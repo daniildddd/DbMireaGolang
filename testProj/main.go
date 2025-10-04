@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"sort"
@@ -69,6 +70,112 @@ type Sale struct {
 // ---------------------- Глобальная переменная DB ----------------------
 var gormDB *gorm.DB
 
+// ---------------------- Логгер ----------------------
+type LogLevel int
+
+const (
+	LogLevelINFO LogLevel = iota
+	LogLevelERROR
+)
+
+type AppLogger struct {
+	infoLogger  *log.Logger
+	errorLogger *log.Logger
+	logLevel    LogLevel
+	file        *os.File
+}
+
+var appLogger *AppLogger
+
+func initLogger() error {
+	// Загружаем .env файл
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Printf("DEBUG: Ошибка загрузки .env файла: %v\n", err)
+	} else {
+		fmt.Println("DEBUG: .env файл успешно загружен")
+	}
+
+	// Проверяем, что читается из переменной окружения
+	rawValue := os.Getenv("LOG_LEVEL")
+	fmt.Printf("DEBUG: os.Getenv('LOG_LEVEL') = '%s' (длина: %d)\n", rawValue, len(rawValue))
+
+	// Получаем уровень логирования из .env
+	logLevelStr := getEnvWithDefault("LOG_LEVEL", "INFO")
+
+	// Отладочная информация
+	fmt.Printf("DEBUG: После getEnvWithDefault: LOG_LEVEL='%s' (длина: %d байт)\n", logLevelStr, len(logLevelStr))
+	fmt.Printf("DEBUG: После ToUpper: '%s'\n", strings.ToUpper(logLevelStr))
+	fmt.Printf("DEBUG: Сравнение с 'ERROR': %v\n", strings.ToUpper(logLevelStr) == "ERROR")
+
+	// Убираем возможные кавычки и пробелы
+	logLevelStr = strings.Trim(logLevelStr, `"' `)
+
+	logLevel := LogLevelINFO
+	if strings.ToUpper(logLevelStr) == "ERROR" {
+		logLevel = LogLevelERROR
+	}
+
+	// Создаем директорию для логов если её нет
+	if err := os.MkdirAll("logs", 0755); err != nil {
+		return fmt.Errorf("не удалось создать директорию logs: %v", err)
+	}
+
+	// Создаем файл лога с временной меткой
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	logFileName := fmt.Sprintf("logs/app_%s.log", timestamp)
+	file, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		return fmt.Errorf("не удалось создать файл лога: %v", err)
+	}
+
+	// Создаем мультиплексор для вывода в файл и консоль
+	multiWriter := io.MultiWriter(os.Stdout, file)
+
+	appLogger = &AppLogger{
+		infoLogger:  log.New(multiWriter, "[INFO] ", log.Ldate|log.Ltime|log.Lmicroseconds),
+		errorLogger: log.New(multiWriter, "[ERROR] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile),
+		logLevel:    logLevel,
+		file:        file,
+	}
+
+	// Записываем стартовые сообщения ВСЕГДА (независимо от уровня)
+	// Используем errorLogger чтобы они всегда записывались
+	if logLevel == LogLevelERROR {
+		appLogger.errorLogger.Printf("=== Приложение запущено (режим ERROR - логируются только ошибки) ===")
+		appLogger.errorLogger.Printf("Уровень логирования: %s", logLevelStr)
+		appLogger.errorLogger.Printf("Лог-файл: %s", logFileName)
+	} else {
+		appLogger.Info("=== Приложение запущено ===")
+		appLogger.Info("Уровень логирования: %s", logLevelStr)
+		appLogger.Info("Лог-файл: %s", logFileName)
+	}
+
+	return nil
+}
+
+func (l *AppLogger) Info(format string, v ...interface{}) {
+	if l.logLevel <= LogLevelINFO {
+		l.infoLogger.Printf(format, v...)
+	}
+}
+
+func (l *AppLogger) Error(format string, v ...interface{}) {
+	l.errorLogger.Printf(format, v...)
+}
+
+func (l *AppLogger) Close() {
+	if l.file != nil {
+		// Записываем финальное сообщение ВСЕГДА
+		if l.logLevel == LogLevelERROR {
+			l.errorLogger.Printf("=== Приложение завершено ===")
+		} else {
+			l.Info("=== Приложение завершено ===")
+		}
+		l.file.Close()
+	}
+}
+
 // ---------------------- Методы TableName для явных имён ----------------------
 func (Product) TableName() string {
 	return "products"
@@ -88,44 +195,65 @@ func (Sale) TableName() string {
 
 // ---------------------- Подключение к PostgreSQL ----------------------
 func connectDB() {
+	appLogger.Info("Начало подключения к базе данных")
+
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Предупреждение: .env файл не найден, используются переменные окружения")
+		appLogger.Info("Предупреждение: .env файл не найден, используются переменные окружения или значения по умолчанию")
 	}
+
 	host := getEnvWithDefault("DB_HOST", "localhost")
 	port := getEnvWithDefault("DB_PORT", "5432")
 	user := getEnvWithDefault("DB_USER", "postgres")
 	password := getEnvWithDefault("DB_PASSWORD", "password")
 	dbname := getEnvWithDefault("DB_NAME", "energy_drinks_db")
+
+	appLogger.Info("Параметры подключения: host=%s, port=%s, user=%s, dbname=%s", host, port, user, dbname)
+
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname,
 	)
+
 	gormDB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
+		appLogger.Error("Ошибка подключения к базе данных: %v", err)
 		log.Fatalf("ошибка подключения GORM: %v", err)
 	}
+
+	appLogger.Info("Успешное подключение к базе данных %s", dbname)
 	fmt.Println("Успешное подключение к базе данных")
 }
 
 // ---------------------- Создание таблиц (с полной очисткой) ----------------------
 func createTables() error {
+	appLogger.Info("=== DDL: Начало пересоздания таблиц ===")
+
 	// Удаляем существующие таблицы в правильном порядке (сначала дочерние, потом родительские)
 	tables := []string{"sales", "inventory", "production_batches", "products"}
 	for _, table := range tables {
 		if gormDB.Migrator().HasTable(table) {
+			appLogger.Info("DDL: Удаление таблицы %s", table)
 			if err := gormDB.Migrator().DropTable(table); err != nil {
+				appLogger.Error("DDL: Ошибка удаления таблицы %s: %v", table, err)
 				return fmt.Errorf("ошибка удаления таблицы %s: %v", table, err)
 			}
+			appLogger.Info("DDL: Таблица %s успешно удалена", table)
 			fmt.Printf("Таблица %s удалена\n", table)
 		}
 	}
+
 	// Удаляем тип ENUM если существует
+	appLogger.Info("DDL: Удаление типа ENUM caffeine_level")
 	if err := gormDB.Exec(`DROP TYPE IF EXISTS caffeine_level`).Error; err != nil {
+		appLogger.Error("DDL: Ошибка удаления типа ENUM: %v", err)
 		return fmt.Errorf("ошибка удаления enum: %v", err)
 	}
+	appLogger.Info("DDL: Тип caffeine_level успешно удален")
 	fmt.Println("Тип caffeine_level удален")
+
 	// Создание ENUM caffeine_level
+	appLogger.Info("DDL: Создание типа ENUM caffeine_level")
 	err := gormDB.Exec(`DO $$
 BEGIN
 IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'caffeine_level') THEN
@@ -133,26 +261,45 @@ CREATE TYPE caffeine_level AS ENUM ('low','medium','high','extra_high');
 END IF;
 END$$;`).Error
 	if err != nil {
+		appLogger.Error("DDL: Ошибка создания типа ENUM: %v", err)
 		return fmt.Errorf("ошибка создания enum: %v", err)
 	}
+	appLogger.Info("DDL: Тип caffeine_level успешно создан")
 	fmt.Println("Тип caffeine_level создан")
+
 	// Создаем таблицы в правильном порядке (сначала родительские, потом дочерние)
+	appLogger.Info("DDL: Создание таблиц через AutoMigrate")
 	err = gormDB.AutoMigrate(&Product{}, &ProductionBatch{}, &Inventory{}, &Sale{})
 	if err != nil {
+		appLogger.Error("DDL: Ошибка создания таблиц: %v", err)
 		return fmt.Errorf("ошибка создания таблиц: %v", err)
 	}
+
+	appLogger.Info("DDL: Все таблицы успешно созданы")
+	appLogger.Info("=== DDL: Пересоздание таблиц завершено ===")
 	fmt.Println("Все таблицы успешно созданы заново")
 	return nil
 }
 
 // ---------------------- Загрузка тестовых данных ----------------------
 func loadTestData() error {
+	appLogger.Info("=== DML: Начало загрузки тестовых данных ===")
+
+	// Проверяем, существует ли таблица products
+	if !gormDB.Migrator().HasTable("products") {
+		appLogger.Error("DML: Таблица products не существует. Сначала создайте таблицы!")
+		return fmt.Errorf("таблицы не созданы. Пожалуйста, сначала нажмите 'Создать таблицы'")
+	}
+
 	// Проверяем, есть ли уже данные
 	var count int64
 	gormDB.Table("products").Count(&count)
 	if count > 0 {
+		appLogger.Error("DML: В базе уже есть данные (%d записей в таблице products)", count)
 		return fmt.Errorf("в базе уже есть данные (%d записей в таблице products)", count)
 	}
+
+	appLogger.Info("DML: Загрузка продуктов (12 записей)")
 	// 1. Таблица products (12 записей)
 	products := []struct {
 		id          int
@@ -179,9 +326,13 @@ func loadTestData() error {
 	for _, p := range products {
 		if err := gormDB.Exec(`INSERT INTO products (product_id, name, flavor, volume_ml, price, caffeine_level, ingredients)
 VALUES (?, ?, ?, ?, ?, ?::caffeine_level, ?)`, p.id, p.name, p.flavor, p.volume, p.price, p.caffeine, p.ingredients).Error; err != nil {
+			appLogger.Error("DML: Ошибка вставки продукта ID=%d: %v", p.id, err)
 			return fmt.Errorf("ошибка вставки продукта: %v", err)
 		}
 	}
+	appLogger.Info("DML: Успешно загружено 12 продуктов")
+
+	appLogger.Info("DML: Загрузка производственных партий (20 записей)")
 	// 2. Таблица production_batches (20 записей)
 	batches := []struct {
 		id       int
@@ -213,9 +364,13 @@ VALUES (?, ?, ?, ?, ?, ?::caffeine_level, ?)`, p.id, p.name, p.flavor, p.volume,
 	for _, b := range batches {
 		if err := gormDB.Exec(`INSERT INTO production_batches (batch_id, product_id, production_date, quantity_produced)
 VALUES (?, ?, ?, ?)`, b.id, b.prodID, b.date, b.quantity).Error; err != nil {
+			appLogger.Error("DML: Ошибка вставки партии ID=%d: %v", b.id, err)
 			return fmt.Errorf("ошибка вставки партии: %v", err)
 		}
 	}
+	appLogger.Info("DML: Успешно загружено 20 производственных партий")
+
+	appLogger.Info("DML: Загрузка данных инвентаря (12 записей)")
 	// 3. Таблица inventory (12 записей)
 	inventory := []struct {
 		id       int
@@ -239,9 +394,13 @@ VALUES (?, ?, ?, ?)`, b.id, b.prodID, b.date, b.quantity).Error; err != nil {
 	for _, inv := range inventory {
 		if err := gormDB.Exec(`INSERT INTO inventory (inventory_id, product_id, quantity_in_stock, last_updated)
 VALUES (?, ?, ?, ?)`, inv.id, inv.prodID, inv.quantity, inv.updated).Error; err != nil {
+			appLogger.Error("DML: Ошибка вставки инвентаря ID=%d: %v", inv.id, err)
 			return fmt.Errorf("ошибка вставки инвентаря: %v", err)
 		}
 	}
+	appLogger.Info("DML: Успешно загружено 12 записей инвентаря")
+
+	appLogger.Info("DML: Загрузка продаж (25 записей)")
 	// 4. Таблица sales (25 записей)
 	sales := []struct {
 		id       int
@@ -279,14 +438,20 @@ VALUES (?, ?, ?, ?)`, inv.id, inv.prodID, inv.quantity, inv.updated).Error; err 
 	for _, s := range sales {
 		if err := gormDB.Exec(`INSERT INTO sales (sale_id, product_id, sale_date, quantity_sold, total_price)
 VALUES (?, ?, ?, ?, ?)`, s.id, s.prodID, s.date, s.quantity, s.total).Error; err != nil {
+			appLogger.Error("DML: Ошибка вставки продажи ID=%d: %v", s.id, err)
 			return fmt.Errorf("ошибка вставки продажи: %v", err)
 		}
 	}
+	appLogger.Info("DML: Успешно загружено 25 продаж")
+
 	// Обновляем последовательности (sequences)
+	appLogger.Info("DML: Обновление последовательностей (sequences)")
 	gormDB.Exec("SELECT setval('products_product_id_seq', (SELECT MAX(product_id) FROM products))")
 	gormDB.Exec("SELECT setval('production_batches_batch_id_seq', (SELECT MAX(batch_id) FROM production_batches))")
 	gormDB.Exec("SELECT setval('inventory_inventory_id_seq', (SELECT MAX(inventory_id) FROM inventory))")
 	gormDB.Exec("SELECT setval('sales_sale_id_seq', (SELECT MAX(sale_id) FROM sales))")
+
+	appLogger.Info("=== DML: Загрузка тестовых данных завершена успешно ===")
 	return nil
 }
 
@@ -325,10 +490,10 @@ func getFieldConfigs(table string) map[string]FieldConfig {
 	switch table {
 	case "products":
 		return map[string]FieldConfig{
-			"name":           {"Название продукта", "text", true, nil, nil},
-			"flavor":         {"Вкус", "text", true, nil, nil},
-			"volume_ml":      {"Объем (мл)", "number", true, nil, nil},
-			"price":          {"Цена", "decimal", true, nil, nil},
+			"name":           {"Название продукта", "text_max20", true, nil, nil},
+			"flavor":         {"Вкус", "text_max20", true, nil, nil},
+			"volume_ml":      {"Объем (мл)", "number_max10", true, nil, nil},
+			"price":          {"Цена", "decimal_max10", true, nil, nil},
 			"ingredients":    {"Ингредиенты", "textarea", false, nil, nil},
 			"caffeine_level": {"Уровень кофеина", "select", true, []string{"low", "medium", "high", "extra_high"}, nil},
 		}
@@ -341,7 +506,7 @@ func getFieldConfigs(table string) map[string]FieldConfig {
 	case "inventory":
 		return map[string]FieldConfig{
 			"product_id":        {"ID продукта", "number", true, nil, nil},
-			"quantity_in_stock": {"Количество на складе", "number_zero", true, nil, nil},
+			"quantity_in_stock": {"Количество на складе", "number_zero_max10", true, nil, nil},
 			"last_updated":      {"Дата и время последнего обновления", "datetime", true, nil, nil},
 		}
 	case "sales":
@@ -356,7 +521,6 @@ func getFieldConfigs(table string) map[string]FieldConfig {
 	}
 }
 
-// Получить порядок полей для таблицы
 func getFieldOrder(table string) []string {
 	switch table {
 	case "products":
@@ -389,7 +553,6 @@ func addRecordWindow(parentApp fyne.App) {
 
 	tables := getTables()
 	tableSelect := widget.NewSelect(tables, nil)
-	// Преобразуем имена таблиц в отображаемые названия
 	displayNames := make([]string, len(tables))
 	for i, table := range tables {
 		displayNames[i] = getTableDisplayName(table)
@@ -403,7 +566,6 @@ func addRecordWindow(parentApp fyne.App) {
 	updateForm := func(displayName string) {
 		formContainer.Objects = nil
 		entries = make(map[string]fyne.CanvasObject)
-		// Найти реальное имя таблицы
 		var table string
 		for _, t := range tables {
 			if getTableDisplayName(t) == displayName {
@@ -430,6 +592,29 @@ func addRecordWindow(parentApp fyne.App) {
 				entry.SetPlaceHolder("Введите " + config.Label)
 				inputWidget = entry
 				entries[field] = entry
+			case "text_max20":
+				entry := widget.NewEntry()
+				entry.SetPlaceHolder("Введите " + config.Label + " (макс. 10 символов)")
+				entry.OnChanged = func(s string) {
+					filtered := s
+					if len(filtered) > 20 {
+						filtered = filtered[:20]
+					}
+					if filtered != s {
+						entry.SetText(filtered)
+					}
+				}
+				entry.Validator = func(text string) error {
+					if text == "" && config.Required {
+						return fmt.Errorf("это поле обязательно")
+					}
+					if len(text) > 20 {
+						return fmt.Errorf("максимум 10 символов")
+					}
+					return nil
+				}
+				inputWidget = entry
+				entries[field] = entry
 			case "textarea":
 				entry := widget.NewMultiLineEntry()
 				entry.SetPlaceHolder("Введите " + config.Label)
@@ -447,6 +632,9 @@ func addRecordWindow(parentApp fyne.App) {
 							filtered += string(r)
 						}
 					}
+					if len(filtered) > 10 {
+						filtered = filtered[:10]
+					}
 					if filtered != s {
 						entry.SetText(filtered)
 					}
@@ -454,6 +642,43 @@ func addRecordWindow(parentApp fyne.App) {
 				entry.Validator = func(text string) error {
 					if text == "" && config.Required {
 						return fmt.Errorf("это поле обязательно")
+					}
+					if text != "" {
+						num, err := strconv.Atoi(text)
+						if err != nil {
+							return fmt.Errorf("введите корректное число")
+						}
+						if num <= 0 {
+							return fmt.Errorf("число должно быть больше 0")
+						}
+					}
+					return nil
+				}
+				inputWidget = entry
+				entries[field] = entry
+			case "number_max10":
+				entry := widget.NewEntry()
+				entry.SetPlaceHolder("Введите число (макс. 10 символов)")
+				entry.OnChanged = func(s string) {
+					filtered := ""
+					for _, r := range s {
+						if r >= '0' && r <= '9' {
+							filtered += string(r)
+						}
+					}
+					if len(filtered) > 10 {
+						filtered = filtered[:10]
+					}
+					if filtered != s {
+						entry.SetText(filtered)
+					}
+				}
+				entry.Validator = func(text string) error {
+					if text == "" && config.Required {
+						return fmt.Errorf("это поле обязательно")
+					}
+					if len(text) > 10 {
+						return fmt.Errorf("максимум 10 символов")
 					}
 					if text != "" {
 						num, err := strconv.Atoi(text)
@@ -496,6 +721,40 @@ func addRecordWindow(parentApp fyne.App) {
 				}
 				inputWidget = entry
 				entries[field] = entry
+			case "number_zero_max10":
+				entry := widget.NewEntry()
+				entry.SetPlaceHolder("Введите число (может быть 0, макс. 10 цифр)")
+				entry.OnChanged = func(s string) {
+					filtered := ""
+					for _, r := range s {
+						if r >= '0' && r <= '9' {
+							filtered += string(r)
+						}
+					}
+					if len(filtered) > 10 {
+						filtered = filtered[:10]
+					}
+					if filtered != s {
+						entry.SetText(filtered)
+					}
+				}
+				entry.Validator = func(text string) error {
+					if text == "" && config.Required {
+						return fmt.Errorf("это поле обязательно")
+					}
+					if len(text) > 10 {
+						return fmt.Errorf("максимум 10 цифр")
+					}
+					if text != "" {
+						_, err := strconv.Atoi(text)
+						if err != nil {
+							return fmt.Errorf("введите корректное число")
+						}
+					}
+					return nil
+				}
+				inputWidget = entry
+				entries[field] = entry
 			case "decimal":
 				entry := widget.NewEntry()
 				entry.SetPlaceHolder("Введите число с точкой")
@@ -510,6 +769,9 @@ func addRecordWindow(parentApp fyne.App) {
 							dotCount++
 						}
 					}
+					if len(filtered) > 10 {
+						filtered = filtered[:10]
+					}
 					if filtered != s {
 						entry.SetText(filtered)
 					}
@@ -517,6 +779,50 @@ func addRecordWindow(parentApp fyne.App) {
 				entry.Validator = func(text string) error {
 					if text == "" && config.Required {
 						return fmt.Errorf("это поле обязательно")
+					}
+					if len(text) > 10 {
+						return fmt.Errorf("максимум 10 символов")
+					}
+					if text != "" {
+						num, err := strconv.ParseFloat(text, 64)
+						if err != nil {
+							return fmt.Errorf("введите корректное число")
+						}
+						if num <= 0 {
+							return fmt.Errorf("число должно быть больше 0")
+						}
+					}
+					return nil
+				}
+				inputWidget = entry
+				entries[field] = entry
+			case "decimal_max10":
+				entry := widget.NewEntry()
+				entry.SetPlaceHolder("Введите число с точкой (макс. 10 символов)")
+				entry.OnChanged = func(s string) {
+					filtered := ""
+					dotCount := 0
+					for _, r := range s {
+						if r >= '0' && r <= '9' {
+							filtered += string(r)
+						} else if r == '.' && dotCount == 0 {
+							filtered += string(r)
+							dotCount++
+						}
+					}
+					if len(filtered) > 10 {
+						filtered = filtered[:10]
+					}
+					if filtered != s {
+						entry.SetText(filtered)
+					}
+				}
+				entry.Validator = func(text string) error {
+					if text == "" && config.Required {
+						return fmt.Errorf("это поле обязательно")
+					}
+					if len(text) > 10 {
+						return fmt.Errorf("максимум 10 символов")
 					}
 					if text != "" {
 						num, err := strconv.ParseFloat(text, 64)
@@ -553,9 +859,15 @@ func addRecordWindow(parentApp fyne.App) {
 						return fmt.Errorf("это поле обязательно")
 					}
 					if text != "" {
-						_, err := time.Parse("2006-01-02", text)
+						t, err := time.Parse("2006-01-02", text)
 						if err != nil {
 							return fmt.Errorf("используйте формат гггг-мм-дд")
+						}
+						now := time.Now()
+						minDate := now.AddDate(-5, 0, 0)
+						maxDate := now.AddDate(5, 0, 0)
+						if t.Before(minDate) || t.After(maxDate) {
+							return fmt.Errorf("дата должна быть в пределах ±5 лет от сегодняшней")
 						}
 					}
 					return nil
@@ -584,9 +896,15 @@ func addRecordWindow(parentApp fyne.App) {
 						return fmt.Errorf("это поле обязательно")
 					}
 					if text != "" {
-						_, err := time.Parse("2006-01-02 15:04", text)
+						t, err := time.Parse("2006-01-02 15:04", text)
 						if err != nil {
 							return fmt.Errorf("используйте формат гггг-мм-дд чч:мм")
+						}
+						now := time.Now()
+						minDate := now.AddDate(-5, 0, 0)
+						maxDate := now.AddDate(5, 0, 0)
+						if t.Before(minDate) || t.After(maxDate) {
+							return fmt.Errorf("дата должна быть в пределах ±5 лет от сегодняшней")
 						}
 					}
 					return nil
@@ -714,11 +1032,24 @@ func addRecordWindow(parentApp fyne.App) {
 			return
 		}
 		query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", table, strings.Join(cols, ","), strings.Join(placeholders, ","))
+		appLogger.Info("DML: Добавление записи в таблицу %s", table)
 		res := gormDB.Exec(query, vals...)
 		if res.Error != nil {
+			appLogger.Error("DML: Ошибка добавления записи в %s: %v", table, res.Error)
+			errorMsg := res.Error.Error()
+			if strings.Contains(errorMsg, "foreign key constraint") {
+				appLogger.Error("CONSTRAINT: Нарушено ограничение внешнего ключа в таблице %s", table)
+			} else if strings.Contains(errorMsg, "check constraint") {
+				appLogger.Error("CONSTRAINT: Нарушено ограничение CHECK в таблице %s", table)
+			} else if strings.Contains(errorMsg, "unique constraint") {
+				appLogger.Error("CONSTRAINT: Нарушено ограничение уникальности в таблице %s", table)
+			} else if strings.Contains(errorMsg, "not-null constraint") {
+				appLogger.Error("CONSTRAINT: Нарушено ограничение NOT NULL в таблице %s", table)
+			}
 			dialog.ShowError(res.Error, win)
 			return
 		}
+		appLogger.Info("DML: Запись успешно добавлена в таблицу %s", table)
 		dialog.ShowInformation("Успех", "✓ Запись успешно добавлена!", win)
 		win.Close()
 	}
@@ -733,14 +1064,12 @@ func viewRecordsWindow(parentApp fyne.App) {
 	win.CenterOnScreen()
 
 	tables := getTables()
-	// Преобразуем имена таблиц в отображаемые названия
 	displayNames := make([]string, len(tables))
 	for i, table := range tables {
 		displayNames[i] = getTableDisplayName(table)
 	}
 	tableSelect := widget.NewSelect(displayNames, nil)
 	tableSelect.SetSelected(displayNames[0])
-	// Чекбокс для включения JOIN
 	joinCheckbox := widget.NewCheck("Показать данные с объединением по Foreign Key", nil)
 	joinCheckbox.SetChecked(false)
 
@@ -748,7 +1077,7 @@ func viewRecordsWindow(parentApp fyne.App) {
 	tableContainer := container.NewStack()
 
 	updateTable := func(displayName string, useJoin bool) {
-		// Найти реальное имя таблицы
+		appLogger.Info("Просмотр таблицы: %s (JOIN=%v)", displayName, useJoin)
 		var table string
 		for _, t := range tables {
 			if getTableDisplayName(t) == displayName {
@@ -757,10 +1086,10 @@ func viewRecordsWindow(parentApp fyne.App) {
 			}
 		}
 		var results []map[string]interface{}
-		// Выбираем запрос в зависимости от таблицы и режима JOIN
 		if useJoin && table != "products" {
 			switch table {
 			case "production_batches":
+				appLogger.Info("Выполнение SELECT с JOIN для таблицы production_batches")
 				gormDB.Raw(`
 SELECT
 pb.batch_id,
@@ -774,6 +1103,7 @@ LEFT JOIN products p ON pb.product_id = p.product_id
 ORDER BY pb.batch_id
 `).Scan(&results)
 			case "inventory":
+				appLogger.Info("Выполнение SELECT с JOIN для таблицы inventory")
 				gormDB.Raw(`
 SELECT
 i.inventory_id,
@@ -788,6 +1118,7 @@ LEFT JOIN products p ON i.product_id = p.product_id
 ORDER BY i.inventory_id
 `).Scan(&results)
 			case "sales":
+				appLogger.Info("Выполнение SELECT с JOIN для таблицы sales")
 				gormDB.Raw(`
 SELECT
 s.sale_id,
@@ -804,8 +1135,10 @@ ORDER BY s.sale_id
 `).Scan(&results)
 			}
 		} else {
+			appLogger.Info("Выполнение SELECT для таблицы %s", table)
 			gormDB.Table(table).Find(&results)
 		}
+		appLogger.Info("Получено записей: %d", len(results))
 		if len(results) == 0 {
 			noDataLabel := widget.NewLabel("Нет данных в таблице")
 			noDataLabel.Alignment = fyne.TextAlignCenter
@@ -813,7 +1146,6 @@ ORDER BY s.sale_id
 			tableContainer.Refresh()
 			return
 		}
-		// Получить отсортированные имена колонок
 		cols := make([]string, 0, len(results[0]))
 		for col := range results[0] {
 			cols = append(cols, col)
@@ -831,19 +1163,15 @@ ORDER BY s.sale_id
 			func(i widget.TableCellID, o fyne.CanvasObject) {
 				label := o.(*widget.Label)
 				if i.Row == 0 {
-					// Заголовки с форматированием
 					colName := cols[i.Col]
-					// Делаем заголовки более читаемыми
 					displayName := strings.ReplaceAll(colName, "_", " ")
 					displayName = strings.Title(displayName)
 					label.SetText(displayName)
 					label.TextStyle = fyne.TextStyle{Bold: true}
 					label.Alignment = fyne.TextAlignCenter
 				} else {
-					// Данные
 					val := results[i.Row-1][cols[i.Col]]
 					if val != nil {
-						// Форматирование времени
 						if t, ok := val.(time.Time); ok {
 							label.SetText(t.Format("2006-01-02 15:04:05"))
 						} else {
@@ -857,7 +1185,6 @@ ORDER BY s.sale_id
 				}
 			},
 		)
-		// Устанавливаем ширину колонок
 		for i := range cols {
 			dataTable.SetColumnWidth(i, 180)
 		}
@@ -870,7 +1197,6 @@ ORDER BY s.sale_id
 	}
 	joinCheckbox.OnChanged = func(checked bool) {
 		updateTable(tableSelect.Selected, checked)
-		// Показываем подсказку, если выбрана таблица products
 		var table string
 		for _, t := range tables {
 			if getTableDisplayName(t) == tableSelect.Selected {
@@ -936,7 +1262,7 @@ func createTablesWindow(parentApp fyne.App, parentWindow fyne.Window) {
 			closeBtn := widget.NewButton("Закрыть", func() {
 				win.Close()
 			})
-			closeBtn.Hide() // Скрываем до завершения
+			closeBtn.Hide()
 			content := container.NewVBox(
 				statusLabel,
 				widget.NewSeparator(),
@@ -986,7 +1312,7 @@ func loadDataWindow(parentApp fyne.App, parentWindow fyne.Window) {
 			closeBtn := widget.NewButton("Закрыть", func() {
 				win.Close()
 			})
-			closeBtn.Hide() // Скрываем до завершения
+			closeBtn.Hide()
 			content := container.NewVBox(
 				statusLabel,
 				widget.NewSeparator(),
@@ -1012,7 +1338,6 @@ func loadDataWindow(parentApp fyne.App, parentWindow fyne.Window) {
 }
 
 func mainMenu(w fyne.Window, a fyne.App) {
-	// Создание стилизованных кнопок с иконками
 	addBtn := widget.NewButtonWithIcon("Добавить запись", theme.ContentAddIcon(), func() {
 		addRecordWindow(a)
 	})
@@ -1026,7 +1351,6 @@ func mainMenu(w fyne.Window, a fyne.App) {
 		loadDataWindow(a, w)
 	})
 
-	// Создание вертикального контейнера для кнопок
 	buttonColumn := container.NewVBox(
 		addBtn,
 		viewBtn,
@@ -1034,7 +1358,6 @@ func mainMenu(w fyne.Window, a fyne.App) {
 		loadDataBtn,
 	)
 
-	// Главный контейнер с отступами и оформлением
 	mainContent := container.NewVBox(
 		layout.NewSpacer(),
 		container.NewCenter(
@@ -1055,6 +1378,11 @@ func mainMenu(w fyne.Window, a fyne.App) {
 }
 
 func main() {
+	if err := initLogger(); err != nil {
+		log.Fatalf("Ошибка инициализации логгера: %v", err)
+	}
+	defer appLogger.Close()
+
 	a := app.New()
 	a.SetIcon(theme.StorageIcon())
 	w := a.NewWindow("EnergyDrinks Manager - Управление базой данных")
@@ -1062,19 +1390,15 @@ func main() {
 	w.Resize(fyne.NewSize(1000, 600))
 	w.CenterOnScreen()
 
-	// Показ загрузки
 	progress := widget.NewProgressBarInfinite()
 	loadingLabel := createStyledLabel("Подключение к базе данных...", fyne.TextAlignCenter, true)
 	loadingContent := container.NewVBox(loadingLabel, progress)
 	w.SetContent(container.NewCenter(loadingContent))
 
-	// Запуск в goroutine чтобы не блокировать GUI
 	go func() {
 		connectDB()
-		// Обновляем текст загрузки
 		loadingLabel.SetText("Подключение установлено!")
 		time.Sleep(500 * time.Millisecond)
-		// Показываем главное меню
 		mainMenu(w, a)
 	}()
 	w.ShowAndRun()
