@@ -1,0 +1,69 @@
+// тут будут функции для работы со строками(в основном они используются в entry.Validator)
+package utils
+
+import "fmt"
+
+// структура для ошибок.
+//
+// в ней хранится имя поля в котором ошибка произошла и сам текст ошибки
+type ValidationError struct {
+	Field   string
+	Message string
+}
+
+// метод структуры ValidationError для реализации интерфейса error(это нам позволит тогда структуру ValidatorError возвращать как результат функций с возвращаемым значением error)
+//
+// возвращает текст ошибки в формате имяПоля: сообщениеОшибки
+func (v ValidationError) Error() string {
+	return fmt.Sprintf("%s: %s", v.Field, v.Message)
+}
+
+// проверяет обязательное поле
+//
+// возвращает ошибку если оно пусто, иначе nil
+func ValidateRequired(value, fieldName string) error { return nil }
+
+// проверяет максимальную длину
+//
+// возвращает ошибку если больше maxLen, иначе nil
+func ValidateMaxLength(value string, maxLen int, fieldName string) error { return nil }
+
+// проверяет число >0
+//
+// возвращает ошибку если невозможно преобразовать к числовому значению или если переданное число <= 0, иначе nil
+func ValidatePositiveInt(value, fieldName string) error { return nil }
+
+// проверяет число >=0
+//
+// возвращает ошибку если невозможно преобразовать к числовому значению или если переданное число < 0, иначе nil
+func ValidateNonNegativeInt(value, fieldName string) error { return nil }
+
+// проверяет положительное десятичное число
+//
+// возвращает ошибку если не удалось преобразовать к float64 или число <=0
+func ValidatePositiveDecimal(value, fieldName string) error { return nil }
+
+// проверяет дату в формате YYYY-MM-DD
+//
+// возвращает ошибку если не соответствует формату или дата не лежит в пределах +- 5 лет от нынешней даты
+func ValidateDate(value, fieldName string) error { return nil }
+
+// проверяет дату и время в формате YYYY-MM-DD HH:MM
+//
+// возвращает ошибку если не подходит по формату или дата не лежит в пределах +- 5 лет от нынешней даты
+func ValidateDateTime(value, fieldName string) error { return nil }
+
+// проверяет, что значение из списка допустимых(проверка enum)
+func ValidateEnum(value string, allowedValues []string, fieldName string) error { return nil }
+
+// объединяет несколько валидаторов в один
+func Combine(validators ...func(string) error) func(string) error {
+	return func(value string) error {
+		for _, validator := range validators {
+			if err := validator(value); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
