@@ -1,10 +1,16 @@
+Десктопное-приложение для взаимодействия с БД
 
-## Для запуска
+## Участники
 
-### Объявляем себя как модуль
+- Валекжанин Владимир - Frontend Developer
+- Амвросов Максим - Frontend Developer
+- Шаломеенко Анастасия - QA Engineer
+- Ляпунов Даниил - Data Scientist
+- Кочегаров Михаил - Backend Developer
 
-go mod init energy-drinks-manager
+## Стек
 
-### Подтягиваем зависимости
-
-go mod tidy
+- Язык: Golang
+- GUI: Fyne
+- БД: PostgreSQL + GORM
+- Юнит-тестирование: встроенный пакет Golang(testing)
