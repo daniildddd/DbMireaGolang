@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/joho/godotenv"
+	"github.com/daniildddd/DbMireaGolang/config"
 )
 
 // отдельный тип для уровня логирования
@@ -36,19 +36,13 @@ var Logger *AppLogger
 
 // функция для инициализиации логера, возвращает ошибку если не смогли загрузить данные из .env файла или
 func InitLogger() error {
-	//загружаем из файла .env переменные в переменные окружения
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Printf("DEBUG: ошибка загрузки из .env файла %v\n", err)
-	} else {
-		fmt.Printf("DEBUG: .env файл успешно загружен")
-	}
+	config.MustLoad()
 
 	rawValue := os.Getenv("LOG_LEVEL")
 	fmt.Printf("DEBUG: LOG_LEVEL =%s", rawValue)
 
 	//получаем уровень логгирование, если такого поля нет в .env файле то по дефолту выставится уровень INFO
-	logLevelStr := getEnvWithDefault("LOG_LEVEL", "INFO")
+	logLevelStr := config.GetEnvWithDefault("LOG_LEVEL", "INFO")
 
 	//убираем всякие кавычки и пробелы
 	logLevelStr = strings.Trim(logLevelStr, `"' `)
@@ -74,6 +68,7 @@ func InitLogger() error {
 	// мультиплексор для записи в консольку и в файл
 	multiWriter := io.MultiWriter(os.Stdout, file)
 
+	//инициализируем логгер
 	Logger = &AppLogger{
 		infoLoger:  log.New(multiWriter, "[INFO]", log.Ldate|log.Ltime),
 		errorLoger: log.New(multiWriter, "[ERROR]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile),
@@ -83,7 +78,6 @@ func InitLogger() error {
 
 	if logLevel == LogLevelError {
 		Logger.errorLoger.Printf("=== приложение запущено(режим ERROR) ===")
-
 	} else {
 		Logger.errorLoger.Printf("=== приложение запущено(режим INFO) ===")
 	}
@@ -92,6 +86,8 @@ func InitLogger() error {
 }
 
 // логгирует на уровне INFO если этого уровень позволяет
+//
+// принимает формат и аргументы которые будут выведены в этом формате строки
 func (a *AppLogger) Info(format string, v ...any) {
 	if a.logLevel <= LogLevelInfo {
 		a.infoLoger.Printf(format, v...)
@@ -99,6 +95,8 @@ func (a *AppLogger) Info(format string, v ...any) {
 }
 
 // логгирует на уровне ERROR
+//
+// принимает формат и аргументы которые будут выведены в этом формате строки
 func (a *AppLogger) Error(format string, v ...any) {
 	a.errorLoger.Printf(format, v...)
 }
