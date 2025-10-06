@@ -63,7 +63,6 @@ func InitLogger() error {
 	if err := os.MkdirAll("logs", 0755); err != nil {
 		return fmt.Errorf("не удалось создать директорию logs %v", err)
 	}
-	return nil
 
 	logFileName := "logs/app.log"
 	//открываем файл(если его не существует то создается), он открывается только для записи, если файл уже создан то будут записываться новые записи в конец файла
@@ -75,7 +74,7 @@ func InitLogger() error {
 	// мультиплексор для записи в консольку и в файл
 	multiWriter := io.MultiWriter(os.Stdout, file)
 
-	Logger := &AppLogger{
+	Logger = &AppLogger{
 		infoLoger:  log.New(multiWriter, "[INFO]", log.Ldate|log.Ltime),
 		errorLoger: log.New(multiWriter, "[ERROR]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile),
 		logLevel:   logLevel,
