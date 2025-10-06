@@ -36,7 +36,7 @@ func MustConnectDB() {
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logger.Logger.Error("ошибка подключения к базе данных %v", err)
-		panic(fmt.Sprintf("ошибка подключения к базе данных %v", err))
+		panic(err)
 	}
 	logger.Logger.Info("успешное подключение к базе данных %s", dbname)
 }
