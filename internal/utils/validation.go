@@ -174,11 +174,34 @@ func ValidateEnum(value string, allowedValues []string, fieldName string) error 
 		fmt.Sprintf("должно быть одним из: %v", allowedValues))
 }
 
+// WrapEnum создает валидатор с фиксированным списком допустимых значений
+func WrapEnum(allowedValues []string) func(string, string) error {
+	return func(value, fieldName string) error {
+		value = strings.TrimSpace(value)
+		for _, allowed := range allowedValues {
+			if value == allowed {
+				return nil
+			}
+		}
+		return &ValidationError{Field: fieldName, Message: "выберите допустимое значение"}
+	}
+}
+
+// WrapMaxLength создает валидатор с фиксированной максимальной длиной
+func WrapMaxLength(maxLen int) func(string, string) error {
+	return func(value, fieldName string) error {
+		if len(strings.TrimSpace(value)) > maxLen {
+			return &ValidationError{Field: fieldName, Message: fmt.Sprintf("максимум %d символов", maxLen)}
+		}
+		return nil
+	}
+}
+
 // объединяет несколько валидаторов в один
-func Combine(validators ...func(string) error) func(string) error {
+func Combine(fieldName string, validators ...func(string, string) error) func(string) error {
 	return func(value string) error {
 		for _, validator := range validators {
-			if err := validator(value); err != nil {
+			if err := validator(value, fieldName); err != nil {
 				return err
 			}
 		}
