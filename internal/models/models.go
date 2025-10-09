@@ -6,10 +6,10 @@ import "time"
 type CaffeineLevel string
 
 const (
-	Low        CaffeineLevel = "low"
-	Medium     CaffeineLevel = "medium"
-	High       CaffeineLevel = "high"
-	ExtraHight CaffeineLevel = "extra_high"
+	Low       CaffeineLevel = "low"
+	Medium    CaffeineLevel = "medium"
+	High      CaffeineLevel = "high"
+	ExtraHigh CaffeineLevel = "extra_high"
 )
 
 type Product struct {
