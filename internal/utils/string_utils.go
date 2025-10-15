@@ -90,3 +90,15 @@ func ToDisplayName(s string) string {
 	}
 	return strings.Join(words, " ")
 }
+
+// FilterLetters оставляет только буквенные символы, пробелы и знаки дефиса/апострофа.
+// Удаляет цифры и остальные небуквенные символы.
+func FilterLetters(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		if unicode.IsLetter(r) || r == ' ' || r == '-' || r == '\'' {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}

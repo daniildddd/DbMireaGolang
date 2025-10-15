@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/daniildddd/DbMireaGolang/internal/utils"
 )
@@ -14,6 +15,7 @@ type FieldConfig struct {
 	Label      string
 	Type       string
 	Required   bool
+	MaxLen     int
 	Options    []string
 	Validation func(string) error
 }
@@ -37,24 +39,36 @@ func CreateField(field string, config FieldConfig) (fyne.CanvasObject, error) {
 	switch config.Type {
 	case "text":
 		entry := widget.NewEntry()
-		entry.SetPlaceHolder("Введите " + config.Label)
+		entry.SetPlaceHolder("Введите " + utils.ToDisplayName(field))
 
-		lengthValidator := utils.WrapMaxLength(10)
+		maxLen := config.MaxLen
+		if maxLen <= 0 {
+			maxLen = 10
+		}
+
+		lengthValidator := utils.WrapMaxLength(maxLen)
 		validators = append(validators, lengthValidator)
+		// добавляем валидацию букв только
+		validators = append(validators, utils.ValidateLettersOnly)
+
+		// Фильтрация в реальном времени: сначала оставить только буквы, затем усечь
+		entry.OnChanged = func(s string) {
+			filtered := utils.FilterLetters(s)
+			entry.SetText(utils.TruncateString(filtered, maxLen))
+		}
 
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
 			entry.Validator = finalValidator
 		}
-		inputWidget = entry
+		// Добавляем стилизованную метку над полем
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, entry)
 
 	case "text_max20":
 		entry := widget.NewEntry()
-		entry.SetPlaceHolder("Введите " + config.Label + " (макс. 20 символов)")
+		entry.SetPlaceHolder("Введите " + utils.ToDisplayName(field) + " (макс. 20 символов)")
 
 		// Добавляем валидатор длины
 		lengthValidator := utils.WrapMaxLength(20)
@@ -68,86 +82,95 @@ func CreateField(field string, config FieldConfig) (fyne.CanvasObject, error) {
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
 			entry.Validator = finalValidator
 		}
-		inputWidget = entry
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, entry)
 
 	case "textarea":
 		entry := widget.NewMultiLineEntry()
-		entry.SetPlaceHolder("Введите " + config.Label)
+		entry.SetPlaceHolder("Введите " + utils.ToDisplayName(field))
 
 		entry.Wrapping = fyne.TextWrapWord
 		entry.SetMinRowsVisible(3)
 
-		lengthValidator := utils.WrapMaxLength(30)
+		maxLen := config.MaxLen
+		if maxLen <= 0 {
+			maxLen = 300
+		}
+
+		lengthValidator := utils.WrapMaxLength(maxLen)
 		validators = append(validators, lengthValidator)
+		validators = append(validators, utils.ValidateLettersOnly)
 
 		entry.OnChanged = func(s string) {
-			entry.SetText(utils.TruncateString(s, 30))
+			filtered := utils.FilterLetters(s)
+			entry.SetText(utils.TruncateString(filtered, maxLen))
 		}
 
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
 			entry.Validator = finalValidator
 		}
-		inputWidget = entry
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, entry)
 
 	case "number":
 		entry := widget.NewEntry()
-		entry.SetPlaceHolder("Введите число")
+		entry.SetPlaceHolder(utils.ToDisplayName(field))
 
 		// Добавляем валидатор неотрицательного целого
 		validators = append(validators, utils.ValidateNonNegativeInt)
 
+		maxLen := config.MaxLen
+		if maxLen <= 0 {
+			maxLen = 10
+		}
+
 		// Фильтрация в реальном времени
 		entry.OnChanged = func(s string) {
 			filtered := utils.FilterDigits(s)
-			entry.SetText(utils.TruncateString(filtered, 10))
+			entry.SetText(utils.TruncateString(filtered, maxLen))
 		}
 
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
 			entry.Validator = finalValidator
 		}
-		inputWidget = entry
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, entry)
 
 	case "decimal":
 		entry := widget.NewEntry()
-		entry.SetPlaceHolder("Введите число с точкой")
+		entry.SetPlaceHolder(utils.ToDisplayName(field))
 
 		// Добавляем валидатор положительного десятичного числа
 		validators = append(validators, utils.ValidatePositiveDecimal)
 
+		maxLen := config.MaxLen
+		if maxLen <= 0 {
+			maxLen = 10
+		}
+
 		// Фильтрация в реальном времени
 		entry.OnChanged = func(s string) {
 			filtered := utils.FilterNumericWithDot(s)
-			entry.SetText(utils.TruncateString(filtered, 10))
+			entry.SetText(utils.TruncateString(filtered, maxLen))
 		}
 
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
 			entry.Validator = finalValidator
 		}
-		inputWidget = entry
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, entry)
 
 	case "date":
 		entry := widget.NewEntry()
-		entry.SetPlaceHolder("ГГГГ-ММ-ДД")
+		entry.SetPlaceHolder("ГГГГ-MM-DD")
 
 		// Добавляем валидатор даты
 		validators = append(validators, utils.ValidateDate)
@@ -161,16 +184,14 @@ func CreateField(field string, config FieldConfig) (fyne.CanvasObject, error) {
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
 			entry.Validator = finalValidator
 		}
-		inputWidget = entry
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, entry)
 
 	case "datetime":
 		entry := widget.NewEntry()
-		entry.SetPlaceHolder("ГГГГ-ММ-ДД ЧЧ:ММ")
+		entry.SetPlaceHolder("ГГГГ-MM-DD HH:MM")
 
 		// Добавляем валидатор даты и времени
 		validators = append(validators, utils.ValidateDateTime)
@@ -184,16 +205,14 @@ func CreateField(field string, config FieldConfig) (fyne.CanvasObject, error) {
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
 			entry.Validator = finalValidator
 		}
-		inputWidget = entry
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, entry)
 
 	case "select":
 		selectWidget := widget.NewSelect(config.Options, nil)
-		selectWidget.PlaceHolder = "Выберите " + config.Label
+		selectWidget.PlaceHolder = "Выберите " + utils.ToDisplayName(field)
 
 		if len(config.Options) > 0 {
 			enumValidator := utils.WrapEnum(config.Options)
@@ -203,17 +222,15 @@ func CreateField(field string, config FieldConfig) (fyne.CanvasObject, error) {
 		// Комбинируем все валидаторы
 		if len(validators) > 0 {
 			finalValidator := utils.Combine(config.Label, validators...)
-			if err := finalValidator(""); err != nil {
-				return nil, fmt.Errorf("инициализация поля %s: %v", config.Label, err)
-			}
-
 			selectWidget.OnChanged = func(s string) {
 				if err := finalValidator(s); err != nil {
-					fmt.Printf("Ошибка валидации: %v\n", err)
+					// Выводим понятное сообщение в лог с человеко-читаемым именем поля
+					fmt.Printf("Ошибка валидации поля %s: %v\n", utils.ToDisplayName(field), err)
 				}
 			}
 		}
-		inputWidget = selectWidget
+		label := widget.NewLabelWithStyle(utils.ToDisplayName(field), fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		inputWidget = container.NewVBox(label, selectWidget)
 
 	default:
 		return nil, fmt.Errorf("неизвестный тип поля: %s", config.Type)

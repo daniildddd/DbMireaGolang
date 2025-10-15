@@ -13,21 +13,21 @@ const (
 )
 
 type Product struct {
-	ProductID       uint              `gorm:"primaryKey;autoIncrement"`
-	Name            string            `gorm:"not null"`
-	Flavor          string            `gorm:"not null"`
-	VolumeML        int               `gorm:"not null;check:volume_ml>0"`
-	Price           float64           `gorm:"not nill;check:price>0"`
-	Ingredients     string            `gorm:"type:text"`
-	CaffeineLevel   CaffeineLevel     `gorm:"type:caffeine_level;default:'medium';not null"`
-	ProductionBatch []ProductionBatch `gorm:"foreginKey:ProductID"`
-	Inventory       []Inventory       `gorm:"foreginKey:ProductID"`
-	Sales           []Sale            `gorm:"foreginKey:ProductID"`
+	ProductID         uint              `gorm:"primaryKey;autoIncrement"`
+	Name              string            `gorm:"not null"`
+	Flavor            string            `gorm:"not null"`
+	VolumeML          int               `gorm:"not null;check:volume_ml>0"`
+	Price             float64           `gorm:"not null;check:price>0"`
+	Ingredients       string            `gorm:"type:text"`
+	CaffeineLevel     CaffeineLevel     `gorm:"type:caffeine_level;default:'medium';not null"`
+	ProductionBatches []ProductionBatch `gorm:"foreignKey:ProductID"`
+	Inventory         []Inventory       `gorm:"foreignKey:ProductID"`
+	Sales             []Sale            `gorm:"foreignKey:ProductID"`
 }
 
 type ProductionBatch struct {
 	BatchID          uint      `gorm:"primaryKey;autoIncrement"`
-	ProductID        uint      `gorm:"not nill"`
+	ProductID        uint      `gorm:"not null"`
 	ProductionDate   time.Time `gorm:"not null"`
 	QuantityProduced int       `gorm:"not null;check:quantity_produced>0"`
 }
@@ -57,4 +57,4 @@ func (ProductionBatch) TableName() string { return "production_batches" }
 func (Inventory) TableName() string { return "inventory" }
 
 // функция возвращающая название таблицы
-func (Sale) TableName() string { return "sale" }
+func (Sale) TableName() string { return "sales" }

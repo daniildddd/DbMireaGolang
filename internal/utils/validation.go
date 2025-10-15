@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 )
 
 // структура для ошибок.
@@ -207,4 +208,14 @@ func Combine(fieldName string, validators ...func(string, string) error) func(st
 		}
 		return nil
 	}
+}
+
+// ValidateLettersOnly проверяет, что строка содержит только буквенные символы, пробелы, дефисы или апострофы.
+func ValidateLettersOnly(value, fieldName string) error {
+	for _, r := range value {
+		if !(unicode.IsLetter(r) || r == ' ' || r == '-' || r == '\'') {
+			return NewValidationError(fieldName, "поле должно содержать только буквы и пробелы")
+		}
+	}
+	return nil
 }
