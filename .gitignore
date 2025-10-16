@@ -25,3 +25,8 @@ go.work
 # OS
 .DS_Store
 Thumbs.db
+
+# Frontend
+ui/**/build/bin
+ui/**/frontend/dist
+node_modules

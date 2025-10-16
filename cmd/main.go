@@ -3,10 +3,12 @@ package main
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+
 	"github.com/daniildddd/DbMireaGolang/config"
 	"github.com/daniildddd/DbMireaGolang/internal/database"
+	"github.com/daniildddd/DbMireaGolang/internal/frontend"
 	"github.com/daniildddd/DbMireaGolang/internal/logger"
-	"github.com/daniildddd/DbMireaGolang/internal/ui"
+
 )
 
 // todo: логи изменить, более логично будет под каждый запуск лог файл создавать
@@ -30,7 +32,7 @@ func main() {
 	window := myApp.NewWindow("Energy Drinks Manager")
 
 	// Создание WindowManager
-	wm := ui.NewWindowManager(myApp, window)
+	wm := frontend.NewWindowManager(myApp, window)
 
 	// Отображение главного меню через WindowManager
 	wm.ShowMainMenu()

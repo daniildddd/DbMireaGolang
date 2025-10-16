@@ -1,5 +1,5 @@
 // Package ui provides UI-related functionality for the application.
-package ui
+package frontend
 
 import (
 	"fyne.io/fyne/v2"

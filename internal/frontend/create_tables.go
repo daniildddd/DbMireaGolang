@@ -1,5 +1,5 @@
 // Package ui provides functionality to create database tables.
-package ui
+package frontend
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 
 	"github.com/daniildddd/DbMireaGolang/internal/database"
 	"github.com/daniildddd/DbMireaGolang/internal/logger"
-	"github.com/daniildddd/DbMireaGolang/internal/ui/components"
+	"github.com/daniildddd/DbMireaGolang/internal/frontend/components"
 )
 
 // CreateTablesWindow показывает окно создания таблиц в базе данных.

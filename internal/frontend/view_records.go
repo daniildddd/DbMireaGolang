@@ -1,5 +1,5 @@
 // Package ui provides UI-related functionality for the application.
-package ui
+package frontend
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/daniildddd/DbMireaGolang/internal/database"
 	"github.com/daniildddd/DbMireaGolang/internal/models"
 	"github.com/daniildddd/DbMireaGolang/internal/repository"
-	"github.com/daniildddd/DbMireaGolang/internal/ui/metadata"
+	"github.com/daniildddd/DbMireaGolang/internal/frontend/metadata"
 )
 
 // CreateViewRecordsWindow создает модальное окно (диалог) для просмотра записей из выбранной таблицы.

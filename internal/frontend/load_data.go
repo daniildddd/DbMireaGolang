@@ -1,4 +1,4 @@
-package ui
+package frontend
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/daniildddd/DbMireaGolang/internal/database"
-	"github.com/daniildddd/DbMireaGolang/internal/ui/components"
+	"github.com/daniildddd/DbMireaGolang/internal/frontend/components"
 )
 
 // ShowLoadDataWindow показывает окно загрузки тестовых данных в базу.

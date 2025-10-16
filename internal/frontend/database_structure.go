@@ -1,5 +1,5 @@
 // Package ui provides database structure viewing functionality.
-package ui
+package frontend
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/daniildddd/DbMireaGolang/internal/logger"
-	"github.com/daniildddd/DbMireaGolang/internal/ui/components"
+	"github.com/daniildddd/DbMireaGolang/internal/frontend/components"
 )
 
 // TableFieldInfo contains information about a table field

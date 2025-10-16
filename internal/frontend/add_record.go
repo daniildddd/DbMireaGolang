@@ -1,5 +1,5 @@
 // Package ui provides functionality to add new records to the database.
-package ui
+package frontend
 
 import (
 	"fmt"
@@ -14,9 +14,9 @@ import (
 
 	"github.com/daniildddd/DbMireaGolang/internal/models"
 	"github.com/daniildddd/DbMireaGolang/internal/repository"
+	"github.com/daniildddd/DbMireaGolang/internal/frontend/components"
+	"github.com/daniildddd/DbMireaGolang/internal/frontend/metadata"
 
-	"github.com/daniildddd/DbMireaGolang/internal/ui/components"
-	"github.com/daniildddd/DbMireaGolang/internal/ui/metadata"
 )
 
 // CreateAddRecordWindow создает окно для добавления новой записи в указанную таблицу.
