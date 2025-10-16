@@ -19,6 +19,7 @@ func MustCreateTables() {
 	err := DB.Transaction(func(tx *gorm.DB) error {
 		// Определяем порядок удаления таблиц: сначала дочерние, затем родительские
 		tables := []string{"sales", "inventory", "production_batches", "products"}
+
 		for _, table := range tables {
 			if tx.Migrator().HasTable(table) {
 				logger.Logger.Info("Попытка удаления таблицы: %s", table)
@@ -32,19 +33,18 @@ func MustCreateTables() {
 			}
 		}
 
-		// Проверка и создание пользовательского типа для CaffeineLevel (если используется ENUM)
-		if tx.Migrator().HasColumn(&models.Product{}, "caffeine_level") {
-			logger.Logger.Info("Проверка и создание типа caffeine_level")
-			if err := tx.Exec("DROP TYPE IF EXISTS caffeine_level").Error; err != nil {
-				logger.Logger.Error("Ошибка удаления типа caffeine_level: %v", err)
-				return fmt.Errorf("не удалось удалить тип caffeine_level: %w", err)
-			}
-			if err := tx.Exec(`CREATE TYPE caffeine_level AS ENUM ('low', 'medium', 'high', 'extra_high')`).Error; err != nil {
-				logger.Logger.Error("Ошибка создания типа caffeine_level: %v", err)
-				return fmt.Errorf("не удалось создать тип caffeine_level: %w", err)
-			}
-			logger.Logger.Info("Тип caffeine_level успешно создан или обновлен")
+		logger.Logger.Info("Удаление старого типа caffeine_level")
+		if err := tx.Exec("DROP TYPE IF EXISTS caffeine_level CASCADE").Error; err != nil {
+			logger.Logger.Error("Ошибка удаления типа caffeine_level: %v", err)
+			return fmt.Errorf("не удалось удалить тип caffeine_level: %w", err)
 		}
+
+		logger.Logger.Info("Создание нового типа caffeine_level")
+		if err := tx.Exec(`CREATE TYPE caffeine_level AS ENUM ('low', 'medium', 'high', 'extra_high')`).Error; err != nil {
+			logger.Logger.Error("Ошибка создания типа caffeine_level: %v", err)
+			return fmt.Errorf("не удалось создать тип caffeine_level: %w", err)
+		}
+		logger.Logger.Info("Тип caffeine_level успешно создан")
 
 		// Создание таблиц на основе моделей
 		logger.Logger.Info("Начало автоматической миграции таблиц")
@@ -53,6 +53,7 @@ func MustCreateTables() {
 			return fmt.Errorf("не удалось создать таблицы: %w", err)
 		}
 		logger.Logger.Info("Таблицы успешно созданы на основе моделей")
+
 		return nil
 	})
 
