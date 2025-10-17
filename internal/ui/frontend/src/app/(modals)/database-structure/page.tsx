@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Button,
   Skeleton,
   Table,
   TableColumnConfig,
@@ -10,8 +9,9 @@ import {
   withTableActions,
   withTableSorting,
 } from "@gravity-ui/uikit";
-import { Suspense, useEffect, useState } from "react";
-import "./page.sass";
+import { Suspense, useState } from "react";
+import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar";
+import useTableNames from "@shared/lib/hooks/useTableNames";
 
 interface FieldMeta {
   name: string;
@@ -56,34 +56,16 @@ const getRowActions = () => {
 };
 
 export default function Page() {
-  const [tableNames, setTableNames] = useState<string[]>([]);
+  const tableNames = useTableNames();
   const [currentTable, setCurrentTable] = useState<string>(tableNames[0]);
-
-  // Initial parse of table names
-  useEffect(() => {
-    const mock = ["name1", "name2", "name3"];
-    setTableNames(mock);
-  }, []);
 
   return (
     <main className="main">
-      <aside className="aside table-list">
-        <h2 className="h2 table-list__title">Таблицы</h2>
-        <ul className="table-list__list">
-          {tableNames.map((name) => (
-            <li className="table-list__item" key={name}>
-              <Button
-                onClick={() => {
-                  setCurrentTable(name);
-                }}
-              >
-                {name}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      </aside>
-      <section className="table-section">
+      <TableSelectorSidebar
+        tableNames={tableNames}
+        setCurrentTable={setCurrentTable}
+      />
+      <section className="section table-section">
         <h2 className="h2 table-section__title">
           Структура таблицы: {currentTable}
         </h2>

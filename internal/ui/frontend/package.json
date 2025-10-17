@@ -2,7 +2,7 @@
   "name": "frontend",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@9.7.0",
+  "packageManager": "pnpm@10.18.3",
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
@@ -13,14 +13,13 @@
   },
   "dependencies": {
     "next": "^15.5.6",
-    "nextjs": "^0.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@gravity-ui/uikit": "^7.24.0",
-    "@types/react": "^18.0.17",
-    "@types/react-dom": "^18.0.6",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "jest": "^30.2.0",
     "sass": "^1.93.2",
     "sass-embedded": "^1.93.2",

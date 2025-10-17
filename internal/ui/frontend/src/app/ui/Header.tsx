@@ -1,5 +1,5 @@
 import { Button, Text } from "@gravity-ui/uikit";
-import AppModalLinkList from "@shared/ui/components/AppModalLinkList/AppModalLinkList";
+import AppModalLinkList from "@shared/ui/components/AppModalLinkList";
 import "./header.sass";
 
 export default function Header({

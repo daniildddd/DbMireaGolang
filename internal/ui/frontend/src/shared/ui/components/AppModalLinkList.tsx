@@ -7,10 +7,10 @@ export default function AppModalLinkList() {
         <Link href="database-structure">Структура БД</Link>
       </li>
       <li className="nav__link-item">
-        <Link href="join">Запросы и фильтрация</Link>
+        <Link href="querying">Запросы и фильтрация</Link>
       </li>
       <li className="nav__link-item">
-        <Link href="querying">Соединения (JOIN)</Link>
+        <Link href="join">Соединения (JOIN)</Link>
       </li>
     </ul>
   );
