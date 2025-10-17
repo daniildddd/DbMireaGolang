@@ -1,3 +1,6 @@
+import '@gravity-ui/uikit/styles/fonts.css';
+import '@gravity-ui/uikit/styles/styles.css';
+
 export default function Layout({
   children,
 }: {
