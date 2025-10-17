@@ -1,1 +1,1 @@
-export {}
+import AppModalLinkList from "./AppModalLinkList/AppModalLinkList";

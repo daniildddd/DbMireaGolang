@@ -1,0 +1,35 @@
+// @use "../../shared/ui/styles/colors"
+
+.header
+    display: flex
+    flex-direction: column
+    align-items: stretch
+    width: 100%
+    > *
+        padding: 1rem
+
+.header__primary-row
+    display: flex
+    justify-content: space-between
+    align-items: center
+    width: 100%
+
+.header__website-meta
+    display: flex
+    flex-direction: column
+
+.website-meta__db-name
+    color: grey
+    font-size: 0.8rem
+    margin-top: 8px
+
+.header__extras
+    display: flex
+    gap: 20px
+
+.nav__links
+    display: flex
+    gap: 20px
+    // border-top: 1px solid $pale-gray-border-clr
+    border-top: 1px solid #e0e0e0a4 // FIXME: Импорт не работает
+    color: grey
