@@ -1,22 +1,44 @@
-@import url("reset.sass")
+@use "./reset"
 
 *,*::after, *::before
     box-sizing: border-box
 
-html
+:root
     max-width: 100vw
     max-height: 100vh
-    background-color: rgba(27, 38, 54, 1)
-    text-align: center
-    color: white
-
-body
-    margin: 0
-    color: white
+    color: black
     font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
+    font-size: 20px
 
 @font-face
     font-family: "Nunito"
     font-style: normal
     font-weight: 400
     src: local(""),url("/fonts/nunito-v16-latin-regular.woff2") format("woff2")
+
+// === Текст ===
+.h1,.h2,.h3,.h4,.h5,.h6
+    font-weight: bold
+
+.h1
+    font-size: 2rem
+
+.h2
+    font-size: 1.1rem
+
+// === Таблицы ===
+table
+    width: 100%
+
+td, th
+    outline: 1px solid #e0e0e0
+    padding: 10px 10px 10px 6px !important
+
+tr
+    td:first-child
+        font-family: monospace
+
+th
+    font-size: 1.1em
+    font-weight: bold !important
+    text-align: center !important
