@@ -27,6 +27,7 @@ go.work
 Thumbs.db
 
 # Frontend
-ui/**/build/bin
-ui/**/frontend/dist
 node_modules
+frontend/dist
+build
+*.syso
