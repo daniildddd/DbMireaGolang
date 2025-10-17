@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function useTableNames() {
-  const [tableNames, setTableNames] = useState<string[]>([]);
-  // Initial parse of table names
-  useEffect(() => {
-    const mock = ["name1", "name2", "name3"];
-    setTableNames(mock);
-  }, []);
-
+  const [tableNames, setTableNames] = useState<string[]>([
+    "Product",
+    "ProductionBatch",
+    "Inventory",
+    "Sale",
+  ]);
   return tableNames;
 }

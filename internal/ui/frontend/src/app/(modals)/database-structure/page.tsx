@@ -12,6 +12,7 @@ import {
 import { Suspense, useState } from "react";
 import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar";
 import useTableNames from "@shared/lib/hooks/useTableNames";
+import "./page.sass";
 
 interface FieldMeta {
   name: string;
@@ -60,7 +61,7 @@ export default function Page() {
   const [currentTable, setCurrentTable] = useState<string>(tableNames[0]);
 
   return (
-    <main className="main">
+    <>
       <TableSelectorSidebar
         tableNames={tableNames}
         setCurrentTable={setCurrentTable}
@@ -81,6 +82,6 @@ export default function Page() {
           />
         </Suspense>
       </section>
-    </main>
+    </>
   );
 }

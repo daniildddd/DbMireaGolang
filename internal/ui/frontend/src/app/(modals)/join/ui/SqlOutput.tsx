@@ -2,6 +2,7 @@
 "use client";
 
 import { Card, Text } from "@gravity-ui/uikit";
+import Code from "@shared/ui/components/Code";
 import CopyButton from "@shared/ui/components/CopyButton";
 
 interface SqlOutputProps {
@@ -15,7 +16,7 @@ export default function SqlOutput({ sql }: SqlOutputProps) {
         Сгенерированный SQL
       </Text>
       <pre className="sql-output__output">
-        <code>{sql}</code>
+        <Code content={sql} />
       </pre>
       <CopyButton content={sql} />
     </Card>

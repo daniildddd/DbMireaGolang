@@ -37,9 +37,9 @@ export default function TableSelector({
           {option.text}
         </Button>
       )}
-      renderControl={() => (
+      renderControl={(option) => (
         <Button view="flat" size="m">
-          KAKAKAKA
+          NaN
         </Button>
       )}
     />

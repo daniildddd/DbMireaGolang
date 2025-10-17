@@ -2,7 +2,7 @@
 
 export function generateSQL(tables: string[]): string {
   if (tables.length === 0) {
-    return "SELECT * FROM Product;";
+    return "";
   }
 
   if (tables.length === 1) {

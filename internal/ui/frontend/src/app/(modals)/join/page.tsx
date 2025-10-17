@@ -22,7 +22,7 @@ export default function Page() {
   };
 
   return (
-    <main className="main">
+    <>
       <TableSelectorSidebar
         tableNames={tableNames}
         setCurrentTable={setCurrentTable}
@@ -57,6 +57,6 @@ export default function Page() {
         </Card>
         {sql && <SqlOutput sql={sql} />}
       </section>
-    </main>
+    </>
   );
 }
