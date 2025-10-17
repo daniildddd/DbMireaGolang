@@ -48,8 +48,6 @@ export default function Page() {
         <Card>
           <Button
             className="button important join-section__submit"
-            view="action"
-            size="l"
             onClick={handleGenerateSQL}
           >
             Сгенерировать SQL

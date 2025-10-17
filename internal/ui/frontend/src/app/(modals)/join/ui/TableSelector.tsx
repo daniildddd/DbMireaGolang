@@ -20,28 +20,15 @@ export default function TableSelector({
   onChange,
 }: TableSelectorProps) {
   return (
-    <Select
-      className="multiple-table-selector"
-      placeholder="Выберите таблицы..."
+    <Select<string>
       multiple
       value={selected}
-      onUpdate={(value) => onChange(value as string[])}
+      onUpdate={(value) => onChange(value)}
       options={TABLES}
-      renderOption={(option) => (
-        <Button
-          className="multiple-table-selector__option"
-          key={option.value}
-          view="flat"
-          size="s"
-        >
-          {option.text}
-        </Button>
-      )}
-      renderControl={(option) => (
-        <Button view="flat" size="m">
-          NaN
-        </Button>
-      )}
+      placeholder="Выберите таблицы..."
+      hasCounter
+      hasClear
+      className="multiple-table-selector"
     />
   );
 }

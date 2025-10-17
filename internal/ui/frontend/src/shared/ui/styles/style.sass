@@ -2,6 +2,7 @@
 
 *,*::after, *::before
     box-sizing: border-box
+    font-size: inherit
 
 :root
     width: 100vw
@@ -49,34 +50,15 @@ body
     whiteSpace: pre-wrap,
     wordWrap: break-word,
 
-// === Таблицы ===
-table
-    width: 100%
-
-td, th
-    outline: 1px solid #e0e0e0
-    padding: 10px 10px 10px 6px !important
-
-tr
-    td:first-child
-        font-family: monospace
-
-th
-    font-size: 1.1em
-    font-weight: bold !important
-    text-align: center !important
-
 // === Кнопки ===
 
 .button
-    max-width: max-content
-    padding: 10px 8px
     font-weight: bold
     border-radius: 4px
 
-.button.important
-    background: #3c81f6
-    color: white
+    &.important
+        background-color: #3c81f6
+        color: white
 
 // === main ===
 .main

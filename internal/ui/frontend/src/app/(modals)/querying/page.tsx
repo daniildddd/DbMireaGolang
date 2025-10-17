@@ -55,9 +55,7 @@ export default function Page() {
           </JoinSectionCard>
         </div>
         <div className="join-section__generated-sql">
-          <Text className="h1 generated-sql__title h2">
-            Сгенерированный SQL
-          </Text>
+          <Text className="generated-sql__title h2">Сгенерированный SQL</Text>
           <Code
             content={`SELECT * FROM ${currentTable};`}
             className="code generated-sql__output"
