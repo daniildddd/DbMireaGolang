@@ -20,7 +20,6 @@ export default function Page() {
   return (
     <div id="app">
       <main>
-        <img src="/logo-universal.png" id="logo" alt="logo" />
         <Text id="result" className="result">
           {resultText}
         </Text>
