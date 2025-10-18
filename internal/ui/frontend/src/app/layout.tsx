@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@gravity-ui/uikit";
 import "@gravity-ui/uikit/styles/fonts.css";
 import "@gravity-ui/uikit/styles/styles.css";
-import "@shared/ui/styles/style.sass";
+import "@shared/ui/styles/globals.sass";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

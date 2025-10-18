@@ -1,6 +1,7 @@
 import { Button, Text } from "@gravity-ui/uikit";
-import AppModalLinkList from "@shared/ui/components/AppModalLinkList";
+import AppModalLinkList from "@shared/ui/components/AppModalLinkList/AppModalLinkList";
 import "./header.sass";
+import Link from "next/link";
 
 export default function Header({
   connectedDbName = "N/A",
@@ -12,7 +13,7 @@ export default function Header({
       <div className="header__primary-row">
         <div className="header__website-meta">
           <Text className="website-meta__title h1" variant="header-1" as="h1">
-            DB Master
+            <Link href=".">DB Master</Link>
           </Text>
           <Text className="website-meta__db-name">
             Подключено к {connectedDbName}

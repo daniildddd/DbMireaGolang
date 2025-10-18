@@ -6,7 +6,7 @@ import { useState } from "react";
 import TableSelector from "./ui/TableSelector";
 import SqlOutput from "./ui/SqlOutput";
 import { generateSQL } from "./lib/sqlGenerator";
-import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar";
+import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar/TableSelectorSidebar";
 import useTableNames from "@shared/lib/hooks/useTableNames";
 import "./page.sass";
 

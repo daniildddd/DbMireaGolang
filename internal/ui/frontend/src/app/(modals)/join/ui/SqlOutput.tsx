@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, Text } from "@gravity-ui/uikit";
-import Code from "@shared/ui/components/Code";
+import Code from "@shared/ui/components/Code/Code";
 import CopyButton from "@shared/ui/components/CopyButton";
 
 interface SqlOutputProps {

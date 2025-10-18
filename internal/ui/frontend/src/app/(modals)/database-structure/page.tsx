@@ -3,58 +3,18 @@
 import {
   Skeleton,
   Table,
-  TableColumnConfig,
-  TableDataItem,
   Text,
   withTableActions,
   withTableSorting,
 } from "@gravity-ui/uikit";
 import { Suspense, useState } from "react";
-import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar";
+import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar/TableSelectorSidebar";
 import useTableNames from "@shared/lib/hooks/useTableNames";
 import "./page.sass";
-
-interface FieldMeta {
-  name: string;
-  type: string;
-  restrictions: string;
-}
-
-const columns: TableColumnConfig<TableDataItem>[] = [
-  { id: "name", name: "Имя поля", primary: true, meta: { sort: true } },
-  { id: "type", name: "Тип", meta: { sort: true } },
-  { id: "restrictions", name: "Ограничения" },
-];
-
-const data: FieldMeta[] = [
-  {
-    name: "ProductID",
-    type: "uint",
-    restrictions: "primary key, auto increment",
-  },
-  { name: "Name", type: "string", restrictions: "not null" },
-  { name: "Flavor", type: "string", restrictions: "not null" },
-  {
-    name: "VolumeML",
-    type: "int",
-    restrictions: "not null, check: volume_ml > 0",
-  },
-];
+import { data, columns } from "./mock/data";
+import getRowActions from "./lib/getRowActions";
 
 const HocTable = withTableSorting(withTableActions(Table));
-
-const getRowActions = () => {
-  return [
-    {
-      text: "Print",
-      handler: () => {},
-    },
-    {
-      text: "Remove",
-      handler: () => {},
-    },
-  ];
-};
 
 export default function Page() {
   const tableNames = useTableNames();

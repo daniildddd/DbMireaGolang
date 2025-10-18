@@ -1,4 +1,5 @@
 import { Button, Text } from "@gravity-ui/uikit";
+import "../page.sass";
 
 export default function CardRow({
   title,

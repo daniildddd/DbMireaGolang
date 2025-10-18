@@ -3,12 +3,12 @@
 
 import { Button, Card, Text } from "@gravity-ui/uikit";
 import { useState } from "react";
-import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar";
+import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar/TableSelectorSidebar";
 import useTableNames from "@shared/lib/hooks/useTableNames";
 import "./page.sass";
 import JoinSectionCard from "./ui/JoinSectionCard";
 import CardRow from "./ui/CardRow";
-import Code from "@shared/ui/components/Code";
+import Code from "@shared/ui/components/Code/Code";
 
 export default function Page() {
   const tableNames = useTableNames();
