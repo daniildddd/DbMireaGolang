@@ -1,6 +1,5 @@
 "use client";
 
-import "./page.sass";
 import AppModalLinkList from "@shared/ui/components/AppModalLinkList";
 
 export default function Page() {
