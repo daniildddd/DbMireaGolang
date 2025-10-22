@@ -1,47 +1,49 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
+    "target": "ES2017",
     "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
-    "paths": {
-      "@*": [
-        "./src/*"
-      ]
-    },
-    "allowJs": false,
+    "allowJs": true,
     "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "esnext",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@shared/*": [
+        "./src/shared/*"
+      ],
+      "@app/*": [
+        "./src/app/*"
+      ]
+    },
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
-    "src",
+    "next-env.d.ts",
+    "src/**/*.d.ts",
     "dist/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
+    "node_modules"
   ]
 }

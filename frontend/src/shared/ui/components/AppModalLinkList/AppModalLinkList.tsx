@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
@@ -11,7 +10,6 @@ export default function AppModalLinkList({
   className?: string;
 }) {
   const pathname = usePathname();
-
   const links = [
     { href: "/database-structure", label: "Структура БД" },
     { href: "/querying", label: "Запросы и фильтрация" },

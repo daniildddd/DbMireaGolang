@@ -28,9 +28,12 @@ Thumbs.db
 
 # Frontend
 node_modules
-**/frontend/dist
-**/frontend/build
+frontend/dist
+frontend/build
+frontend/.github
+frontend/.gitignore
+frontend/out
 *.syso
 .next
+.hidden
 package.json.md5
-**frontend/.gitignore

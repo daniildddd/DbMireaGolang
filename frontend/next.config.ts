@@ -1,7 +1,13 @@
-/** @type {import('next').NextConfig} */
-export default {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   distDir: "dist",
+  images: {
+    unoptimized: false,
+  },
   experimental: {
-    webpackMemoryOptimizations: true,
+    optimizePackageImports: ["gravity-uikit"],
   },
 };
+
+export default nextConfig;

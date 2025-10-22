@@ -13,7 +13,7 @@ export default function Header({
       <div className="header__primary-row">
         <div className="header__website-meta">
           <Text className="website-meta__title h1" variant="header-1" as="h1">
-            <Link href=".">DB Master</Link>
+            <Link href="/">DB Master</Link>
           </Text>
           <Text className="website-meta__db-name">
             Подключено к {connectedDbName}

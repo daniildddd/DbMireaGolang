@@ -1,4 +1,3 @@
-// app/(modals)/join/ui/SqlOutput.tsx
 "use client";
 
 import { Card, Text } from "@gravity-ui/uikit";
