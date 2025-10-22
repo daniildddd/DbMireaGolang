@@ -32,3 +32,5 @@ node_modules
 **/frontend/build
 *.syso
 .next
+.hidden
+**/frontend/.github
