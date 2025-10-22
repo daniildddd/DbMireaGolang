@@ -32,3 +32,5 @@ node_modules
 **/frontend/build
 *.syso
 .next
+package.json.md5
+**frontend/.gitignore
