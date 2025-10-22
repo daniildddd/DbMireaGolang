@@ -1,4 +1,3 @@
-// app/(modals)/join/ui/TableSelector.tsx
 "use client";
 
 import { Select, Button } from "@gravity-ui/uikit";

@@ -1,5 +1,3 @@
-// app/(modals)/join/lib/sqlGenerator.ts
-
 export function generateSQL(tables: string[]): string {
   if (tables.length === 0) {
     return "";

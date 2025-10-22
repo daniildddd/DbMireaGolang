@@ -1,16 +1,17 @@
 {
-	"$schema": "https://wails.io/schemas/config.v2.json",
-	"name": "DbMireaGolang",
-	"assetdir": "frontend/out",
-	"frontend:dir": "frontend",
-	"outputfilename": "db-mirea-golang",
-	"frontend:install": "pnpm install",
-	"frontend:build": "pnpm run build",
-	"frontend:dev:watcher": "pnpm run dev",
-	"frontend:dev:serverUrl": "http://localhost:3000",
-	"wailsjsdir": "./frontend/wailsjs",
-	"author": {
-		"name": "Vladimir Valekzhanin",
-		"email": "valdemarcheck@yandex.ru"
-	}
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "DbMireaGolang",
+  "assetdir": "frontend/dist",
+  "environment": "production",
+  "frontend:dir": "frontend",
+  "outputfilename": "DB Master",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm run build",
+  "frontend:dev:watcher": "pnpm run dev",
+  "frontend:dev:serverUrl": "http://localhost:3000",
+  "wailsjsdir": "./frontend/wailsjs",
+  "author": {
+    "name": "Vladimir Valekzhanin",
+    "email": "valdemarcheck@yandex.ru"
+  }
 }

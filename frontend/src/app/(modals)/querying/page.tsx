@@ -1,4 +1,3 @@
-// app/(modals)/join/ui/JoinPage.tsx
 "use client";
 
 import { Button, Card, Text } from "@gravity-ui/uikit";
