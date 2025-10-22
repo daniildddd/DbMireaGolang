@@ -23,9 +23,15 @@ main() {
     go_get github.com/joho/godotenv
     go_get gorm.io/driver/postgres
     go_get gorm.io/gorm
+    go_get github.com/wailsapp/wails/v2
 
     echo "=== Создание .env ==="
-    cp .env.example .env
+    if ![ -f ".env" ]; then
+        cp .env.example .env
+        echo ".env создан"
+    else
+        echo ".env уже существует"
+    fi
 
     echo "Настройка завершена."
 }
