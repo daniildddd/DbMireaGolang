@@ -1,27 +1,31 @@
+// CardRow.tsx
 import { Button, Text } from "@gravity-ui/uikit";
 import s from "./style.module.sass";
 import clsx from "clsx";
+import React, { ReactNode } from "react";
 
 export default function CardRow({
   title,
   buttonText,
   onClick,
+  modal,
 }: {
   title: string;
   buttonText: string;
-  onClick: (e: any) => void;
+  onClick?: () => void;
+  modal?: ReactNode; // модалка будет передаваться как children
 }) {
   return (
-    <div className={s["grid-item__row"]}>
-      <Text className={clsx(s["row__title"])} as="h3">
-        {title}
-      </Text>
-      <Button
-        className={clsx(s["row__button"], "button")}
-        onClick={(e: any) => onClick(e)}
-      >
-        + {buttonText}
-      </Button>
-    </div>
+    <>
+      <div className={s["grid-item__row"]}>
+        <Text className={clsx(s["row__title"])} as="h3">
+          {title}
+        </Text>
+        <Button className={clsx(s["row__button"], "button")} onClick={onClick}>
+          + {buttonText}
+        </Button>
+      </div>
+      {modal}
+    </>
   );
 }

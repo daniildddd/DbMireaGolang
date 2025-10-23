@@ -9,10 +9,13 @@ import CardRow from "./ui/CardRow/CardRow";
 import Code from "@shared/ui/components/Code/Code";
 import s from "./page.module.sass";
 import clsx from "clsx";
+import WhereModal from "./ui/modals/WhereModal";
 
 export default function Page() {
   const tableNames = useTableNames();
   const [currentTable, setCurrentTable] = useState<string>(tableNames[0]);
+  const [returnValues, setReturnValues] = useState<object>({});
+  const [open, setOpen] = useState<boolean>(false);
 
   return (
     <>
@@ -26,31 +29,33 @@ export default function Page() {
             <CardRow
               title="Фильтры (WHERE)"
               buttonText="Добавить фильтр"
-              onClick={() => {}}
+              modal={
+                <WhereModal
+                  open={open}
+                  setOpen={setOpen}
+                  setReturnValues={(newValues) => {
+                    setReturnValues({ ...returnValues, ...newValues });
+                  }}
+                  fields={[{ name: "test", type: "UInt32" }]}
+                />
+              }
+              onClick={() => {
+                setOpen(true);
+              }}
             />
           </JoinSectionCard>
           <JoinSectionCard>
-            <CardRow
-              title="Сортировка"
-              buttonText="Добавить сортировку"
-              onClick={() => {}}
-            />
+            <CardRow title="Сортировка" buttonText="Добавить сортировку" />
             <CardRow
               title="Группировка (GROUP BY)"
               buttonText="Добавить группировку"
-              onClick={() => {}}
             />
           </JoinSectionCard>
           <JoinSectionCard>
-            <CardRow
-              title="Агрегатные функции"
-              buttonText="Добавить агрегат"
-              onClick={() => {}}
-            />
+            <CardRow title="Агрегатные функции" buttonText="Добавить агрегат" />
             <CardRow
               title="Фильтр групп (HAVING)"
               buttonText="Добавить HAVING"
-              onClick={() => {}}
             />
           </JoinSectionCard>
         </div>
