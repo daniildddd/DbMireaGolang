@@ -8,16 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
-// MustCreateTables пересоздает таблицы в базе данных.
+// CreateTables пересоздает таблицы в базе данных.
 //
-// Функция удаляет существующие таблицы и типы в правильном порядке (сначала дочерние, затем родительские)
-// в рамках транзакции, а затем создает новые таблицы на основе моделей.
-// Падает с паникой в случае ошибки удаления или создания таблиц.
-func MustCreateTables() {
+// Функция удаляет существующие таблицы и типы в правильном порядке (сначала дочерние, затем родительские) в рамках транзакции, а затем создает новые таблицы на основе моделей.
+//
+// возвращает ошибку в случае если не смогли создать enum type или таблицы пересоздать
+func CreateTables() error {
 	logger.Logger.Info("!!! НАЧАЛО ПЕРЕСОЗДАНИЯ ТАБЛИЦ В БАЗЕ ДАННЫХ !!!")
 
 	err := DB.Transaction(func(tx *gorm.DB) error {
-		// Определяем порядок удаления таблиц: сначала дочерние, затем родительские
 		tables := []string{"sales", "inventory", "production_batches", "products"}
 
 		for _, table := range tables {
@@ -46,7 +45,6 @@ func MustCreateTables() {
 		}
 		logger.Logger.Info("Тип caffeine_level успешно создан")
 
-		// Создание таблиц на основе моделей
 		logger.Logger.Info("Начало автоматической миграции таблиц")
 		if err := tx.AutoMigrate(&models.Product{}, &models.ProductionBatch{}, &models.Inventory{}, &models.Sale{}); err != nil {
 			logger.Logger.Error("!!! ОШИБКА СОЗДАНИЯ ТАБЛИЦ: %v !!!", err)
@@ -58,9 +56,10 @@ func MustCreateTables() {
 	})
 
 	if err != nil {
-		logger.Logger.Error("!!! ПАНИКА ПРИ ПЕРЕСОЗДАНИИ ТАБЛИЦ: %v !!!", err)
-		panic(err)
+		logger.Logger.Error("!!! ОШИБКА ПРИ ПЕРЕСОЗДАНИИ ТАБЛИЦ: %v !!!", err)
+		return err
 	}
 
 	logger.Logger.Info("=== ПЕРЕСОЗДАНИЕ ТАБЛИЦ ЗАВЕРШЕНО УСПЕШНО ===")
+	return nil
 }

@@ -25,11 +25,10 @@ func main() {
 	// Подключение к PostgreSQL (инициализация глобальной DB)
 	database.MustConnectDB()
 
-	/* Миграция таблиц
-	if err := database.MigrateDB(database.DB); err != nil {
+	// если не смогли создать/пересоздать таблицы то падаем с паникой
+	if err := database.CreateTables(); err != nil {
 		panic("failed to migrate database: " + err.Error())
-	}*/
-
+	}
 	app := NewApp()
 
 	err := wails.Run(&options.App{
