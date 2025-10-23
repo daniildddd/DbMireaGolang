@@ -1,5 +1,6 @@
 import { Button, Text } from "@gravity-ui/uikit";
-import "../page.sass";
+import s from "./style.module.sass";
+import clsx from "clsx";
 
 export default function CardRow({
   title,
@@ -11,11 +12,14 @@ export default function CardRow({
   onClick: (e: any) => void;
 }) {
   return (
-    <div className="grid-item__row">
-      <Text className="h2 row__title" as="h2">
+    <div className={s["grid-item__row"]}>
+      <Text className={clsx(s["row__title"])} as="h3">
         {title}
       </Text>
-      <Button className="row__button" onClick={(e) => onClick(e)}>
+      <Button
+        className={clsx(s["row__button"], "button")}
+        onClick={(e: any) => onClick(e)}
+      >
         + {buttonText}
       </Button>
     </div>

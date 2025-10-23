@@ -36,6 +36,7 @@ frontend/dist
 frontend/build
 frontend/out
 frontend/.github
-frontend/.gitignore
 .next
-.hidden
+
+# misc
+.hidden/

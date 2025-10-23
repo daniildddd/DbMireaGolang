@@ -2,9 +2,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import "./styles.module.sass";
+import s from "./style.module.sass";
 
-export default function AppModalLinkList({
+export default function PageLinkList({
   className = "",
 }: {
   className?: string;
@@ -17,13 +17,14 @@ export default function AppModalLinkList({
   ];
 
   return (
-    <ul className={clsx("nav-links", className)}>
+    <ul className={clsx(s["nav-links"], className)}>
       {links.map((link) => {
         const isActive = pathname === link.href;
+
         return (
           <li
             key={link.href}
-            className={clsx("nav-links__item", {
+            className={clsx(s["nav-links__item"], {
               active: isActive,
             })}
           >
