@@ -6,6 +6,7 @@
       "dom.iterable",
       "esnext"
     ],
+    "checkJs": false,
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -26,6 +27,9 @@
       "@/*": [
         "./src/*"
       ],
+      "wailsjs": [
+        "./src/shared/lib/wailsjs/go/main/App"
+      ],
       "@shared/*": [
         "./src/shared/*"
       ],
@@ -44,6 +48,7 @@
     "dist/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/shared/lib/wailsjs"
   ]
 }

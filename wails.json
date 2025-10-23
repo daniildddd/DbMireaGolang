@@ -8,10 +8,9 @@
   "outputfilename": "DB Master",
   "frontend:install": "pnpm install",
   "frontend:build": "pnpm run build",
-  "frontend:prod": "pnpm run prod",
   "frontend:dev:watcher": "pnpm run dev",
   "frontend:dev:serverUrl": "http://localhost:3030",
-  "wailsjsdir": "./frontend/wailsjs",
+  "wailsjsdir": "./frontend/src/shared/lib",
   "author": {
     "name": "DbMireaGolang team"
   }
