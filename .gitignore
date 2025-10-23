@@ -26,14 +26,16 @@ go.work
 .DS_Store
 Thumbs.db
 
+# Wails
+*.syso
+**/package.json.md5
+
 # Frontend
 node_modules
 frontend/dist
 frontend/build
+frontend/out
 frontend/.github
 frontend/.gitignore
-frontend/out
-*.syso
 .next
 .hidden
-package.json.md5

@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     unoptimized: false,
   },
   experimental: {
-    optimizePackageImports: ["gravity-uikit"],
+    optimizePackageImports: ["@gravity-ui/uikit"],
   },
 };
 
