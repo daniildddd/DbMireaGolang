@@ -1,3 +1,4 @@
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 import { Button } from "@gravity-ui/uikit";
 
 export default function SubmitButton({
@@ -9,11 +10,13 @@ export default function SubmitButton({
   setReturnValues: (arg0: object) => void;
   values: object;
 }) {
+  const notifier = useNotifications();
+
   return (
     <Button
       className="button buttons__button important"
       onClick={() => {
-        console.log("Применено");
+        notifier.notify("Применено");
         setReturnValues(values);
         setOpen(false);
       }}

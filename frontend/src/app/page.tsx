@@ -6,21 +6,23 @@ import clsx from "clsx";
 import { Button } from "@gravity-ui/uikit";
 import { useState } from "react";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 export default function Page() {
   const [tablesCreated, setTablesCreated] = useState(false);
+  const notifier = useNotifications();
 
   const tryRecreateTables = async () => {
     if (!tablesCreated) {
       const result = await ApiMiddleware.recreateTables();
       if (result.success) {
         setTablesCreated(true);
-        alert("Таблицы пересозданы!");
+        notifier.notify("Таблицы успешно созданы", "success");
       } else {
-        alert(result.message);
+        notifier.notify(result.message, "error");
       }
     } else {
-      alert("Таблицы уже существуют.");
+      notifier.notify("Таблицы уже существуют");
     }
   };
 
