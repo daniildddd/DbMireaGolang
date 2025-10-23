@@ -35,3 +35,5 @@ frontend/build
 .hidden
 frontend/.github
 out/
+build
+package.json.md5
