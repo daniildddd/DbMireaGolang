@@ -1,41 +1,32 @@
-import { Modal, Label, NumberInput } from "@gravity-ui/uikit";
-import { Operator, TableField } from "@/types";
+import { Modal, Label } from "@gravity-ui/uikit";
+import { TableField } from "@/types";
 import { useState } from "react";
 import CancelButton from "../buttons/CancelButton";
 import SubmitButton from "../buttons/SubmitButton";
 import FieldNameSelector from "../selectors/FieldNameSelector";
-import OperatorSelector from "../selectors/OperatorSelector";
 import s from "./style.module.sass";
+import AggregateSelector from "../selectors/AggregateSelector";
 import AbstractModal from "./AbstractModal";
 
-interface WhereModalParams {
+interface AggregateModalParams {
   open: boolean;
   handleCloseModal: (arg0: boolean) => void;
   setReturnValues: (arg0: object) => void;
   fields: TableField[];
-  step?: number;
-  min?: number;
-  max?: number;
 }
 
-export default function WhereModal({
+export default function AggregateModal({
   open,
   handleCloseModal,
   setReturnValues,
   fields,
-  step = 1,
-  min = -Infinity,
-  max = +Infinity,
-}: WhereModalParams) {
+}: AggregateModalParams) {
   const [fieldName, setFieldName] = useState<string>();
-  const [operator, setOperator] = useState<Operator>();
-  const [inputNumber, setInputNumber] = useState<number>();
+  const [aggregate, setAggregate] = useState<string>();
 
   return (
     <AbstractModal open={open} handleCloseModal={handleCloseModal}>
-      <h1 className="h1 filter-modal__title">
-        Добавить фильтр (<code className="code">WHERE</code>)
-      </h1>
+      <h1 className="h1 filter-modal__title">Добавить агрегатную функцию</h1>
       <form
         action="."
         method="post"
@@ -47,28 +38,15 @@ export default function WhereModal({
           <FieldNameSelector fields={fields} setFieldName={setFieldName} />
         </div>
         <div className={s["form__row"]}>
-          <Label>Оператор</Label>
-          <OperatorSelector onUpdate={(value) => setOperator(value[0])} />
-        </div>
-        <div className={s["form__row"]}>
-          <Label>Число</Label>
-          <NumberInput
-            placeholder="0"
-            value={inputNumber}
-            step={step}
-            min={min}
-            max={max}
-            onChange={(e) => {
-              setInputNumber(+e.target.value);
-            }}
-          />
+          <Label>Агрегатная функция</Label>
+          <AggregateSelector onUpdate={(value) => setAggregate(value[0])} />
         </div>
       </form>
       <div className="filter-modal__buttons">
         <CancelButton handleCloseModal={handleCloseModal} />
         <SubmitButton
           handleCloseModal={handleCloseModal}
-          values={{ fieldName, operator, inputNumber }}
+          values={{ fieldName, aggregate }}
           setReturnValues={setReturnValues}
         />
       </div>

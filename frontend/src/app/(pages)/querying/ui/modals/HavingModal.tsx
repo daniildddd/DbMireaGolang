@@ -8,7 +8,7 @@ import OperatorSelector from "../selectors/OperatorSelector";
 import s from "./style.module.sass";
 import AbstractModal from "./AbstractModal";
 
-interface WhereModalParams {
+interface HavingModalParams {
   open: boolean;
   handleCloseModal: (arg0: boolean) => void;
   setReturnValues: (arg0: object) => void;
@@ -18,7 +18,7 @@ interface WhereModalParams {
   max?: number;
 }
 
-export default function WhereModal({
+export default function HavingModal({
   open,
   handleCloseModal,
   setReturnValues,
@@ -26,7 +26,7 @@ export default function WhereModal({
   step = 1,
   min = -Infinity,
   max = +Infinity,
-}: WhereModalParams) {
+}: HavingModalParams) {
   const [fieldName, setFieldName] = useState<string>();
   const [operator, setOperator] = useState<Operator>();
   const [inputNumber, setInputNumber] = useState<number>();
@@ -34,7 +34,7 @@ export default function WhereModal({
   return (
     <AbstractModal open={open} handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">
-        Добавить фильтр (<code className="code">WHERE</code>)
+        Добавить фильтр групп (<code className="code">HAVING</code>)
       </h1>
       <form
         action="."
@@ -43,7 +43,7 @@ export default function WhereModal({
         className="form where-form"
       >
         <div className={s["form__row"]}>
-          <Label>Поле</Label>
+          <Label>Агрегат или поле</Label>
           <FieldNameSelector fields={fields} setFieldName={setFieldName} />
         </div>
         <div className={s["form__row"]}>
