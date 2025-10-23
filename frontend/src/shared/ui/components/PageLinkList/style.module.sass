@@ -1,0 +1,16 @@
+@use "../../styles/colors"
+
+.nav-links
+    display: flex
+    gap: 2rem
+    font-size: 0.8rem
+    color: colors.$inactive-text-clr
+    border-top: 1px solid colors.$pale-gray-border-clr
+    &.vertical
+        flex-direction: column
+        border-top: none
+
+.nav-links__item
+    &.active
+        color: colors.$active-link-clr
+        border-bottom: 2px solid colors.$active-link-clr

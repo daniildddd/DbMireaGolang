@@ -1,13 +1,14 @@
 "use client";
 
-import { Button, Card, Text } from "@gravity-ui/uikit";
+import { Button, Text } from "@gravity-ui/uikit";
 import { useState } from "react";
 import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar/TableSelectorSidebar";
 import useTableNames from "@shared/lib/hooks/useTableNames";
-import "./page.sass";
-import JoinSectionCard from "./ui/JoinSectionCard";
-import CardRow from "./ui/CardRow";
+import JoinSectionCard from "./ui/JoinSectionCard/JoinSectionCard";
+import CardRow from "./ui/CardRow/CardRow";
 import Code from "@shared/ui/components/Code/Code";
+import s from "./page.module.sass";
+import clsx from "clsx";
 
 export default function Page() {
   const tableNames = useTableNames();
@@ -19,8 +20,8 @@ export default function Page() {
         tableNames={tableNames}
         setCurrentTable={setCurrentTable}
       />
-      <section className="section join-section">
-        <div className="join-section__grid">
+      <section className={clsx("section", s["join-section"])}>
+        <div className={s["join-section__grid"]}>
           <JoinSectionCard>
             <CardRow
               title="Фильтры (WHERE)"
@@ -53,17 +54,19 @@ export default function Page() {
             />
           </JoinSectionCard>
         </div>
-        <div className="join-section__generated-sql">
-          <Text className="generated-sql__title h2">Сгенерированный SQL</Text>
+        <div className={s["join-section__generated-sql"]}>
+          <Text className={clsx("h2", s["generated-sql__title"])} as="h2">
+            Сгенерированный SQL
+          </Text>
           <Code
             content={`SELECT * FROM ${currentTable};`}
-            className="code generated-sql__output"
+            className={clsx(s.code, s["generated-sql__output"])}
           />
-          <div className="generated-sql__actions">
-            <Button className="actions__execute-button button">
+          <div className={s["generated-sql__actions"]}>
+            <Button className={clsx(s["actions__execute-button"], "button")}>
               Выполнить
             </Button>
-            <Button className="actions_export-csv-button button">
+            <Button className={clsx(s["actions_export-csv-button"], "button")}>
               Экспорт в CSV
             </Button>
           </div>

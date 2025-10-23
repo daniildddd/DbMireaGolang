@@ -7,7 +7,8 @@ import SqlOutput from "./ui/SqlOutput";
 import { generateSQL } from "./lib/sqlGenerator";
 import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar/TableSelectorSidebar";
 import useTableNames from "@shared/lib/hooks/useTableNames";
-import "./page.sass";
+import s from "./page.module.sass";
+import clsx from "clsx";
 
 export default function Page() {
   const tableNames = useTableNames();
@@ -26,16 +27,19 @@ export default function Page() {
         tableNames={tableNames}
         setCurrentTable={setCurrentTable}
       />
-      <section className="section join-section">
-        <div className="join-section__header">
-          <Text className="h1 join-section__title" as="h1">
+      <section className={clsx("section", s["join-section"])}>
+        <div className={s["join-section__header"]}>
+          <Text className={clsx("h1", s["join-section__title"])} as="h1">
             Соединения (JOIN) таблиц
           </Text>
-          <Text as="p" className="p smaller join-section__description">
+          <Text
+            as="p"
+            className={clsx("p", "smaller", s["join-section__description"])}
+          >
             Выберите таблицы и сгенерируйте SQL-запрос
           </Text>
         </div>
-        <Card className="join-section__available-tables-list">
+        <Card className={clsx(s["join-section__available-tables-list"])}>
           <Text variant="subheader-1" className="h3" as="h3">
             Доступные таблицы
           </Text>

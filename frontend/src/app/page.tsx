@@ -1,13 +1,14 @@
 "use client";
 
-import AppModalLinkList from "@shared/ui/components/AppModalLinkList/AppModalLinkList";
-import "./page.sass";
+import PageLinkList from "@/shared/ui/components/PageLinkList/PageLinkList";
+import s from "./page.module.sass";
+import clsx from "clsx";
 
 export default function Page() {
   return (
-    <main className="main index-page">
-      <h1 className="h1 index-page_website-title">DB Master</h1>
-      <AppModalLinkList className="vertical" />
+    <main className={clsx("main", s["index-page"])}>
+      <h1 className={clsx("h1", s["index-page_website-title"])}>DB Master</h1>
+      <PageLinkList className="vertical" />
     </main>
   );
 }
