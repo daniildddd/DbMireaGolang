@@ -4,11 +4,7 @@ import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import s from "./style.module.sass";
 
-export default function PageLinkList({
-  className = "",
-}: {
-  className?: string;
-}) {
+export default function PageLinkList() {
   const pathname = usePathname();
   const links = [
     { href: "/database-structure", label: "Структура БД" },
@@ -17,7 +13,7 @@ export default function PageLinkList({
   ];
 
   return (
-    <ul className={clsx(s["nav-links"], className)}>
+    <ul className={s["nav-links"]}>
       {links.map((link) => {
         const isActive = pathname === link.href;
 
