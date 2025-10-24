@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.19.0",
   "type": "module",
   "scripts": {
-    "build": "tcm ./src && next build",
+    "build": "next build",
     "dev": "next dev -p 3030 --turbopack",
     "prod": "pnpm run build && next start -p 3030",
     "test": "jest",
@@ -25,6 +25,7 @@
     "@types/react-dom": "19.2.2",
     "eslint": "^9.38.0",
     "jest": "30.2.0",
+    "jiti": "^2.6.1",
     "sass-embedded": "1.93.2",
     "typescript": "5.9.3"
   },
