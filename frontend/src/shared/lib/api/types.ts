@@ -5,6 +5,15 @@ export namespace Api {
     error: string;
   }
 
+  export interface TableNamesResponse {
+    tableName: string[];
+  }
+
+  export interface TableInfo {
+    name: string; // это прям имя таблицы, можно будет дальше прокидывать в другие функции
+    displayName?: string; // как выглядит название таблицы на Фронте
+  }
+
   export interface InsertRequest {
     tableName: string;
   }
