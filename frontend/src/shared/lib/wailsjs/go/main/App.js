@@ -6,6 +6,10 @@ export function GetTableNamesFromModels() {
   return window['go']['main']['App']['GetTableNamesFromModels']();
 }
 
+export function GetTableSchema(arg1) {
+  return window['go']['main']['App']['GetTableSchema'](arg1);
+}
+
 export function RecreateTables() {
   return window['go']['main']['App']['RecreateTables']();
 }

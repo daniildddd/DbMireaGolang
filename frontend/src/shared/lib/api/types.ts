@@ -27,16 +27,8 @@ export namespace Api {
     error: string;
   }
 
-  export type CreateTablesResponse = GenericResponse;
-
   export interface TableSchemaRequest {
     name: string;
-  }
-
-  export interface TableSchemaResponse {
-    columns: string[];
-    rows: string[];
-    error: string;
   }
 
   interface FieldSchema {

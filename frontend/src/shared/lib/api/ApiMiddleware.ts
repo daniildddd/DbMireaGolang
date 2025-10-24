@@ -1,23 +1,26 @@
-import { RecreateTables, GetTableNamesFromModels } from "wailsjs";
+import {
+  RecreateTables,
+  GetTableNamesFromModels,
+  GetTableSchema,
+} from "wailsjs";
 import { Api } from "./types";
+import { main } from "../wailsjs/go/models";
 
 export default class ApiMiddleware {
-  static async recreateTables(): Promise<Api.CreateTablesResponse> {
-    return RecreateTables() as Promise<Api.CreateTablesResponse>;
+  static async recreateTables(): Promise<main.RecreateTablesResult> {
+    return RecreateTables();
   }
 
-  // static async getTableFields(tableName: string): Promise<Api.TableInfo> {
-  //   const request: Api.TableSchemaRequest = { name: tableName };
-  // }
+  static async getTableFields(tableName: string): Promise<Api.TableInfo> {
+    const request: Api.TableSchemaRequest = { name: tableName };
+    return { name: "" };
+  }
 
-  // static async getTableSchema(
-  //   tableName: string
-  // ): Promise<Api.TableSchemaResponse> {
-  //   const request: Api.TableSchemaRequest = { name: tableName };
-  //   const response: Api.TableSchemaResponse =
-  // }
+  static async getTableSchema(tableName: string): Promise<main.FieldSchema[]> {
+    return GetTableSchema(tableName);
+  }
 
-  static getTableNames(): Promise<Api.TableNamesResponse> {
+  static getTableNames(): Promise<main.TablesListResponse> {
     return GetTableNamesFromModels();
   }
 }

@@ -4,4 +4,6 @@ import {main} from '../models';
 
 export function GetTableNamesFromModels():Promise<main.TablesListResponse>;
 
+export function GetTableSchema(arg1:string):Promise<Array<main.FieldSchema>>;
+
 export function RecreateTables():Promise<main.RecreateTablesResult>;
