@@ -12,8 +12,7 @@ go_get() {
 main() {
     echo "Произвожу настройку проекта."
 
-    echo "=== Установка пакетов ==="
-
+    echo "=== Установка пакетов Go ==="
     go mod tidy
 
     echo "Установка Wails CLI"
@@ -24,6 +23,11 @@ main() {
     go_get gorm.io/driver/postgres
     go_get gorm.io/gorm
     go_get github.com/wailsapp/wails/v2
+
+    echo "=== Установка пакетов фронтенда ==="
+    cd frontend
+    pnpm i
+    cd ../
 
     echo "=== Создание .env ==="
     if ![ -f ".env" ]; then
