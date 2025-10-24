@@ -1,6 +1,6 @@
 import { Select } from "@gravity-ui/uikit";
 import { useContext, useEffect, useState } from "react";
-import { CurrentTableContext } from "../../context/CurrentTableContext";
+import { CurrentTableContext } from "../../../../../shared/context/CurrentTableContext";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 import { Api } from "@/shared/lib/api/types";

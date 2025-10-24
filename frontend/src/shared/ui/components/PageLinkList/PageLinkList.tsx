@@ -8,7 +8,7 @@ export default function PageLinkList() {
   const pathname = usePathname();
   const links = [
     { href: "/database-structure", label: "Структура БД" },
-    { href: "/querying", label: "Запросы и фильтрация" },
+    { href: "/filtering", label: "Запросы и фильтрация" },
     { href: "/join", label: "Соединения (JOIN)" },
   ];
 

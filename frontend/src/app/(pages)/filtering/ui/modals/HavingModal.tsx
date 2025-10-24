@@ -1,28 +1,38 @@
-import { Label } from "@gravity-ui/uikit";
-import { useState, useContext } from "react";
+import { Label, NumberInput } from "@gravity-ui/uikit";
+import { Operator } from "@/types";
+import { useContext, useState } from "react";
 import CancelButton from "../buttons/CancelButton";
 import SubmitButton from "../buttons/SubmitButton";
 import FieldNameSelector from "../selectors/FieldNameSelector";
+import OperatorSelector from "../selectors/OperatorSelector";
 import s from "./style.module.sass";
-import OrderingSelector from "../selectors/OrderingSelector";
 import AbstractModal from "./AbstractModal";
-import FilterContext from "../../context/FilterContext";
+import FilterContext from "../../../../../shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/app/(pages)/types";
 
-interface OrderByModalParams {
+interface HavingModalParams {
   handleCloseModal: (arg0: boolean) => void;
+  step?: number;
+  min?: number;
+  max?: number;
 }
 
-export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
+export default function HavingModal({
+  handleCloseModal,
+  step = 1,
+  min = -Infinity,
+  max = +Infinity,
+}: HavingModalParams) {
   const [fieldName, setFieldName] = useState<string>();
-  const [ordering, setOrdering] = useState<string>();
+  const [operator, setOperator] = useState<Operator>();
+  const [inputNumber, setInputNumber] = useState<number>();
   const { filters, setFilters } = useContext(FilterContext);
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">
-        Добавить сортировку (<code className="code">ORDER BY</code>)
+        Добавить фильтр групп (<code className="code">HAVING</code>)
       </h1>
       <form
         action="."
@@ -36,7 +46,20 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
-          <OrderingSelector onUpdate={(value) => setOrdering(value[0])} />
+          <OperatorSelector onUpdate={(value) => setOperator(value[0])} />
+        </div>
+        <div className={s["form__row"]}>
+          <Label>Число</Label>
+          <NumberInput
+            placeholder="0"
+            value={inputNumber}
+            step={step}
+            min={min}
+            max={max}
+            onChange={(e) => {
+              setInputNumber(+e.target.value);
+            }}
+          />
         </div>
       </form>
       <div className="filter-modal__buttons">
@@ -44,12 +67,12 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
         <SubmitButton
           handleCloseModal={handleCloseModal}
           onClick={() => {
-            const orderByFilter = `${fieldName} ${ordering}`;
+            const havingFilter = `${fieldName} ${operator} ${inputNumber}`;
             updateFilterValueByType(
               filters,
               setFilters,
-              FilterType.orderBy,
-              orderByFilter
+              FilterType.having,
+              havingFilter
             );
           }}
         />

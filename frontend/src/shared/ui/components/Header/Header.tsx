@@ -24,20 +24,6 @@ export default function Header({
             Подключено к {connectedDbName}
           </Text>
         </div>
-        <ul className={s["header__extras"]}>
-          <li className={s["header__extras-item"]}>
-            <Button>Файл</Button>
-          </li>
-          <li className={s["header__extras-item"]}>
-            <Button>Правка</Button>
-          </li>
-          <li className={s["header__extras-item"]}>
-            <Button>Вид</Button>
-          </li>
-          <li className={s["header__extras-item"]}>
-            <Button>Справка</Button>
-          </li>
-        </ul>
       </div>
       <PageLinkList />
     </header>

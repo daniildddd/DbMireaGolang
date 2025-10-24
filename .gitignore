@@ -37,6 +37,7 @@ frontend/.github
 .next
 
 # Output
+coverage/
 dist/
 build/
 out/

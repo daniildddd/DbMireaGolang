@@ -6,7 +6,7 @@ import FieldNameSelector from "../selectors/FieldNameSelector";
 import s from "./style.module.sass";
 import AggregateSelector from "../selectors/AggregateSelector";
 import AbstractModal from "./AbstractModal";
-import FilterContext from "../../context/FilterContext";
+import FilterContext from "../../../../../shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/app/(pages)/types";
 
@@ -44,7 +44,7 @@ export default function AggregateModal({
         <SubmitButton
           handleCloseModal={handleCloseModal}
           onClick={() => {
-            const aggregateFilter = `${aggregate} (${fieldName})`;
+            const aggregateFilter = `${aggregate}(${fieldName})`;
             updateFilterValueByType(
               filters,
               setFilters,

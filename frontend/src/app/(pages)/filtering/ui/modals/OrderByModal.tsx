@@ -1,38 +1,28 @@
-import { Label, NumberInput } from "@gravity-ui/uikit";
-import { Operator } from "@/types";
-import { useContext, useState } from "react";
+import { Label } from "@gravity-ui/uikit";
+import { useState, useContext } from "react";
 import CancelButton from "../buttons/CancelButton";
 import SubmitButton from "../buttons/SubmitButton";
 import FieldNameSelector from "../selectors/FieldNameSelector";
-import OperatorSelector from "../selectors/OperatorSelector";
 import s from "./style.module.sass";
+import OrderingSelector from "../selectors/OrderingSelector";
 import AbstractModal from "./AbstractModal";
-import FilterContext from "../../context/FilterContext";
+import FilterContext from "../../../../../shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/app/(pages)/types";
 
-interface WhereModalParams {
+interface OrderByModalParams {
   handleCloseModal: (arg0: boolean) => void;
-  step?: number;
-  min?: number;
-  max?: number;
 }
 
-export default function WhereModal({
-  handleCloseModal,
-  step = 1,
-  min = -Infinity,
-  max = +Infinity,
-}: WhereModalParams) {
+export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
   const [fieldName, setFieldName] = useState<string>();
-  const [operator, setOperator] = useState<Operator>();
-  const [inputNumber, setInputNumber] = useState<number>(0);
+  const [ordering, setOrdering] = useState<string>();
   const { filters, setFilters } = useContext(FilterContext);
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">
-        Добавить фильтр (<code className="code">WHERE</code>)
+        Добавить сортировку (<code className="code">ORDER BY</code>)
       </h1>
       <form
         action="."
@@ -41,25 +31,12 @@ export default function WhereModal({
         className="form where-form"
       >
         <div className={s["form__row"]}>
-          <Label>Поле</Label>
+          <Label>Агрегат или поле</Label>
           <FieldNameSelector setFieldName={setFieldName} />
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
-          <OperatorSelector onUpdate={(value) => setOperator(value[0])} />
-        </div>
-        <div className={s["form__row"]}>
-          <Label>Число</Label>
-          <NumberInput
-            placeholder="0"
-            value={inputNumber}
-            step={step}
-            min={min}
-            max={max}
-            onChange={(e) => {
-              setInputNumber(+e.target.value);
-            }}
-          />
+          <OrderingSelector onUpdate={(value) => setOrdering(value[0])} />
         </div>
       </form>
       <div className="filter-modal__buttons">
@@ -67,12 +44,12 @@ export default function WhereModal({
         <SubmitButton
           handleCloseModal={handleCloseModal}
           onClick={() => {
-            const whereFilter = `${fieldName} ${operator} ${inputNumber}`;
+            const orderByFilter = `${fieldName} ${ordering}`;
             updateFilterValueByType(
               filters,
               setFilters,
-              FilterType.where,
-              whereFilter
+              FilterType.orderBy,
+              orderByFilter
             );
           }}
         />

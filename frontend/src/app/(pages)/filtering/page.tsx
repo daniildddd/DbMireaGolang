@@ -11,9 +11,9 @@ import AggregateModal from "./ui/modals/AggregateModal";
 import GroupByModal from "./ui/modals/GroupByModal";
 import OrderByModal from "./ui/modals/OrderByModal";
 import FilterSelectionGrid from "./ui/FilterSelectionGrid/FilterSelectionGrid";
-import GeneratedSQL from "./ui/GeneratedSQL/GeneratedSQL";
-import FilterContext from "./context/FilterContext";
-import { CurrentTableContext } from "./context/CurrentTableContext";
+import FilterContext from "../../../shared/context/FilterContext";
+import { CurrentTableContext } from "../../../shared/context/CurrentTableContext";
+import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
 
 export default function Page() {
   const tableNames: string[] = useTableNames();

@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useContext } from "react";
 import FilterList from "../FilterList/FilterList";
 import FilterCard from "../FilterCard/FilterCard";
-import FilterContext from "../../context/FilterContext";
+import FilterContext from "../../../../../shared/context/FilterContext";
 import { FilterType } from "@/app/(pages)/types";
 
 export default function FilterRow({
