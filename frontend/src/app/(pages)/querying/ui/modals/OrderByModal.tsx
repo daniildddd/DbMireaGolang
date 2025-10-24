@@ -1,31 +1,26 @@
 import { Label } from "@gravity-ui/uikit";
-import { TableField } from "@/types";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import CancelButton from "../buttons/CancelButton";
 import SubmitButton from "../buttons/SubmitButton";
 import FieldNameSelector from "../selectors/FieldNameSelector";
 import s from "./style.module.sass";
 import OrderingSelector from "../selectors/OrderingSelector";
 import AbstractModal from "./AbstractModal";
+import FilterContext from "../../context/FilterContext";
+import updateFilterValueByType from "./lib/updateFilterValueByType";
+import { FilterType } from "@/app/(pages)/types";
 
 interface OrderByModalParams {
-  open: boolean;
   handleCloseModal: (arg0: boolean) => void;
-  setReturnValues: (arg0: object) => void;
-  fields: TableField[];
 }
 
-export default function OrderByModal({
-  open,
-  handleCloseModal,
-  setReturnValues,
-  fields,
-}: OrderByModalParams) {
+export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
   const [fieldName, setFieldName] = useState<string>();
   const [ordering, setOrdering] = useState<string>();
+  const { filters, setFilters } = useContext(FilterContext);
 
   return (
-    <AbstractModal open={open} handleCloseModal={handleCloseModal}>
+    <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">
         Добавить сортировку (<code className="code">ORDER BY</code>)
       </h1>
@@ -37,7 +32,7 @@ export default function OrderByModal({
       >
         <div className={s["form__row"]}>
           <Label>Агрегат или поле</Label>
-          <FieldNameSelector fields={fields} setFieldName={setFieldName} />
+          <FieldNameSelector setFieldName={setFieldName} />
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
@@ -48,8 +43,15 @@ export default function OrderByModal({
         <CancelButton handleCloseModal={handleCloseModal} />
         <SubmitButton
           handleCloseModal={handleCloseModal}
-          values={{ fieldName, ordering }}
-          setReturnValues={setReturnValues}
+          onClick={() => {
+            const orderByFilter = `${fieldName} ${ordering}`;
+            updateFilterValueByType(
+              filters,
+              setFilters,
+              FilterType.orderBy,
+              orderByFilter
+            );
+          }}
         />
       </div>
     </AbstractModal>

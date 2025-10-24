@@ -37,6 +37,8 @@ export namespace Api {
     constraints: string; // вся строка с ограничениями, ты ее просто выводишь и все,я на беке ее соберу
   }
 
+  export type TableSchema = FieldSchema[];
+
   export type FieldSchemaResponse = FieldSchema[];
 
   export interface DeleteFieldRequest {

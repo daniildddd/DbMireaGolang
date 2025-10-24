@@ -1,28 +1,25 @@
-import { Modal, Label, NumberInput } from "@gravity-ui/uikit";
-import { Operator, TableField } from "@/types";
-import { useState } from "react";
+import { Label, NumberInput } from "@gravity-ui/uikit";
+import { Operator } from "@/types";
+import { useContext, useState } from "react";
 import CancelButton from "../buttons/CancelButton";
 import SubmitButton from "../buttons/SubmitButton";
 import FieldNameSelector from "../selectors/FieldNameSelector";
 import OperatorSelector from "../selectors/OperatorSelector";
 import s from "./style.module.sass";
 import AbstractModal from "./AbstractModal";
+import FilterContext from "../../context/FilterContext";
+import updateFilterValueByType from "./lib/updateFilterValueByType";
+import { FilterType } from "@/app/(pages)/types";
 
 interface HavingModalParams {
-  open: boolean;
   handleCloseModal: (arg0: boolean) => void;
-  setReturnValues: (arg0: object) => void;
-  fields: TableField[];
   step?: number;
   min?: number;
   max?: number;
 }
 
 export default function HavingModal({
-  open,
   handleCloseModal,
-  setReturnValues,
-  fields,
   step = 1,
   min = -Infinity,
   max = +Infinity,
@@ -30,9 +27,10 @@ export default function HavingModal({
   const [fieldName, setFieldName] = useState<string>();
   const [operator, setOperator] = useState<Operator>();
   const [inputNumber, setInputNumber] = useState<number>();
+  const { filters, setFilters } = useContext(FilterContext);
 
   return (
-    <AbstractModal open={open} handleCloseModal={handleCloseModal}>
+    <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">
         Добавить фильтр групп (<code className="code">HAVING</code>)
       </h1>
@@ -44,7 +42,7 @@ export default function HavingModal({
       >
         <div className={s["form__row"]}>
           <Label>Агрегат или поле</Label>
-          <FieldNameSelector fields={fields} setFieldName={setFieldName} />
+          <FieldNameSelector setFieldName={setFieldName} />
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
@@ -68,8 +66,15 @@ export default function HavingModal({
         <CancelButton handleCloseModal={handleCloseModal} />
         <SubmitButton
           handleCloseModal={handleCloseModal}
-          values={{ fieldName, operator, inputNumber }}
-          setReturnValues={setReturnValues}
+          onClick={() => {
+            const havingFilter = `${fieldName} ${operator} ${inputNumber}`;
+            updateFilterValueByType(
+              filters,
+              setFilters,
+              FilterType.having,
+              havingFilter
+            );
+          }}
         />
       </div>
     </AbstractModal>

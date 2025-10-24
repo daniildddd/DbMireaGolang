@@ -23,10 +23,7 @@ export default function Page() {
 
   return (
     <>
-      <TableSelectorSidebar
-        tableNames={tableNames}
-        setCurrentTable={setCurrentTable}
-      />
+      <TableSelectorSidebar setCurrentTable={setCurrentTable} />
       <section className={clsx("section", s["join-section"])}>
         <div className={s["join-section__header"]}>
           <Text className={clsx("h1", s["join-section__title"])} as="h1">
@@ -43,6 +40,7 @@ export default function Page() {
           <Text variant="subheader-1" className="h3" as="h3">
             Доступные таблицы
           </Text>
+          <Text>Первичная таблица: {currentTable}</Text>
           <TableSelector
             selected={selectedTables}
             onChange={setSelectedTables}

@@ -1,7 +1,15 @@
+export enum FilterType {
+  where,
+  groupBy,
+  orderBy,
+  having,
+  aggregate,
+}
+
 export interface Filters {
-  where: string[];
-  groupBy: string[];
-  orderBy: string[];
-  having: string[];
-  aggregates: string[];
+  [FilterType.where]: string[];
+  [FilterType.groupBy]: string[];
+  [FilterType.orderBy]: string[];
+  [FilterType.having]: string[];
+  [FilterType.aggregate]: string[];
 }

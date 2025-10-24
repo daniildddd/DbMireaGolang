@@ -1,4 +1,5 @@
-import CardRow from "../CardRow/CardRow";
+import { FilterType } from "@/app/(pages)/types";
+import FilterRow from "../FilterRow/FIlterRow";
 import JoinSectionCard from "../JoinSectionCard/JoinSectionCard";
 import s from "./style.module.sass";
 
@@ -10,7 +11,8 @@ export default function FilterSelectionGrid({
   return (
     <div className={s["join-section__grid"]}>
       <JoinSectionCard>
-        <CardRow
+        <FilterRow
+          filterType={FilterType.where}
           title="Фильтры (WHERE)"
           buttonText="Добавить фильтр"
           modalId="whereModal"
@@ -18,13 +20,15 @@ export default function FilterSelectionGrid({
         />
       </JoinSectionCard>
       <JoinSectionCard>
-        <CardRow
+        <FilterRow
+          filterType={FilterType.orderBy}
           title="Сортировка"
           buttonText="Добавить сортировку"
           modalId="orderByModal"
           onOpenModal={handleOpenModal}
         />
-        <CardRow
+        <FilterRow
+          filterType={FilterType.groupBy}
           title="Группировка (GROUP BY)"
           buttonText="Добавить группировку"
           modalId="groupByModal"
@@ -32,13 +36,15 @@ export default function FilterSelectionGrid({
         />
       </JoinSectionCard>
       <JoinSectionCard>
-        <CardRow
+        <FilterRow
+          filterType={FilterType.aggregate}
           title="Агрегатные функции"
           buttonText="Добавить агрегат"
           modalId="aggregateModal"
           onOpenModal={handleOpenModal}
         />
-        <CardRow
+        <FilterRow
+          filterType={FilterType.having}
           title="Фильтр групп (HAVING)"
           buttonText="Добавить HAVING"
           modalId="havingModal"

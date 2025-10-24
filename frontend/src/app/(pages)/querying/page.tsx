@@ -1,7 +1,6 @@
-// Page.tsx
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import TableSelectorSidebar from "@shared/ui/components/TableSelectorSidebar/TableSelectorSidebar";
 import useTableNames from "@shared/lib/hooks/useTableNames";
 import s from "./page.module.sass";
@@ -13,13 +12,13 @@ import GroupByModal from "./ui/modals/GroupByModal";
 import OrderByModal from "./ui/modals/OrderByModal";
 import FilterSelectionGrid from "./ui/FilterSelectionGrid/FilterSelectionGrid";
 import GeneratedSQL from "./ui/GeneratedSQL/GeneratedSQL";
-
-const mockFields = [{ name: "test", type: "UInt32" }];
+import FilterContext from "./context/FilterContext";
+import { CurrentTableContext } from "./context/CurrentTableContext";
 
 export default function Page() {
-  const tableNames = useTableNames();
+  const tableNames: string[] = useTableNames();
   const [currentTable, setCurrentTable] = useState<string>(tableNames[0]);
-  const [returnValues, setReturnValues] = useState<object>({});
+  const { filters, setFilters } = useContext(FilterContext);
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const handleOpenModal = (modalId: string) => {
@@ -31,67 +30,31 @@ export default function Page() {
   };
 
   return (
-    <>
-      <TableSelectorSidebar
-        tableNames={tableNames}
-        setCurrentTable={setCurrentTable}
-      />
-      <section className={clsx("section", s["join-section"])}>
-        <FilterSelectionGrid handleOpenModal={handleOpenModal} />
+    <FilterContext.Provider value={{ filters, setFilters }}>
+      <CurrentTableContext.Provider value={currentTable}>
+        <TableSelectorSidebar setCurrentTable={setCurrentTable} />
+        <section className={clsx("section", s["query-section"])}>
+          <FilterSelectionGrid handleOpenModal={handleOpenModal} />
 
-        {/* Рендерим только активную модалку */}
-        {activeModal === "whereModal" && (
-          <WhereModal
-            open={true}
-            handleCloseModal={handleCloseModal} // передаём функцию закрытия
-            setReturnValues={(newValues) => {
-              setReturnValues({ ...returnValues, ...newValues });
-            }}
-            fields={mockFields}
-          />
-        )}
-        {activeModal === "orderByModal" && (
-          <OrderByModal
-            open={true}
-            handleCloseModal={handleCloseModal}
-            setReturnValues={(newValues) => {
-              setReturnValues({ ...returnValues, ...newValues });
-            }}
-            fields={mockFields}
-          />
-        )}
-        {activeModal === "groupByModal" && (
-          <GroupByModal
-            open={true}
-            handleCloseModal={handleCloseModal}
-            setReturnValues={(newValues) => {
-              setReturnValues({ ...returnValues, ...newValues });
-            }}
-            fields={mockFields}
-          />
-        )}
-        {activeModal === "aggregateModal" && (
-          <AggregateModal
-            open={true}
-            handleCloseModal={handleCloseModal}
-            setReturnValues={(newValues) => {
-              setReturnValues({ ...returnValues, ...newValues });
-            }}
-            fields={mockFields}
-          />
-        )}
-        {activeModal === "havingModal" && (
-          <HavingModal
-            open={true}
-            handleCloseModal={handleCloseModal}
-            setReturnValues={(newValues) => {
-              setReturnValues({ ...returnValues, ...newValues });
-            }}
-            fields={mockFields}
-          />
-        )}
-        <GeneratedSQL currentTable={currentTable} />
-      </section>
-    </>
+          {/* Рендерим только активную модалку */}
+          {activeModal === "whereModal" && (
+            <WhereModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "orderByModal" && (
+            <OrderByModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "groupByModal" && (
+            <GroupByModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "aggregateModal" && (
+            <AggregateModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "havingModal" && (
+            <HavingModal handleCloseModal={handleCloseModal} />
+          )}
+          <GeneratedSQL currentTable={currentTable} />
+        </section>
+      </CurrentTableContext.Provider>
+    </FilterContext.Provider>
   );
 }

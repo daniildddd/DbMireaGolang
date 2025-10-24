@@ -2,13 +2,11 @@ import useNotifications from "@/shared/lib/hooks/useNotifications";
 import { Button } from "@gravity-ui/uikit";
 
 export default function SubmitButton({
+  onClick,
   handleCloseModal,
-  setReturnValues,
-  values,
 }: {
+  onClick: (arg0?: any) => void;
   handleCloseModal: (open: boolean) => void;
-  setReturnValues: (arg0: object) => void;
-  values: object;
 }) {
   const notifier = useNotifications();
 
@@ -17,7 +15,7 @@ export default function SubmitButton({
       className="button buttons__button important"
       onClick={() => {
         notifier.notify("Применено");
-        setReturnValues(values);
+        onClick();
         handleCloseModal(false);
       }}
     >
