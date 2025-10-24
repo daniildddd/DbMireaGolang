@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/daniildddd/DbMireaGolang/internal/database"
 	"github.com/daniildddd/DbMireaGolang/internal/models"
@@ -55,7 +53,7 @@ type TablesListResponse struct {
 }
 
 // получение всех табличек через заранее определенные модели, в будущем скорее всего придется передалть
-func GetTableNamesFromModels(a *App) TablesListResponse {
+func (a *App) GetTableNamesFromModels() TablesListResponse {
 	if database.DB == nil {
 		return TablesListResponse{TableName: []string{}}
 	}
