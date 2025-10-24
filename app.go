@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/daniildddd/DbMireaGolang/internal/database"
 	"github.com/daniildddd/DbMireaGolang/internal/models"
@@ -79,4 +81,61 @@ func (a *App) GetTableNamesFromModels() TablesListResponse {
 	return TablesListResponse{
 		TableName: tables,
 	}
+}
+
+// нужна для окна отображения характеристике таблички
+type FieldSchema struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Constraints string `json:"constraints"`
+}
+
+// выдает схему таблицы
+func (a *App) GetTableSchema(tableName string) []FieldSchema {
+	if database.DB == nil {
+		return []FieldSchema{}
+	}
+
+	columns, err := database.DB.Migrator().ColumnTypes(tableName)
+	if err != nil {
+		return []FieldSchema{}
+	}
+
+	var fields []FieldSchema
+	for _, col := range columns {
+		name := col.Name()
+		colType, _ := col.ColumnType()
+		dbType := strings.ToLower(colType)
+
+		var constraints []string
+
+		if pk, _ := col.PrimaryKey(); pk {
+			c := "primary key"
+			if ai, _ := col.AutoIncrement(); ai {
+				c += ", auto increment"
+			}
+			constraints = append(constraints, c)
+		}
+
+		if nn, _ := col.Nullable(); !nn {
+			constraints = append(constraints, "not null")
+		}
+
+		if def, ok := col.DefaultValue(); ok && def != "" {
+			def = strings.Trim(def, "'")
+			if strings.Contains(dbType, "text") || strings.Contains(dbType, "char") || strings.Contains(dbType, "enum") {
+				constraints = append(constraints, fmt.Sprintf("default: '%s'", def))
+			} else {
+				constraints = append(constraints, "default: "+def)
+			}
+		}
+
+		fields = append(fields, FieldSchema{
+			Name:        name,
+			Type:        dbType,
+			Constraints: strings.Join(constraints, ", "),
+		})
+	}
+
+	return fields
 }
