@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/daniildddd/DbMireaGolang/internal/database"
+	"github.com/daniildddd/DbMireaGolang/internal/logger"
 	"github.com/daniildddd/DbMireaGolang/internal/models"
 	"gorm.io/gorm"
 )
@@ -98,42 +98,105 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 
 	columns, err := database.DB.Migrator().ColumnTypes(tableName)
 	if err != nil {
+		logger.Logger.Error("Table %s not found: %v", tableName, err)
 		return []FieldSchema{}
 	}
 
+	// Получаем все ограничения одним запросом
+	type Constraint struct {
+		Column     string
+		Type       string
+		Definition string
+	}
+
+	var constraints []Constraint
+	database.DB.Raw(`
+        SELECT 
+            kcu.column_name as column,
+            tc.constraint_type as type,
+            CASE 
+                WHEN tc.constraint_type = 'FOREIGN KEY' THEN 
+                    ccu.table_name || '(' || ccu.column_name || ')'
+                WHEN tc.constraint_type = 'CHECK' THEN 
+                    cc.check_clause
+                ELSE ''
+            END as definition
+        FROM information_schema.table_constraints tc
+        LEFT JOIN information_schema.key_column_usage kcu 
+            ON tc.constraint_name = kcu.constraint_name 
+            AND tc.table_schema = kcu.table_schema
+        LEFT JOIN information_schema.constraint_column_usage ccu 
+            ON tc.constraint_name = ccu.constraint_name
+        LEFT JOIN information_schema.check_constraints cc 
+            ON tc.constraint_name = cc.constraint_name
+        WHERE tc.table_name = $1 
+            AND tc.table_schema = 'public'
+            AND tc.constraint_type IN ('FOREIGN KEY', 'UNIQUE', 'CHECK')
+    `, tableName).Scan(&constraints)
+
+	// Группируем ограничения по колонкам
+	consMap := make(map[string][]string)
+	var tableChecks []string // CHECK на уровне таблицы
+
+	for _, c := range constraints {
+		switch c.Type {
+		case "FOREIGN KEY":
+			consMap[c.Column] = append(consMap[c.Column], "foreign key references "+c.Definition)
+		case "UNIQUE":
+			consMap[c.Column] = append(consMap[c.Column], "unique")
+		case "CHECK":
+			if c.Column != "" {
+				// CHECK для конкретной колонки
+				consMap[c.Column] = append(consMap[c.Column], "check: "+c.Definition)
+			} else {
+				// CHECK на уровне таблицы - нужно парсить
+				tableChecks = append(tableChecks, c.Definition)
+			}
+		}
+	}
+
+	// Пытаемся распарсить table-level CHECK constraints
+	for _, check := range tableChecks {
+		// Простой парсинг: ищем имя колонки в начале выражения
+		// Например: "age >= 18" или "(age >= 18)"
+		check = strings.Trim(check, "()")
+		parts := strings.Fields(check)
+		if len(parts) > 0 {
+			colName := parts[0]
+			// Проверяем, что это реальная колонка
+			for _, col := range columns {
+				if col.Name() == colName {
+					consMap[colName] = append(consMap[colName], "check: "+check)
+					break
+				}
+			}
+		}
+	}
+
+	// Собираем финальный результат
 	var fields []FieldSchema
 	for _, col := range columns {
 		name := col.Name()
 		colType, _ := col.ColumnType()
-		dbType := strings.ToLower(colType)
+		nullable, _ := col.Nullable()
+		pk, _ := col.PrimaryKey()
 
-		var constraints []string
+		var cons []string
 
-		if pk, _ := col.PrimaryKey(); pk {
-			c := "primary key"
-			if ai, _ := col.AutoIncrement(); ai {
-				c += ", auto increment"
-			}
-			constraints = append(constraints, c)
+		if pk {
+			cons = append(cons, "primary key")
 		}
 
-		if nn, _ := col.Nullable(); !nn {
-			constraints = append(constraints, "not null")
+		if !nullable {
+			cons = append(cons, "not null")
 		}
 
-		if def, ok := col.DefaultValue(); ok && def != "" {
-			def = strings.Trim(def, "'")
-			if strings.Contains(dbType, "text") || strings.Contains(dbType, "char") || strings.Contains(dbType, "enum") {
-				constraints = append(constraints, fmt.Sprintf("default: '%s'", def))
-			} else {
-				constraints = append(constraints, "default: "+def)
-			}
-		}
+		cons = append(cons, consMap[name]...)
 
 		fields = append(fields, FieldSchema{
 			Name:        name,
-			Type:        dbType,
-			Constraints: strings.Join(constraints, ", "),
+			Type:        strings.ToLower(colType),
+			Constraints: strings.Join(cons, ", "),
 		})
 	}
 
