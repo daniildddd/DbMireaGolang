@@ -6,6 +6,8 @@ export default function updateFilterValueByType(
   filterType: FilterType,
   filter: string
 ): void {
+  console.log(filters, setFilters);
+
   const filtersCopy = { ...filters };
   console.log(filtersCopy);
   filtersCopy[filterType].push(filter);

@@ -23,29 +23,21 @@ export default function FilterRow({
   const { filters, setFilters } = useContext(FilterContext);
 
   return (
-    <>
-      <div className={s["grid-item__row"]}>
-        <Text className={clsx(s["row__title"])} as="h3">
-          {title}
-        </Text>
-        <Button
-          className={clsx(s["row__button"], "button")}
-          onClick={() => onOpenModal(modalId)}
-        >
-          + {buttonText}
-        </Button>
-        <FilterList>
-          {filters[filterType].map((filter) => (
-            <FilterCard
-              filterType={filterType}
-              filter={filter}
-              key={filter}
-              filters={filters}
-              setFilters={setFilters}
-            />
-          ))}
-        </FilterList>
-      </div>
-    </>
+    <div className={s["grid-item__row"]}>
+      <Text className={clsx(s["row__title"])} as="h3">
+        {title}
+      </Text>
+      <Button
+        className={clsx(s["row__button"], "button")}
+        onClick={() => onOpenModal(modalId)}
+      >
+        + {buttonText}
+      </Button>
+      <FilterList>
+        {filters[filterType].map((filter) => (
+          <FilterCard filterType={filterType} filter={filter} key={filter} />
+        ))}
+      </FilterList>
+    </div>
   );
 }

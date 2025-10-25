@@ -12,5 +12,6 @@ const FilterContext = createContext<{
     [FilterType.orderBy]: [],
     [FilterType.groupBy]: [],
   },
+  setFilters: (filters: Filters) => {},
 });
 export default FilterContext;
