@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/daniildddd/DbMireaGolang/internal/database"
 	"github.com/daniildddd/DbMireaGolang/internal/logger"
@@ -201,4 +202,71 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 	}
 
 	return fields
+}
+
+// структура для возврата данных таблицы
+type TableDataResponse struct {
+	Columns []string                 `json:"columns"`
+	Rows    []map[string]interface{} `json:"rows"`
+	Error   string                   `json:"error,omitempty"`
+}
+
+// получает данные из указанной таблицы
+//
+// принимает имя таблички, возвращает название колонок и строчки таблицы
+//
+// в случае ощибки вернется дополнительное поле Error, иначе этого поля не будет(свойство json omitempty)
+func (a *App) GetTableData(tableName string) TableDataResponse {
+	if database.DB == nil {
+		return TableDataResponse{
+			Error: "База данных не инициализирована",
+		}
+	}
+
+	// Проверяем существование таблицы
+	if !database.DB.Migrator().HasTable(tableName) {
+		return TableDataResponse{
+			Error: "Таблица не найдена",
+		}
+	}
+
+	// Получаем информацию о колонках
+	columns, err := database.DB.Migrator().ColumnTypes(tableName)
+	if err != nil {
+		logger.Logger.Error("Ошибка получения колонок таблицы %s: %v", tableName, err)
+		return TableDataResponse{
+			Error: "Не удалось получить структуру таблицы",
+		}
+	}
+
+	// Формируем список имен колонок
+	var columnNames []string
+	for _, col := range columns {
+		columnNames = append(columnNames, col.Name())
+	}
+
+	// Получаем данные из таблицы
+	var rows []map[string]interface{}
+	result := database.DB.Table(tableName).Find(&rows)
+
+	if result.Error != nil {
+		logger.Logger.Error("Ошибка получения данных из таблицы %s: %v", tableName, result.Error)
+		return TableDataResponse{
+			Error: "Не удалось получить данные таблицы",
+		}
+	}
+
+	// GORM возвращает time.Time, который нужно преобразовать в строку и отформатировать
+	for i := range rows {
+		for key, value := range rows[i] {
+			if t, ok := value.(time.Time); ok {
+				rows[i][key] = t.Format("2006-01-02 15:04:05")
+			}
+		}
+	}
+
+	return TableDataResponse{
+		Columns: columnNames,
+		Rows:    rows,
+	}
 }
