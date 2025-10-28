@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, Text, Button } from "@gravity-ui/uikit";
 import { useState } from "react";
 import TableSelector from "./ui/TableSelector";
 import SqlOutput from "./ui/SqlOutput";
@@ -26,34 +25,29 @@ export default function Page() {
       <TableSelectorSidebar setCurrentTable={setCurrentTable} />
       <section className={clsx("section", s["join-section"])}>
         <div className={s["join-section__header"]}>
-          <Text className={clsx("h1", s["join-section__title"])} as="h1">
+          <h1 className={clsx(s["join-section__title"])}>
             Соединения (JOIN) таблиц
-          </Text>
-          <Text
-            as="p"
-            className={clsx("p", "smaller", s["join-section__description"])}
-          >
+          </h1>
+          <p className={clsx(s.smaller, s["join-section__description"])}>
             Выберите таблицы и сгенерируйте SQL-запрос
-          </Text>
+          </p>
         </div>
-        <Card className={clsx(s["join-section__available-tables-list"])}>
-          <Text variant="subheader-1" className="h3" as="h3">
-            Доступные таблицы
-          </Text>
-          <Text>Первичная таблица: {currentTable}</Text>
+        <div className={clsx(s["join-section__available-tables-list"])}>
+          <h3>Доступные таблицы</h3>
+          <span>Первичная таблица: {currentTable}</span>
           <TableSelector
             selected={selectedTables}
             onChange={setSelectedTables}
           />
-        </Card>
-        <Card>
-          <Button
-            className="button important join-section__submit"
+        </div>
+        <div>
+          <button
+            className={clsx(s.button, s.important, s["join-section__submit"])}
             onClick={handleGenerateSQL}
           >
             Сгенерировать SQL
-          </Button>
-        </Card>
+          </button>
+        </div>
         {sql && <SqlOutput sql={sql} />}
       </section>
     </>

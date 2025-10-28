@@ -1,5 +1,4 @@
 import Code from "@/shared/ui/components/Code/Code";
-import { Button, Text } from "@gravity-ui/uikit";
 import clsx from "clsx";
 import s from "./style.module.sass";
 import { generateSqlQuery } from "@/features/sqlQueryGenerator/generateSqlQuery";
@@ -15,20 +14,20 @@ export default function GeneratedSQL({
 
   return (
     <div className={s["join-section__generated-sql"]}>
-      <Text className={clsx("h2", s["generated-sql__title"])} as="h2">
+      <h2 className={clsx("h2", s["generated-sql__title"])}>
         Сгенерированный SQL
-      </Text>
+      </h2>
       <Code
         content={generateSqlQuery("*", currentTable, filters)}
         className={clsx(s.code, s["generated-sql__output"])}
       />
       <div className={s["generated-sql__actions"]}>
-        <Button className={clsx(s["actions__execute-button"], "button")}>
+        <button className={clsx("button", s["actions__execute-button"])}>
           Выполнить
-        </Button>
-        <Button className={clsx(s["actions_export-csv-button"], "button")}>
+        </button>
+        <button className={clsx("button", s["actions_export-csv-button"])}>
           Экспорт в CSV
-        </Button>
+        </button>
       </div>
     </div>
   );

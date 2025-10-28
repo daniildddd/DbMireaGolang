@@ -1,4 +1,3 @@
-import { Button, Text } from "@gravity-ui/uikit";
 import s from "./style.module.sass";
 import clsx from "clsx";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
@@ -11,21 +10,19 @@ export default function TableSelectorSidebar({
   const tableNames = useTableNames();
 
   return (
-    <aside className={clsx(s["aside"])}>
-      <Text as="h2" className={clsx(s["aside__title"])}>
-        Таблицы
-      </Text>
+    <aside className={s.aside}>
+      <h2 className={clsx(s["aside__title"])}>Таблицы</h2>
       <hr />
       <ul className={s["table-list"]}>
         {tableNames.map((name) => (
           <li className={s["table-list__item"]} key={name}>
-            <Button
+            <button
               onClick={() => {
                 setCurrentTable(name);
               }}
             >
               {name}
-            </Button>
+            </button>
           </li>
         ))}
       </ul>

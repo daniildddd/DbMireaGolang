@@ -4,7 +4,6 @@ import {
   TableColumnConfig,
   withTableActions,
   withTableSorting,
-  Text,
 } from "@gravity-ui/uikit";
 import { Suspense } from "react";
 import getRowActions from "../lib/getRowActions";
@@ -28,7 +27,7 @@ export default function SchemaTable({ data }: { data: main.FieldSchema[] }) {
         emptyMessage="Таблица пуста :(" // Если вся табшица пустая
         edgePadding={true}
         getRowActions={getRowActions}
-        renderRowActions={({ item }) => <Text>{item.text}</Text>}
+        renderRowActions={({ item }) => <span>{item.text}</span>}
       />
     </Suspense>
   );
