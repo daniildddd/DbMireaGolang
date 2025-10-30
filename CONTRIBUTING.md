@@ -22,7 +22,7 @@ corepack enable pnpm
 pnpm -v # Должно напечатать "10.9.3".
 ```
 
-- Вводим в консоль `go run cmd/main.go`
+- Вводим в консоль `go run main.go`
 - Ура, все работает!
 
 ## Запуск
