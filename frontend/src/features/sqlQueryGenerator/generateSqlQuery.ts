@@ -3,7 +3,8 @@ import { Filters, FilterType } from "@/app/(pages)/types";
 export function generateSqlQuery(
   select: { column: string; as?: string }[] | "*" = "*",
   table: string,
-  filters?: Filters
+  filters?: Filters,
+  oneLine: boolean = false
 ) {
   let query =
     select === "*"

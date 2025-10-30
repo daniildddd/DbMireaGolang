@@ -1,4 +1,3 @@
-import { Button, Text } from "@gravity-ui/uikit";
 import s from "./style.module.sass";
 import clsx from "clsx";
 import { useContext } from "react";
@@ -23,29 +22,19 @@ export default function FilterRow({
   const { filters, setFilters } = useContext(FilterContext);
 
   return (
-    <>
-      <div className={s["grid-item__row"]}>
-        <Text className={clsx(s["row__title"])} as="h3">
-          {title}
-        </Text>
-        <Button
-          className={clsx(s["row__button"], "button")}
-          onClick={() => onOpenModal(modalId)}
-        >
-          + {buttonText}
-        </Button>
-        <FilterList>
-          {filters[filterType].map((filter) => (
-            <FilterCard
-              filterType={filterType}
-              filter={filter}
-              key={filter}
-              filters={filters}
-              setFilters={setFilters}
-            />
-          ))}
-        </FilterList>
-      </div>
-    </>
+    <div className={s["grid-item__row"]}>
+      <h3 className={clsx(s["row__title"])}>{title}</h3>
+      <button
+        className={clsx(s["row__button"])}
+        onClick={() => onOpenModal(modalId)}
+      >
+        + {buttonText}
+      </button>
+      <FilterList>
+        {filters[filterType].map((filter) => (
+          <FilterCard filterType={filterType} filter={filter} key={filter} />
+        ))}
+      </FilterList>
+    </div>
   );
 }

@@ -1,6 +1,9 @@
 import { Filters, FilterType } from "@/app/(pages)/types";
+import FilterContext from "@/shared/context/FilterContext";
 import Icons from "@/shared/ui/components/Icons";
-import { Card } from "@gravity-ui/uikit";
+import clsx from "clsx";
+import s from "./style.module.sass";
+import { useContext } from "react";
 
 function removeFilter(
   filters: Filters,
@@ -15,23 +18,21 @@ function removeFilter(
 export default function FilterCard({
   filter,
   filterType,
-  filters,
-  setFilters,
 }: {
   filter: string;
   filterType: FilterType;
-  filters: Filters;
-  setFilters: (filters: Filters) => void;
 }) {
+  const { filters, setFilters } = useContext(FilterContext);
+
   return (
-    <Card className="filter-card">
+    <div className="filter-card">
       <span className="filter-card__query-text">{filter}</span>
       <button
-        className="filter-card__delete-button button"
+        className={clsx(s["filter-card__delete-button"], "button")}
         onClick={() => setFilters(removeFilter(filters, filterType, filter))}
       >
         <Icons.Delete />
       </button>
-    </Card>
+    </div>
   );
 }

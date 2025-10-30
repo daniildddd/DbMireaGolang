@@ -1,4 +1,3 @@
-import { Button, Text } from "@gravity-ui/uikit";
 import PageLinkList from "@/shared/ui/components/PageLinkList/PageLinkList";
 import s from "./style.module.sass";
 import Link from "next/link";
@@ -13,16 +12,12 @@ export default function Header({
     <header className={s.header}>
       <div className={s["header__primary-row"]}>
         <div className={s["header__website-meta"]}>
-          <Text
-            className={clsx(s["website-meta__title"], "h1")}
-            variant="header-1"
-            as="h1"
-          >
+          <h1 className={clsx(s["website-meta__title"])}>
             <Link href="/">DB Master</Link>
-          </Text>
-          <Text className={s["website-meta__db-name"]}>
+          </h1>
+          <span className={s["website-meta__db-name"]}>
             Подключено к {connectedDbName}
-          </Text>
+          </span>
         </div>
       </div>
       <PageLinkList />

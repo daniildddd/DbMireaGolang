@@ -1,5 +1,4 @@
 import useNotifications from "@/shared/lib/hooks/useNotifications";
-import { Button } from "@gravity-ui/uikit";
 
 export default function SubmitButton({
   onClick,
@@ -11,7 +10,7 @@ export default function SubmitButton({
   const notifier = useNotifications();
 
   return (
-    <Button
+    <button
       className="button buttons__button important"
       onClick={() => {
         notifier.notify("Применено");
@@ -20,6 +19,6 @@ export default function SubmitButton({
       }}
     >
       Применить
-    </Button>
+    </button>
   );
 }

@@ -1,4 +1,4 @@
-import "@shared/ui/styles/globals.sass";
+import "@shared/ui/styles/global.sass";
 
 // @gravity-ui/uikit
 import { ThemeProvider } from "@gravity-ui/uikit";

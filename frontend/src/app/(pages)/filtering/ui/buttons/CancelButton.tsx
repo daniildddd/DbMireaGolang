@@ -1,5 +1,4 @@
 import useNotifications from "@/shared/lib/hooks/useNotifications";
-import { Button } from "@gravity-ui/uikit";
 
 export default function CancelButton({
   handleCloseModal,
@@ -8,7 +7,7 @@ export default function CancelButton({
 }) {
   const notifier = useNotifications();
   return (
-    <Button
+    <button
       className="button buttons__button"
       onClick={() => {
         notifier.notify("Отменено");
@@ -16,6 +15,6 @@ export default function CancelButton({
       }}
     >
       Отмена
-    </Button>
+    </button>
   );
 }

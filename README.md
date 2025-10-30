@@ -10,7 +10,7 @@
 
 ## Стек
 
-- Язык: Golang 
-- GUI: wails
+- Язык: Golang :fire:
+- GUI: NextJS + SaSS, запускается на базе Wails
 - БД: PostgreSQL + GORM
 - Юнит-тестирование: встроенный пакет Golang(testing)

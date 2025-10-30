@@ -1,6 +1,6 @@
 "use client";
 
-import { Select, Button } from "@gravity-ui/uikit";
+import { Select } from "@gravity-ui/uikit";
 
 const TABLES = [
   { value: "Product", label: "Product" },

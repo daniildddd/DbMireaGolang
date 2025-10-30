@@ -3,7 +3,6 @@
 import PageLinkList from "@/shared/ui/components/PageLinkList/PageLinkList";
 import s from "./page.module.sass";
 import clsx from "clsx";
-import { Button } from "@gravity-ui/uikit";
 import { useState } from "react";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
@@ -30,12 +29,12 @@ export default function Page() {
     <main className={clsx("main", s["index-page"])}>
       <h1 className={clsx("h1", s["index-page_website-title"])}>DB Master</h1>
       <div className={s["db-interactions"]}>
-        <Button
+        <button
           className={clsx("button", s["db-interactions__button"])}
           onClick={tryRecreateTables}
         >
           Создать таблицы
-        </Button>
+        </button>
       </div>
       <PageLinkList />
     </main>
