@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.19.0",
   "type": "module",
   "scripts": {
-    "build": "next build",
+    "build": "sh ./scripts/build.sh",
     "dev": "next dev -p 3030 --turbopack",
     "start": "pnpm run build && next start -p 3030",
     "test": "jest",
