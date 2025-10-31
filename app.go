@@ -63,6 +63,17 @@ type TableDataResponse struct {
 	Error   string                   `json:"error,omitempty"`
 }
 
+// Метаданные одной таблицы (имя + все поля, которые можно использовать в WHERE)
+type TableMetadata struct {
+	Name   string      `json:"name"`   // "products"
+	Fields []FieldInfo `json:"fields"` // те же FieldInfo, что в GetInsertFormFields
+}
+
+// Запрос, который придёт от фронта
+type CustomQueryRequest struct {
+	Query string `json:"query"` // произвольный SELECT … WHERE …
+}
+
 func (a *App) RecreateTables() RecreateTablesResult {
 	err := database.CreateTables()
 	if err != nil {
@@ -382,5 +393,118 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 	return RecreateTablesResult{
 		Success: true,
 		Message: "Запись успешно добавлена",
+	}
+}
+
+// Возвращает метаданные всех таблиц, чтобы фронт мог построить форму WHERE
+func (a *App) GetTablesMetadata() []TableMetadata {
+	if database.DB == nil {
+		return []TableMetadata{}
+	}
+
+	migrator := database.DB.Migrator()
+	modelsList := []any{
+		&models.Product{},
+		&models.Inventory{},
+		&models.ProductionBatch{},
+		&models.Sale{},
+	}
+
+	// todo: в будущем скорее всего придется переделать при масштабировании
+	knownEnums := map[string]map[string][]string{
+		"products": {
+			"caffeine_level": {
+				string(models.Low),
+				string(models.Medium),
+				string(models.High),
+				string(models.ExtraHigh),
+			},
+		},
+	}
+
+	var meta []TableMetadata
+	for _, m := range modelsList {
+		stmt := &gorm.Statement{DB: database.DB}
+		if err := stmt.Parse(m); err != nil {
+			continue
+		}
+		table := stmt.Table
+		if !migrator.HasTable(table) {
+			continue
+		}
+
+		cols, err := migrator.ColumnTypes(table)
+		if err != nil {
+			logger.Error("GetTablesMetadata: columns %s: %v", table, err)
+			continue
+		}
+
+		var fields []FieldInfo
+		tableEnums := knownEnums[table]
+
+		for _, c := range cols {
+			name := c.Name()
+			colType, _ := c.ColumnType()
+			nullable, _ := c.Nullable()
+			autoInc, _ := c.AutoIncrement()
+
+			f := FieldInfo{
+				Name:            name,
+				Type:            strings.ToLower(colType),
+				IsNullable:      nullable,
+				IsAutoIncrement: autoInc,
+			}
+			if ev, ok := tableEnums[name]; ok {
+				f.EnumValues = ev
+				f.Type = "enum"
+			}
+			fields = append(fields, f)
+		}
+
+		if len(fields) > 0 {
+			meta = append(meta, TableMetadata{Name: table, Fields: fields})
+		}
+	}
+	return meta
+}
+
+// выполняет SELECT-запрос и возвращает TableDataResponse, нужна для сценария когда в окне where уже сформировался запрос и нужно получить результирующую табличку
+func (a *App) ExecuteCustomQuery(req CustomQueryRequest) TableDataResponse {
+	if database.DB == nil {
+		return TableDataResponse{Error: "База данных не инициализирована"}
+	}
+	if strings.TrimSpace(req.Query) == "" {
+		return TableDataResponse{Error: "Запрос пустой"}
+	}
+
+	var rows []map[string]interface{}
+	result := database.DB.Raw(req.Query).Scan(&rows)
+	if result.Error != nil {
+		logger.Error("ExecuteCustomQuery error: %v\nQuery: %s", result.Error, req.Query)
+		return TableDataResponse{Error: result.Error.Error()}
+	}
+
+	if len(rows) == 0 {
+		return TableDataResponse{Columns: []string{}, Rows: []map[string]interface{}{}}
+	}
+
+	// Колонки берём из первой строки
+	var cols []string
+	for col := range rows[0] {
+		cols = append(cols, col)
+	}
+
+	// Приводим time.Time к строке
+	for i := range rows {
+		for k, v := range rows[i] {
+			if t, ok := v.(time.Time); ok {
+				rows[i][k] = t.Format("2006-01-02 15:04:05")
+			}
+		}
+	}
+
+	return TableDataResponse{
+		Columns: cols,
+		Rows:    rows,
 	}
 }
