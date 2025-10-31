@@ -23,19 +23,48 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// структура для хранения результатов работы функций
+type InsertRequest struct {
+	TableName string `json:"tableName"`
+}
+
+type FieldInfo struct {
+	Name            string   `json:"name"`
+	Type            string   `json:"type"`
+	IsNullable      bool     `json:"isNullable"`
+	IsAutoIncrement bool     `json:"isAutoIncrement"`
+	EnumValues      []string `json:"enumValues,omitempty"`
+	Error           string   `json:"error,omitempty"`
+}
+
+type InsertRecordRequest struct {
+	TableName string                 `json:"tableName"`
+	Data      map[string]interface{} `json:"data"`
+}
+
 type RecreateTablesResult struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Error   string `json:"error,omitempty"`
 }
 
-// удаляет и создает заново все таблицы в базе данных
-//
-// возвращает ошибкку в случае если не удаллось пересоздать таблицы
+type TablesListResponse struct {
+	TableName []string `json:"tableName"`
+}
+
+type FieldSchema struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Constraints string `json:"constraints"`
+}
+
+type TableDataResponse struct {
+	Columns []string                 `json:"columns"`
+	Rows    []map[string]interface{} `json:"rows"`
+	Error   string                   `json:"error,omitempty"`
+}
+
 func (a *App) RecreateTables() RecreateTablesResult {
 	err := database.CreateTables()
-
 	if err != nil {
 		return RecreateTablesResult{
 			Success: false,
@@ -43,27 +72,19 @@ func (a *App) RecreateTables() RecreateTablesResult {
 			Error:   err.Error(),
 		}
 	}
-
 	return RecreateTablesResult{
 		Success: true,
 		Message: "Таблицы успешно пересозданы",
 	}
 }
 
-// список всех табличек
-type TablesListResponse struct {
-	TableName []string `json:"tableName"`
-}
-
-// получение всех табличек через заранее определенные модели, в будущем скорее всего придется передалть
 func (a *App) GetTableNamesFromModels() TablesListResponse {
 	if database.DB == nil {
 		return TablesListResponse{TableName: []string{}}
 	}
 
 	migrator := database.DB.Migrator()
-
-	models := []any{
+	modelsList := []any{
 		&models.Product{},
 		&models.Inventory{},
 		&models.ProductionBatch{},
@@ -71,7 +92,7 @@ func (a *App) GetTableNamesFromModels() TablesListResponse {
 	}
 
 	var tables []string
-	for _, model := range models {
+	for _, model := range modelsList {
 		if migrator.HasTable(model) {
 			stmt := &gorm.Statement{DB: database.DB}
 			_ = stmt.Parse(model)
@@ -79,19 +100,9 @@ func (a *App) GetTableNamesFromModels() TablesListResponse {
 		}
 	}
 
-	return TablesListResponse{
-		TableName: tables,
-	}
+	return TablesListResponse{TableName: tables}
 }
 
-// нужна для окна отображения характеристике таблички
-type FieldSchema struct {
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Constraints string `json:"constraints"`
-}
-
-// выдает схему таблицы
 func (a *App) GetTableSchema(tableName string) []FieldSchema {
 	if database.DB == nil {
 		return []FieldSchema{}
@@ -99,11 +110,10 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 
 	columns, err := database.DB.Migrator().ColumnTypes(tableName)
 	if err != nil {
-		logger.Logger.Error("Table %s not found: %v", tableName, err)
+		logger.Error("Table %s not found: %v", tableName, err)
 		return []FieldSchema{}
 	}
 
-	// Получаем все ограничения одним запросом
 	type Constraint struct {
 		Column     string
 		Type       string
@@ -135,9 +145,8 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
             AND tc.constraint_type IN ('FOREIGN KEY', 'UNIQUE', 'CHECK')
     `, tableName).Scan(&constraints)
 
-	// Группируем ограничения по колонкам
 	consMap := make(map[string][]string)
-	var tableChecks []string // CHECK на уровне таблицы
+	var tableChecks []string
 
 	for _, c := range constraints {
 		switch c.Type {
@@ -147,24 +156,18 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 			consMap[c.Column] = append(consMap[c.Column], "unique")
 		case "CHECK":
 			if c.Column != "" {
-				// CHECK для конкретной колонки
 				consMap[c.Column] = append(consMap[c.Column], "check: "+c.Definition)
 			} else {
-				// CHECK на уровне таблицы - нужно парсить
 				tableChecks = append(tableChecks, c.Definition)
 			}
 		}
 	}
 
-	// Пытаемся распарсить table-level CHECK constraints
 	for _, check := range tableChecks {
-		// Простой парсинг: ищем имя колонки в начале выражения
-		// Например: "age >= 18" или "(age >= 18)"
 		check = strings.Trim(check, "()")
 		parts := strings.Fields(check)
 		if len(parts) > 0 {
 			colName := parts[0]
-			// Проверяем, что это реальная колонка
 			for _, col := range columns {
 				if col.Name() == colName {
 					consMap[colName] = append(consMap[colName], "check: "+check)
@@ -174,7 +177,6 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 		}
 	}
 
-	// Собираем финальный результат
 	var fields []FieldSchema
 	for _, col := range columns {
 		name := col.Name()
@@ -183,15 +185,12 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 		pk, _ := col.PrimaryKey()
 
 		var cons []string
-
 		if pk {
 			cons = append(cons, "primary key")
 		}
-
 		if !nullable {
 			cons = append(cons, "not null")
 		}
-
 		cons = append(cons, consMap[name]...)
 
 		fields = append(fields, FieldSchema{
@@ -204,59 +203,33 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 	return fields
 }
 
-// структура для возврата данных таблицы
-type TableDataResponse struct {
-	Columns []string                 `json:"columns"`
-	Rows    []map[string]interface{} `json:"rows"`
-	Error   string                   `json:"error,omitempty"`
-}
-
-// получает данные из указанной таблицы
-//
-// принимает имя таблички, возвращает название колонок и строчки таблицы
-//
-// в случае ощибки вернется дополнительное поле Error, иначе этого поля не будет(свойство json omitempty)
 func (a *App) GetTableData(tableName string) TableDataResponse {
 	if database.DB == nil {
-		return TableDataResponse{
-			Error: "База данных не инициализирована",
-		}
+		return TableDataResponse{Error: "База данных не инициализирована"}
 	}
 
-	// Проверяем существование таблицы
 	if !database.DB.Migrator().HasTable(tableName) {
-		return TableDataResponse{
-			Error: "Таблица не найдена",
-		}
+		return TableDataResponse{Error: "Таблица не найдена"}
 	}
 
-	// Получаем информацию о колонках
 	columns, err := database.DB.Migrator().ColumnTypes(tableName)
 	if err != nil {
-		logger.Logger.Error("Ошибка получения колонок таблицы %s: %v", tableName, err)
-		return TableDataResponse{
-			Error: "Не удалось получить структуру таблицы",
-		}
+		logger.Error("Ошибка получения колонок таблицы %s: %v", tableName, err)
+		return TableDataResponse{Error: "Не удалось получить структуру таблицы"}
 	}
 
-	// Формируем список имен колонок
 	var columnNames []string
 	for _, col := range columns {
 		columnNames = append(columnNames, col.Name())
 	}
 
-	// Получаем данные из таблицы
 	var rows []map[string]interface{}
 	result := database.DB.Table(tableName).Find(&rows)
-
 	if result.Error != nil {
-		logger.Logger.Error("Ошибка получения данных из таблицы %s: %v", tableName, result.Error)
-		return TableDataResponse{
-			Error: "Не удалось получить данные таблицы",
-		}
+		logger.Error("Ошибка получения данных из таблицы %s: %v", tableName, result.Error)
+		return TableDataResponse{Error: "Не удалось получить данные таблицы"}
 	}
 
-	// GORM возвращает time.Time, который нужно преобразовать в строку и отформатировать
 	for i := range rows {
 		for key, value := range rows[i] {
 			if t, ok := value.(time.Time); ok {
@@ -268,5 +241,146 @@ func (a *App) GetTableData(tableName string) TableDataResponse {
 	return TableDataResponse{
 		Columns: columnNames,
 		Rows:    rows,
+	}
+}
+
+func (a *App) GetInsertFormFields(req InsertRequest) []FieldInfo {
+	var fields []FieldInfo
+
+	if database.DB == nil {
+		return []FieldInfo{{Error: "База данных не инициализирована"}}
+	}
+
+	if req.TableName == "" {
+		return []FieldInfo{{Error: "Название таблицы не указано"}}
+	}
+
+	if !database.DB.Migrator().HasTable(req.TableName) {
+		return []FieldInfo{{Error: "Таблица не найдена"}}
+	}
+
+	columns, err := database.DB.Migrator().ColumnTypes(req.TableName)
+	if err != nil {
+		logger.Error("Ошибка получения колонок для формы вставки таблицы %s: %v", req.TableName, err)
+		return []FieldInfo{{Error: "Не удалось получить структуру таблицы"}}
+	}
+
+	knownEnums := map[string][]string{
+		"caffeine_level": {
+			string(models.Low),
+			string(models.Medium),
+			string(models.High),
+			string(models.ExtraHigh),
+		},
+	}
+
+	for _, col := range columns {
+		name := col.Name()
+		colType, _ := col.ColumnType()
+		nullable, _ := col.Nullable()
+		autoIncrement, _ := col.AutoIncrement()
+		primaryKey, _ := col.PrimaryKey()
+
+		if autoIncrement || (primaryKey && strings.Contains(strings.ToLower(colType), "serial")) {
+			continue
+		}
+
+		field := FieldInfo{
+			Name:            name,
+			Type:            strings.ToLower(colType),
+			IsNullable:      nullable,
+			IsAutoIncrement: autoIncrement,
+		}
+
+		if enumVals, exists := knownEnums[name]; exists {
+			field.EnumValues = enumVals
+			field.Type = "enum"
+		}
+
+		fields = append(fields, field)
+	}
+
+	if len(fields) == 0 {
+		return []FieldInfo{{Error: "Нет доступных полей для вставки"}}
+	}
+
+	return fields
+}
+
+func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.TableName == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Название таблицы не указано",
+			Error:   "table name empty",
+		}
+	}
+
+	if !database.DB.Migrator().HasTable(req.TableName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Таблица не найдена",
+			Error:   "table not found: " + req.TableName,
+		}
+	}
+
+	if len(req.Data) == 0 {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Нет данных для вставки",
+			Error:   "empty data",
+		}
+	}
+
+	// Валидация caffeine_level для products
+	if req.TableName == "products" {
+		if val, exists := req.Data["caffeine_level"]; exists {
+			strVal, ok := val.(string)
+			if !ok {
+				return RecreateTablesResult{
+					Success: false,
+					Message: "caffeine_level должен быть строкой",
+					Error:   "invalid type for caffeine_level",
+				}
+			}
+
+			valid := false
+			for _, v := range []models.CaffeineLevel{models.Low, models.Medium, models.High, models.ExtraHigh} {
+				if string(v) == strVal {
+					valid = true
+					break
+				}
+			}
+			if !valid {
+				return RecreateTablesResult{
+					Success: false,
+					Message: "Недопустимое значение caffeine_level",
+					Error:   "invalid enum value: " + strVal,
+				}
+			}
+		}
+	}
+
+	result := database.DB.Table(req.TableName).Create(req.Data)
+	if result.Error != nil {
+		logger.Error("Ошибка вставки в таблицу %s: %v", req.TableName, result.Error)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось добавить запись",
+			Error:   result.Error.Error(),
+		}
+	}
+
+	return RecreateTablesResult{
+		Success: true,
+		Message: "Запись успешно добавлена",
 	}
 }
