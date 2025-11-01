@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -63,17 +64,38 @@ type TableDataResponse struct {
 	Error   string                   `json:"error,omitempty"`
 }
 
-// Метаданные одной таблицы (имя + все поля, которые можно использовать в WHERE)
 type TableMetadata struct {
-	Name   string      `json:"name"`   // "products"
-	Fields []FieldInfo `json:"fields"` // те же FieldInfo, что в GetInsertFormFields
+	Name   string      `json:"name"`
+	Fields []FieldInfo `json:"fields"`
 }
 
-// Запрос, который придёт от фронта
 type CustomQueryRequest struct {
-	Query string `json:"query"` // произвольный SELECT … WHERE …
+	Query string `json:"query"`
 }
 
+// Новые типы для JOIN функциональности
+type JoinType string
+
+const (
+	InnerJoin JoinType = "INNER"
+	LeftJoin  JoinType = "LEFT"
+	RightJoin JoinType = "RIGHT"
+	FullJoin  JoinType = "FULL"
+)
+
+type JoinConfig struct {
+	Table string   `json:"table"`
+	Type  JoinType `json:"type"`
+	Field string   `json:"field"` // одно поле (не массив!)
+}
+
+type JoinRequest struct {
+	MainTable string       `json:"mainTable"`
+	MainField string       `json:"mainField"` // одно поле (не массив!)
+	Joins     []JoinConfig `json:"joins"`
+}
+
+// ручка для создания/пересоздания табличек
 func (a *App) RecreateTables() RecreateTablesResult {
 	err := database.CreateTables()
 	if err != nil {
@@ -89,6 +111,7 @@ func (a *App) RecreateTables() RecreateTablesResult {
 	}
 }
 
+// ручка для получения всех табличек(их названий)
 func (a *App) GetTableNamesFromModels() TablesListResponse {
 	if database.DB == nil {
 		return TablesListResponse{TableName: []string{}}
@@ -114,6 +137,7 @@ func (a *App) GetTableNamesFromModels() TablesListResponse {
 	return TablesListResponse{TableName: tables}
 }
 
+// ручка для получения информации об ограниченях на поля таблички
 func (a *App) GetTableSchema(tableName string) []FieldSchema {
 	if database.DB == nil {
 		return []FieldSchema{}
@@ -214,6 +238,7 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 	return fields
 }
 
+// ручка для получения записей в табличке
 func (a *App) GetTableData(tableName string) TableDataResponse {
 	if database.DB == nil {
 		return TableDataResponse{Error: "База данных не инициализирована"}
@@ -255,6 +280,7 @@ func (a *App) GetTableData(tableName string) TableDataResponse {
 	}
 }
 
+// ручка для получения всех полей(используется в окне вставке данных)
 func (a *App) GetInsertFormFields(req InsertRequest) []FieldInfo {
 	var fields []FieldInfo
 
@@ -396,7 +422,7 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 	}
 }
 
-// Возвращает метаданные всех таблиц, чтобы фронт мог построить форму WHERE
+// Возвращает метаданные всех таблиц
 func (a *App) GetTablesMetadata() []TableMetadata {
 	if database.DB == nil {
 		return []TableMetadata{}
@@ -410,7 +436,6 @@ func (a *App) GetTablesMetadata() []TableMetadata {
 		&models.Sale{},
 	}
 
-	// todo: в будущем скорее всего придется переделать при масштабировании
 	knownEnums := map[string]map[string][]string{
 		"products": {
 			"caffeine_level": {
@@ -468,7 +493,7 @@ func (a *App) GetTablesMetadata() []TableMetadata {
 	return meta
 }
 
-// выполняет SELECT-запрос и возвращает TableDataResponse, нужна для сценария когда в окне where уже сформировался запрос и нужно получить результирующую табличку
+// выполняет SELECT-запрос
 func (a *App) ExecuteCustomQuery(req CustomQueryRequest) TableDataResponse {
 	if database.DB == nil {
 		return TableDataResponse{Error: "База данных не инициализирована"}
@@ -488,7 +513,81 @@ func (a *App) ExecuteCustomQuery(req CustomQueryRequest) TableDataResponse {
 		return TableDataResponse{Columns: []string{}, Rows: []map[string]interface{}{}}
 	}
 
-	// Колонки берём из первой строки
+	var cols []string
+	for col := range rows[0] {
+		cols = append(cols, col)
+	}
+
+	for i := range rows {
+		for k, v := range rows[i] {
+			if t, ok := v.(time.Time); ok {
+				rows[i][k] = t.Format("2006-01-02 15:04:05")
+			}
+		}
+	}
+
+	return TableDataResponse{
+		Columns: cols,
+		Rows:    rows,
+	}
+}
+
+// Новый метод для выполнения JOIN-запросов
+func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
+	if database.DB == nil {
+		return TableDataResponse{Error: "База данных не инициализирована"}
+	}
+
+	if req.MainTable == "" {
+		return TableDataResponse{Error: "Основная таблица не указана"}
+	}
+
+	if !database.DB.Migrator().HasTable(req.MainTable) {
+		return TableDataResponse{Error: fmt.Sprintf("Таблица %s не найдена", req.MainTable)}
+	}
+
+	if req.MainField == "" {
+		return TableDataResponse{Error: "Не указано поле основной таблицы для соединения"}
+	}
+
+	if len(req.Joins) == 0 {
+		return TableDataResponse{Error: "Не указаны таблицы для соединения"}
+	}
+
+	// Проверяем все таблицы для JOIN
+	for _, join := range req.Joins {
+		if !database.DB.Migrator().HasTable(join.Table) {
+			return TableDataResponse{Error: fmt.Sprintf("Таблица %s не найдена", join.Table)}
+		}
+		if join.Field == "" {
+			return TableDataResponse{Error: fmt.Sprintf("Не указано поле для соединения с таблицей %s", join.Table)}
+		}
+	}
+
+	// Формируем SELECT * (выбираем все поля из всех таблиц)
+	query := fmt.Sprintf("SELECT * FROM %s", req.MainTable)
+
+	// Формируем JOIN части с условиями ON
+	// mainField соединяется с join.Field для каждого JOIN
+	for _, join := range req.Joins {
+		condition := fmt.Sprintf("%s.%s = %s.%s", req.MainTable, req.MainField, join.Table, join.Field)
+		query += fmt.Sprintf(" %s JOIN %s ON %s", join.Type, join.Table, condition)
+	}
+
+	logger.Info("Executing JOIN query: %s", query)
+
+	var rows []map[string]interface{}
+	result := database.DB.Raw(query).Scan(&rows)
+	if result.Error != nil {
+		logger.Error("ExecuteJoinQuery error: %v\nQuery: %s", result.Error, query)
+		return TableDataResponse{Error: result.Error.Error()}
+	}
+
+	if len(rows) == 0 {
+		return TableDataResponse{Columns: []string{}, Rows: []map[string]interface{}{}}
+	}
+
+	// Получаем названия колонок из первой строки
 	var cols []string
 	for col := range rows[0] {
 		cols = append(cols, col)
