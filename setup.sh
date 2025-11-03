@@ -18,7 +18,6 @@ main() {
     echo "Установка Wails CLI"
     go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-    go_get fyne.io/fyne/v2
     go_get github.com/joho/godotenv
     go_get gorm.io/driver/postgres
     go_get gorm.io/gorm
@@ -26,11 +25,11 @@ main() {
 
     echo "=== Установка пакетов фронтенда ==="
     cd frontend
-    pnpm i
+    pnpm install
     cd ../
 
     echo "=== Создание .env ==="
-    if ![ -f ".env" ]; then
+    if [ ! -f ".env" ]; then
         cp .env.example .env
         echo ".env создан"
     else
