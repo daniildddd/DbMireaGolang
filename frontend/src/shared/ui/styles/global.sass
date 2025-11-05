@@ -44,15 +44,6 @@ hr
 
 // === Кнопки ===
 
-.button
-    font-size: 0.6rem
-    font-weight: bold
-    border-radius: 4px
-
-    &.important
-        background-color: colors.$active-link-clr
-        color: white
-
 .header
     display: flex
     flex-direction: column
@@ -78,3 +69,27 @@ hr
 
 .section
     padding: 1rem
+
+.button
+    padding: 4px 10px
+    font-size: 0.6rem
+    font-weight: bold
+    border-radius: 4px
+    background-color: none
+    color: colors.$text-clr
+    border: 1px solid colors.$button-border-clr
+
+    &:active, &:hover
+        color: white
+        cursor: pointer
+    &:active
+        background-color: colors.$button-active-clr
+    &:hover
+        background-color: colors.$button-hover-clr
+
+.button.important
+    background-color: colors.$active-link-clr
+    color: white
+    border-color: colors.$important-button-border-clr
+    &:hover
+        background-color: colors.$accent-dark-clr

@@ -13,7 +13,9 @@ export default function Header({
       <div className={s["header__primary-row"]}>
         <div className={s["header__website-meta"]}>
           <h1 className={clsx(s["website-meta__title"])}>
-            <Link href="/">DB Master</Link>
+            <Link href="/" className={clsx(s["header__title"])}>
+              DB Master
+            </Link>
           </h1>
           <span className={s["website-meta__db-name"]}>
             Подключено к {connectedDbName}

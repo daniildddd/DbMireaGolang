@@ -25,7 +25,7 @@ export default function FilterRow({
     <div className={s["grid-item__row"]}>
       <h3 className={clsx(s["row__title"])}>{title}</h3>
       <button
-        className={clsx(s["row__button"])}
+        className={clsx("button", s["row__button"])}
         onClick={() => onOpenModal(modalId)}
       >
         + {buttonText}

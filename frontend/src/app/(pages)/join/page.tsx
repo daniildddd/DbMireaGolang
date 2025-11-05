@@ -42,7 +42,7 @@ export default function Page() {
         </div>
         <div>
           <button
-            className={clsx(s.button, s.important, s["join-section__submit"])}
+            className={clsx("button", "important", s["join-section__submit"])}
             onClick={handleGenerateSQL}
           >
             Сгенерировать SQL

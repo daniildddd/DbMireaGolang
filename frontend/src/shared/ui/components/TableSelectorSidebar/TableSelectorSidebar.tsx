@@ -17,6 +17,7 @@ export default function TableSelectorSidebar({
         {tableNames.map((name) => (
           <li className={s["table-list__item"]} key={name}>
             <button
+              className="button"
               onClick={() => {
                 setCurrentTable(name);
               }}

@@ -16,6 +16,7 @@
     ![create-db](./docs/create-db.png)
 - Настраиваем NodeJS
   - Открываем cmd/bash/powershell и ПООЧЕРЕДНО вставляем и выполняем эти команды:
+
 ```pwsh
 # === WINDOWS ===
 powershell -c "irm https://community.chocolatey.org/install.ps1|iex"
@@ -36,6 +37,7 @@ node -v # Should print "v24.11.0".
 corepack enable pnpm
 pnpm -v
 ```
+
 - Открываем в VSCode консоль (`ctrl` + `~`, или Вид->Терминал)
 - Вводим в консоль `chmod +x ./setup.sh && ./setup.sh`
 - В файле `.env` меняем пароль и название базы данных на введенные ранее
