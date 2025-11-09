@@ -86,13 +86,435 @@ const (
 type JoinConfig struct {
 	Table string   `json:"table"`
 	Type  JoinType `json:"type"`
-	Field string   `json:"field"` // одно поле (не массив!)
+	Field string   `json:"field"`
 }
 
 type JoinRequest struct {
 	MainTable string       `json:"mainTable"`
-	MainField string       `json:"mainField"` // одно поле (не массив!)
+	MainField string       `json:"mainField"`
 	Joins     []JoinConfig `json:"joins"`
+}
+
+// SearchRequest — запрос, отправляемый с фронта для выполнения поиска
+type SearchRequest struct {
+	TableName string       `json:"tableName"`
+	Filters   SearchFilter `json:"filters"`
+}
+
+// SearchFilter — единичное условие поиска для одной колонки
+type SearchFilter struct {
+	FieldName string         `json:"fieldName"` // Имя колонки для поиска
+	Operator  SearchOperator `json:"operator"`  // Выбранный оператор
+	Value     string         `json:"value"`     // Шаблон/регулярное выражение для поиска
+}
+
+// SearchOperator — перечисление доступных операторов поиска
+type SearchOperator string
+
+const (
+	LikeOperator       SearchOperator = "LIKE" // Регистрозависимый LIKE
+	RegexpOperator     SearchOperator = "~"    // Соответствует регулярному выражению (регистрозависимый)
+	IRegexpOperator    SearchOperator = "~*"   // Соответствует регулярному выражению (регистроНЕзависимый)
+	NotRegexpOperator  SearchOperator = "!~"   // НЕ соответствует регулярному выражению (регистрозависимый)
+	NotIRegexpOperator SearchOperator = "!~*"  // НЕ соответствует регулярному выражению (регистроНЕзависимый)
+)
+
+// RenameTableRequest - запрос на переименование таблицы
+type RenameTableRequest struct {
+	OldName string `json:"oldName"`
+	NewName string `json:"newName"`
+}
+
+// DeleteFieldRequest - запрос на удаление поля
+type DeleteFieldRequest struct {
+	TableName string `json:"tableName"`
+	FieldName string `json:"fieldName"`
+}
+
+// UpdateFieldRequest - запрос на изменение поля
+type UpdateFieldRequest struct {
+	TableName   string           `json:"tableName"`
+	OldName     string           `json:"oldName"`
+	NewName     string           `json:"newName"`
+	Type        string           `json:"type"`
+	Constraints FieldConstraints `json:"constraints"`
+}
+
+// FieldConstraints - ограничения для поля
+type FieldConstraints struct {
+	NotNull    bool                  `json:"notNull"`
+	Unique     bool                  `json:"unique"`
+	Check      string                `json:"check,omitempty"`
+	ForeignKey *ForeignKeyConstraint `json:"foreignKey,omitempty"`
+}
+
+// ForeignKeyConstraint - детали внешнего ключа
+type ForeignKeyConstraint struct {
+	RefTable   string   `json:"refTable"`
+	RefColumns []string `json:"refColumns"`
+	OnDelete   string   `json:"onDelete,omitempty"`
+	OnUpdate   string   `json:"onUpdate,omitempty"`
+}
+
+// SearchInTable - выполняет поиск по таблице с использованием LIKE или регулярных выражений
+func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
+	if database.DB == nil {
+		return TableDataResponse{Error: "База данных не инициализирована"}
+	}
+
+	if req.TableName == "" {
+		return TableDataResponse{Error: "Название таблицы не указано"}
+	}
+
+	if !database.DB.Migrator().HasTable(req.TableName) {
+		return TableDataResponse{Error: fmt.Sprintf("Таблица '%s' не найдена", req.TableName)}
+	}
+
+	if req.Filters.FieldName == "" {
+		return TableDataResponse{Error: "Не указано поле для поиска"}
+	}
+
+	if req.Filters.Value == "" {
+		return TableDataResponse{Error: "Не указано значение для поиска"}
+	}
+
+	// Проверяем существование поля
+	if !database.DB.Migrator().HasColumn(req.TableName, req.Filters.FieldName) {
+		return TableDataResponse{Error: fmt.Sprintf("Поле '%s' не найдено в таблице '%s'", req.Filters.FieldName, req.TableName)}
+	}
+
+	// Валидация оператора
+	validOperators := map[SearchOperator]bool{
+		LikeOperator:       true,
+		RegexpOperator:     true,
+		IRegexpOperator:    true,
+		NotRegexpOperator:  true,
+		NotIRegexpOperator: true,
+	}
+	if !validOperators[req.Filters.Operator] {
+		return TableDataResponse{Error: fmt.Sprintf("Недопустимый оператор поиска: %s", req.Filters.Operator)}
+	}
+
+	// Формируем SQL-запрос
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s %s ?",
+		req.TableName,
+		req.Filters.FieldName,
+		req.Filters.Operator)
+
+	logger.Info("Executing search query: %s with value: %s", query, req.Filters.Value)
+
+	var rows []map[string]interface{}
+	result := database.DB.Raw(query, req.Filters.Value).Scan(&rows)
+	if result.Error != nil {
+		logger.Error("SearchInTable error: %v\nQuery: %s\nValue: %s", result.Error, query, req.Filters.Value)
+		return TableDataResponse{Error: result.Error.Error()}
+	}
+
+	if len(rows) == 0 {
+		return TableDataResponse{
+			Columns: []string{},
+			Rows:    []map[string]interface{}{},
+		}
+	}
+
+	// Получаем названия колонок из первой строки
+	var cols []string
+	for col := range rows[0] {
+		cols = append(cols, col)
+	}
+
+	// Приводим time.Time к строке
+	for i := range rows {
+		for k, v := range rows[i] {
+			if t, ok := v.(time.Time); ok {
+				rows[i][k] = t.Format("2006-01-02 15:04:05")
+			}
+		}
+	}
+
+	logger.Info("Search completed: found %d rows", len(rows))
+
+	return TableDataResponse{
+		Columns: cols,
+		Rows:    rows,
+	}
+}
+
+// RenameTable - переименование таблицы
+func (a *App) RenameTable(req RenameTableRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.OldName == "" || req.NewName == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Необходимо указать старое и новое имя таблицы",
+			Error:   "empty table names",
+		}
+	}
+
+	if !database.DB.Migrator().HasTable(req.OldName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Таблица '%s' не найдена", req.OldName),
+			Error:   "table not found",
+		}
+	}
+
+	if database.DB.Migrator().HasTable(req.NewName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Таблица '%s' уже существует", req.NewName),
+			Error:   "table already exists",
+		}
+	}
+
+	err := database.DB.Exec(fmt.Sprintf("ALTER TABLE %s RENAME TO %s", req.OldName, req.NewName)).Error
+	if err != nil {
+		logger.Error("Ошибка переименования таблицы %s -> %s: %v", req.OldName, req.NewName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось переименовать таблицу",
+			Error:   err.Error(),
+		}
+	}
+
+	logger.Info("Таблица успешно переименована: %s -> %s", req.OldName, req.NewName)
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Таблица '%s' переименована в '%s'", req.OldName, req.NewName),
+	}
+}
+
+// DeleteField - удаление поля из таблицы
+func (a *App) DeleteField(req DeleteFieldRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.TableName == "" || req.FieldName == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Необходимо указать имя таблицы и имя поля",
+			Error:   "empty table or field name",
+		}
+	}
+
+	if !database.DB.Migrator().HasTable(req.TableName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Таблица '%s' не найдена", req.TableName),
+			Error:   "table not found",
+		}
+	}
+
+	// Проверяем существование поля
+	if !database.DB.Migrator().HasColumn(req.TableName, req.FieldName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Поле '%s' не найдено в таблице '%s'", req.FieldName, req.TableName),
+			Error:   "column not found",
+		}
+	}
+
+	err := database.DB.Migrator().DropColumn(req.TableName, req.FieldName)
+	if err != nil {
+		logger.Error("Ошибка удаления поля %s.%s: %v", req.TableName, req.FieldName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось удалить поле",
+			Error:   err.Error(),
+		}
+	}
+
+	logger.Info("Поле успешно удалено: %s.%s", req.TableName, req.FieldName)
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Поле '%s' успешно удалено из таблицы '%s'", req.FieldName, req.TableName),
+	}
+}
+
+// UpdateField - изменение поля (имя, тип, ограничения)
+func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.TableName == "" || req.OldName == "" || req.NewName == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Необходимо указать имя таблицы, старое и новое имя поля",
+			Error:   "empty table or field names",
+		}
+	}
+
+	if !database.DB.Migrator().HasTable(req.TableName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Таблица '%s' не найдена", req.TableName),
+			Error:   "table not found",
+		}
+	}
+
+	if !database.DB.Migrator().HasColumn(req.TableName, req.OldName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Поле '%s' не найдено в таблице '%s'", req.OldName, req.TableName),
+			Error:   "column not found",
+		}
+	}
+
+	// Начинаем транзакцию
+	tx := database.DB.Begin()
+	if tx.Error != nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось начать транзакцию",
+			Error:   tx.Error.Error(),
+		}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 1. Переименование поля (если имя изменилось)
+	if req.OldName != req.NewName {
+		err := tx.Exec(fmt.Sprintf("ALTER TABLE %s RENAME COLUMN %s TO %s",
+			req.TableName, req.OldName, req.NewName)).Error
+		if err != nil {
+			tx.Rollback()
+			logger.Error("Ошибка переименования поля %s.%s -> %s: %v", req.TableName, req.OldName, req.NewName, err)
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Не удалось переименовать поле",
+				Error:   err.Error(),
+			}
+		}
+		logger.Info("Поле переименовано: %s.%s -> %s", req.TableName, req.OldName, req.NewName)
+	}
+
+	// 2. Изменение типа данных
+	err := tx.Exec(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE %s",
+		req.TableName, req.NewName, req.Type)).Error
+	if err != nil {
+		tx.Rollback()
+		logger.Error("Ошибка изменения типа поля %s.%s: %v", req.TableName, req.NewName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось изменить тип поля",
+			Error:   err.Error(),
+		}
+	}
+
+	// 3. Обработка NOT NULL
+	if req.Constraints.NotNull {
+		err = tx.Exec(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL",
+			req.TableName, req.NewName)).Error
+		if err != nil {
+			tx.Rollback()
+			logger.Error("Ошибка добавления NOT NULL для %s.%s: %v", req.TableName, req.NewName, err)
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Не удалось добавить ограничение NOT NULL",
+				Error:   err.Error(),
+			}
+		}
+	} else {
+		// Убираем NOT NULL если он был
+		tx.Exec(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP NOT NULL",
+			req.TableName, req.NewName))
+	}
+
+	// 4. Обработка UNIQUE
+	if req.Constraints.Unique {
+		constraintName := fmt.Sprintf("unique_%s_%s", req.TableName, req.NewName)
+		err = tx.Exec(fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s)",
+			req.TableName, constraintName, req.NewName)).Error
+		if err != nil && !strings.Contains(err.Error(), "already exists") {
+			tx.Rollback()
+			logger.Error("Ошибка добавления UNIQUE для %s.%s: %v", req.TableName, req.NewName, err)
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Не удалось добавить ограничение UNIQUE",
+				Error:   err.Error(),
+			}
+		}
+	}
+
+	// 5. Обработка CHECK
+	if req.Constraints.Check != "" {
+		constraintName := fmt.Sprintf("check_%s_%s", req.TableName, req.NewName)
+		err = tx.Exec(fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT %s CHECK (%s)",
+			req.TableName, constraintName, req.Constraints.Check)).Error
+		if err != nil && !strings.Contains(err.Error(), "already exists") {
+			tx.Rollback()
+			logger.Error("Ошибка добавления CHECK для %s.%s: %v", req.TableName, req.NewName, err)
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Не удалось добавить ограничение CHECK",
+				Error:   err.Error(),
+			}
+		}
+	}
+
+	// 6. Обработка FOREIGN KEY
+	if req.Constraints.ForeignKey != nil {
+		fk := req.Constraints.ForeignKey
+		constraintName := fmt.Sprintf("fk_%s_%s", req.TableName, req.NewName)
+
+		refColumns := strings.Join(fk.RefColumns, ", ")
+		fkSQL := fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(%s)",
+			req.TableName, constraintName, req.NewName, fk.RefTable, refColumns)
+
+		if fk.OnDelete != "" {
+			fkSQL += fmt.Sprintf(" ON DELETE %s", fk.OnDelete)
+		}
+		if fk.OnUpdate != "" {
+			fkSQL += fmt.Sprintf(" ON UPDATE %s", fk.OnUpdate)
+		}
+
+		err = tx.Exec(fkSQL).Error
+		if err != nil && !strings.Contains(err.Error(), "already exists") {
+			tx.Rollback()
+			logger.Error("Ошибка добавления FOREIGN KEY для %s.%s: %v", req.TableName, req.NewName, err)
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Не удалось добавить внешний ключ",
+				Error:   err.Error(),
+			}
+		}
+	}
+
+	// Фиксируем транзакцию
+	if err := tx.Commit().Error; err != nil {
+		logger.Error("Ошибка фиксации изменений для %s.%s: %v", req.TableName, req.NewName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось зафиксировать изменения",
+			Error:   err.Error(),
+		}
+	}
+
+	logger.Info("Поле успешно изменено: %s.%s", req.TableName, req.NewName)
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Поле '%s' успешно изменено", req.NewName),
+	}
 }
 
 // ручка для создания/пересоздания табличек
