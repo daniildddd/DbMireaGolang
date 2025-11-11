@@ -1,12 +1,10 @@
 import { Label } from "@gravity-ui/uikit";
 import { useState, useContext } from "react";
-import CancelButton from "../buttons/CancelButton";
-import SubmitButton from "../buttons/SubmitButton";
 import FieldNameSelector from "../selectors/FieldNameSelector";
 import s from "./style.module.sass";
 import OrderingSelector from "../selectors/OrderingSelector";
-import AbstractModal from "./AbstractModal";
-import FilterContext from "../../../../../shared/context/FilterContext";
+import AbstractModal from "./AbstractModal/AbstractModal";
+import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/app/(pages)/types";
 
@@ -20,7 +18,18 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
   const { filters, setFilters } = useContext(FilterContext);
 
   return (
-    <AbstractModal handleCloseModal={handleCloseModal}>
+    <AbstractModal
+      handleCloseModal={handleCloseModal}
+      onSubmit={() => {
+        const orderByFilter = `${fieldName} ${ordering}`;
+        updateFilterValueByType(
+          filters,
+          setFilters,
+          FilterType.orderBy,
+          orderByFilter
+        );
+      }}
+    >
       <h1 className="h1 filter-modal__title">
         Добавить сортировку (<code className="code">ORDER BY</code>)
       </h1>
@@ -39,21 +48,6 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
           <OrderingSelector onUpdate={(value) => setOrdering(value[0])} />
         </div>
       </form>
-      <div className="filter-modal__buttons">
-        <CancelButton handleCloseModal={handleCloseModal} />
-        <SubmitButton
-          handleCloseModal={handleCloseModal}
-          onClick={() => {
-            const orderByFilter = `${fieldName} ${ordering}`;
-            updateFilterValueByType(
-              filters,
-              setFilters,
-              FilterType.orderBy,
-              orderByFilter
-            );
-          }}
-        />
-      </div>
     </AbstractModal>
   );
 }
