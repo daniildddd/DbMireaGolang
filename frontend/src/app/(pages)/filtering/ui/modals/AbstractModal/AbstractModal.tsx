@@ -18,7 +18,7 @@ export default function AbstractModal({
   return (
     <Modal
       open={true}
-      className={clsx(s.modal)}
+      contentClassName={clsx(s.modal)}
       onOpenChange={(isOpen, e, reason) => {
         // Quit only in certain conditions
         if (reason == "escape-key" || reason == "outside-press") {
