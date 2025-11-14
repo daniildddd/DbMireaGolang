@@ -7,9 +7,9 @@
   "environment": "production",
   "frontend:dir": "frontend",
   "outputfilename": "DB Master",
-  "frontend:install": "pnpm install",
-  "frontend:build": "pnpm run build",
-  "frontend:dev:watcher": "pnpm run dev",
+  "frontend:install": "pnpm wails:install",
+  "frontend:build": "pnpm run wails:build",
+  "frontend:dev:watcher": "pnpm run wails:dev",
   "frontend:dev:serverUrl": "http://localhost:3030",
   "wailsjsdir": "./frontend/src/shared/lib",
   "author": {
