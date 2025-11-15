@@ -1,10 +1,10 @@
 module github.com/daniildddd/DbMireaGolang
 
-go 1.25.3
+go 1.25.4
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/wailsapp/wails/v2 v2.10.2
+	github.com/wailsapp/wails/v2 v2.11.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )
