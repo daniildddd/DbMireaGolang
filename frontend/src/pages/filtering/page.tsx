@@ -3,13 +3,13 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import s from "./page.module.sass";
 import clsx from "clsx";
+import AggregateModal from "./ui/modals/AggregateModal";
 import WhereModal from "./ui/modals/WhereModal";
 import HavingModal from "./ui/modals/HavingModal";
-import AggregateModal from "./ui/modals/AggregateModal";
 import GroupByModal from "./ui/modals/GroupByModal";
 import OrderByModal from "./ui/modals/OrderByModal";
 import FilterSelectionGrid from "./ui/FilterSelectionGrid/FilterSelectionGrid";
-import FilterContext from "../../shared/context/FilterContext";
+import FilterContext from "@/shared/context/FilterContext";
 import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import { generateSqlQuery } from "@/features/sqlQueryGenerator/generateSqlQuery";
@@ -27,6 +27,7 @@ export default function FilteringPage() {
     [FilterType.groupBy]: [],
     [FilterType.orderBy]: [],
   });
+
   const query = useMemo(
     () => generateSqlQuery("*", currentTable, filters),
     [currentTable, [...Object.values(filters)]]

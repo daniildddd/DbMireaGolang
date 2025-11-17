@@ -1,36 +1,32 @@
-import { Select } from "@gravity-ui/uikit";
-import { useContext, useEffect, useState } from "react";
-import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
+import { useContext } from "react";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
-import { Api } from "@/shared/lib/api/types";
-import { useTableContext } from "@/shared/lib/hooks/useTableContext";
+import { TableContext } from "@/shared/context/TableContext";
+import Select from "@/shared/ui/components/Select/Select";
+import useTableSchema from "@/shared/lib/hooks/useTableSchema";
 
 export default function FieldNameSelector({
   setFieldName,
+  required = true,
 }: {
-  setFieldName: (arg0: string) => void;
+  setFieldName: React.Dispatch<React.SetStateAction<string>>;
+  required?: boolean;
 }) {
-  const notifier = useNotifications();
-  const { currentTable } = useTableContext();
-  const [tableSchema, setTableSchema] = useState<Api.TableSchema>([]);
-
-  useEffect(() => {
-    if (currentTable !== "") {
-      ApiMiddleware.getTableSchema(currentTable)
-        .then((fields) => {
-          setTableSchema(fields);
-        })
-        .catch((err) => notifier.notify(err, "error"));
-    } else {
-      notifier.notify("Сначала выберете таблицу!", "warn");
-    }
-  }, [currentTable]);
+  const { currentTable } = useContext(TableContext);
+  const { tableSchema } = useTableSchema(currentTable);
 
   return (
-    <Select onUpdate={(value) => setFieldName(value[0])} multiple={false}>
-      {tableSchema.map((field) => (
-        <option value={field.name}>{`${field.name} (${field.type})`}</option>
-      ))}
+    <Select
+      name="field-name"
+      onChange={(e) => setFieldName(e.target.value)}
+      required={required}
+    >
+      {tableSchema.length ? (
+        tableSchema.map((field) => (
+          <option value={field.name}>{`${field.name} (${field.type})`}</option>
+        ))
+      ) : (
+        <option>Грузим...</option>
+      )}
     </Select>
   );
 }

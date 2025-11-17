@@ -1,24 +1,20 @@
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 
-export default function SubmitButton({
-  onClick,
+export default function CancelButton({
   handleCloseModal,
 }: {
-  onClick: (arg0?: any) => void;
   handleCloseModal: (open: boolean) => void;
 }) {
   const notifier = useNotifications();
-
   return (
     <button
-      className="button buttons__button important"
+      className="button cancel"
       onClick={() => {
-        notifier.notify("Применено");
-        onClick();
+        notifier.notify("Отменено");
         handleCloseModal(false);
       }}
     >
-      Применить
+      Отмена
     </button>
   );
 }

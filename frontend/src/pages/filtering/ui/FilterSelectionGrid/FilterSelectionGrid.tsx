@@ -9,7 +9,7 @@ export default function FilterSelectionGrid({
   handleOpenModal: (modalId?: string) => void;
 }) {
   return (
-    <div className={s["join-section__grid"]}>
+    <div className={s["join-section-grid"]}>
       <JoinSectionCard>
         <FilterRow
           filterType={FilterType.where}

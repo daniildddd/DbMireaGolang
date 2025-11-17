@@ -22,10 +22,10 @@ export default function FilterRow({
   const { filters } = useContext(FilterContext);
 
   return (
-    <div className={s["grid-item__row"]}>
-      <h3 className={clsx(s["row__title"])}>{title}</h3>
+    <div className={s["grid-item-row"]}>
+      <h3 className={clsx(s["row-title"])}>{title}</h3>
       <button
-        className={clsx("button", s["row__button"])}
+        className={clsx("button", s["row-button"])}
         onClick={() => onOpenModal(modalId)}
       >
         + {buttonText}

@@ -9,11 +9,11 @@ export default function AsideTableSelector() {
 
   return (
     <aside className={s.aside}>
-      <h2 className={clsx(s["aside__title"])}>Таблицы</h2>
+      <h2 className={clsx(s["aside-title"])}>Таблицы</h2>
       <hr />
       <ul className={s["table-list"]}>
         {tableNames.map((name) => (
-          <li className={s["table-list__item"]} key={name}>
+          <li className={s["table-list-item"]} key={name}>
             <button
               className={clsx("button", { active: name === currentTable })}
               onClick={() => {

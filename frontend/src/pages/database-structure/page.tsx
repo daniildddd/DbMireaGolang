@@ -32,7 +32,7 @@ export default function DatabaseStructurePage() {
     <TableContext.Provider value={{ currentTable, setCurrentTable }}>
       <ContentWrapper>
         <section className={clsx("section", s["table-section"])}>
-          <h2 className={clsx("h2", s["table-section__title"])}>
+          <h2 className={clsx("h2", s["table-section-title"])}>
             Структура таблицы: {currentTable}
           </h2>
           <SchemaTable data={tableSchema} />

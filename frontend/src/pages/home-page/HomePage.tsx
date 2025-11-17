@@ -31,7 +31,7 @@ export default function HomePage() {
       <h1 className={clsx("h1", s["index-page_website-title"])}>DB Master</h1>
       <div className={s["db-interactions"]}>
         <button
-          className={clsx("button", s["db-interactions__button"])}
+          className={clsx("button", s["db-interactions-button"])}
           onClick={tryRecreateTables}
         >
           Создать таблицы

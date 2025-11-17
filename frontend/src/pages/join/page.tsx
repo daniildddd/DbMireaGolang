@@ -32,15 +32,15 @@ export default function JoinPage() {
     <TableContext.Provider value={{ currentTable, setCurrentTable }}>
       <ContentWrapper>
         <section className={clsx("section", s["join-section"])}>
-          <div className={s["join-section__header"]}>
-            <h1 className={clsx(s["join-section__title"])}>
+          <div className={s["join-section-header"]}>
+            <h1 className={clsx(s["join-section-title"])}>
               Соединения (JOIN) таблиц
             </h1>
-            <p className={clsx(s.smaller, s["join-section__description"])}>
+            <p className={clsx(s.smaller, s["join-section-description"])}>
               Выберите таблицы и сгенерируйте SQL-запрос
             </p>
           </div>
-          <div className={clsx(s["join-section__available-tables-list"])}>
+          <div className={clsx(s["join-section-available-tables-list"])}>
             <h3>Доступные таблицы</h3>
             <span>Первичная таблица: {currentTable}</span>
             <TableSelector
@@ -50,7 +50,7 @@ export default function JoinPage() {
           </div>
           <div>
             <button
-              className={clsx("button", "important", s["join-section__submit"])}
+              className={clsx("button", "important", s["join-section-submit"])}
               onClick={handleGenerateSQL}
             >
               Сгенерировать SQL

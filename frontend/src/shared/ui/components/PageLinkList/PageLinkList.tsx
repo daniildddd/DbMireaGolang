@@ -4,7 +4,7 @@ import s from "./style.module.sass";
 import clsx from "clsx";
 
 function getClassNames({ isActive }: { isActive: boolean }) {
-  return clsx(s["nav-links__item"], { active: isActive });
+  return clsx(s["nav-links-item"], { active: isActive });
 }
 
 export default function PageLinkList() {

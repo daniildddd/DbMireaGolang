@@ -26,7 +26,7 @@ export default function FilterCard({
 
   return (
     <div className="filter-card">
-      <span className="filter-card__query-text">{filter}</span>
+      <span className="filter-card-query-text">{filter}</span>
       <button
         className={clsx(s["delete-filter-button"])}
         onClick={() => {

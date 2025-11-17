@@ -17,7 +17,12 @@ function customToast(
   }
 }
 
-export default function useNotifications() {
+export interface Notifier {
+  notify: (...args: any) => void;
+  error: (...args: any) => void;
+}
+
+export default function useNotifications(): Notifier {
   return {
     notify: (
       message: string,
@@ -25,6 +30,14 @@ export default function useNotifications() {
       theme: Theme = "light"
     ) => {
       customToast(type)(message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        pauseOnHover: true,
+        theme,
+      });
+    },
+    error: (message: string, theme: Theme = "light") => {
+      customToast("error")(message, {
         position: "bottom-right",
         autoClose: 5000,
         pauseOnHover: true,
