@@ -28,7 +28,7 @@ export default function FilterCard({
     <div className="filter-card">
       <span className="filter-card__query-text">{filter}</span>
       <button
-        className={clsx(s["filter-card__delete-button"], "button")}
+        className={clsx(s["delete-filter-button"])}
         onClick={() => {
           setFilters(removeFilter(filters, filterType, filter));
         }}
