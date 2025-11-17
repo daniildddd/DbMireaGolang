@@ -1,16 +1,10 @@
 import { createContext, Dispatch, SetStateAction } from "react";
-import { Filters, FilterType } from "../../pages/filtering/types";
+import { Filters } from "../../pages/filtering/types";
 
 const FilterContext = createContext<{
   filters: Filters;
   setFilters?: Dispatch<SetStateAction<Filters>>;
 }>({
-  filters: {
-    [FilterType.where]: [],
-    [FilterType.aggregate]: [],
-    [FilterType.having]: [],
-    [FilterType.orderBy]: [],
-    [FilterType.groupBy]: [],
-  },
+  filters: {} as Filters,
 });
 export default FilterContext;

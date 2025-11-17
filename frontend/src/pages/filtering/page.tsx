@@ -15,11 +15,18 @@ import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper
 import { generateSqlQuery } from "@/features/sqlQueryGenerator/generateSqlQuery";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
 import { TableContext } from "@/shared/context/TableContext";
+import { Filters, FilterType } from "./types";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
   const [currentTable, setCurrentTable] = useState("");
-  const { filters, setFilters } = useContext(FilterContext);
+  const [filters, setFilters] = useState<Filters>({
+    [FilterType.aggregate]: [],
+    [FilterType.where]: [],
+    [FilterType.having]: [],
+    [FilterType.groupBy]: [],
+    [FilterType.orderBy]: [],
+  });
   const query = useMemo(
     () => generateSqlQuery("*", currentTable, filters),
     [currentTable, [...Object.values(filters)]]

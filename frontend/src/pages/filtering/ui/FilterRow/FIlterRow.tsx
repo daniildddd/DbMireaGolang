@@ -19,7 +19,7 @@ export default function FilterRow({
   filterType: FilterType;
   onOpenModal?: (modalId: string) => void;
 }) {
-  const { filters, setFilters } = useContext(FilterContext);
+  const { filters } = useContext(FilterContext);
 
   return (
     <div className={s["grid-item__row"]}>

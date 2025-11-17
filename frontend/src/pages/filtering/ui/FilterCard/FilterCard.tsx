@@ -29,7 +29,9 @@ export default function FilterCard({
       <span className="filter-card__query-text">{filter}</span>
       <button
         className={clsx(s["filter-card__delete-button"], "button")}
-        onClick={() => setFilters(removeFilter(filters, filterType, filter))}
+        onClick={() => {
+          setFilters(removeFilter(filters, filterType, filter));
+        }}
       >
         <Icons.Delete />
       </button>
