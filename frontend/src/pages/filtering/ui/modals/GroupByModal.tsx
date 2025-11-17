@@ -2,7 +2,7 @@ import { Label } from "@gravity-ui/uikit";
 import { useContext, useState } from "react";
 import FieldNameSelector from "../selectors/FieldNameSelector";
 import s from "./style.module.sass";
-import AbstractModal from "./AbstractModal/AbstractModal";
+import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/pages/filtering/types";
