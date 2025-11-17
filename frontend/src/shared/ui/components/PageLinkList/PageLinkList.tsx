@@ -1,11 +1,10 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useLocation } from "react-router-dom";
 import { clsx } from "clsx";
 import s from "./style.module.sass";
 
 export default function PageLinkList() {
-  const pathname = usePathname();
+  const location = useLocation();
   const links = [
     { href: "/database-structure", label: "Структура БД" },
     { href: "/filtering", label: "Запросы и фильтрация" },
@@ -15,7 +14,7 @@ export default function PageLinkList() {
   return (
     <ul className={s["nav-links"]}>
       {links.map((link) => {
-        const isActive = pathname === link.href;
+        const isActive = location.pathname === link.href;
 
         return (
           <li
@@ -24,7 +23,7 @@ export default function PageLinkList() {
               active: isActive,
             })}
           >
-            <Link href={link.href}>{link.label}</Link>
+            <Link to={link.href}>{link.label}</Link>
           </li>
         );
       })}

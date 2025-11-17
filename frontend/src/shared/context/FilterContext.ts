@@ -1,5 +1,5 @@
 import { createContext, Dispatch, SetStateAction } from "react";
-import { Filters, FilterType } from "../../app/(pages)/types";
+import { Filters, FilterType } from "../../pages/filtering/types";
 
 const FilterContext = createContext<{
   filters: Filters;
