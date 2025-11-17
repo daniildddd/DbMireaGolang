@@ -6,6 +6,9 @@
       "dom.iterable",
       "esnext"
     ],
+    "types": [
+      "vite/client"
+    ],
     "checkJs": false,
     "allowJs": true,
     "skipLibCheck": true,
@@ -13,10 +16,10 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -27,23 +30,20 @@
       "@/*": [
         "./src/*"
       ],
-      "wailsjs": [
-        "./src/shared/lib/wailsjs/go/main/App"
+      "@pages/*": [
+        "./src/pages/*"
       ],
       "@shared/*": [
         "./src/shared/*"
       ],
-      "@app/*": [
-        "./src/app/*"
-      ]
+      "wailsjs": [
+        "./src/shared/lib/wailsjs/go/main/App"
+      ],
     },
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "next-env.d.ts",
+    "src/**/*",
     "src/**/*.d.ts",
     "dist/types/**/*.ts",
   ],

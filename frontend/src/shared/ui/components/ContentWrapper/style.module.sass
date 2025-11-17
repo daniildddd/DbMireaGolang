@@ -1,0 +1,12 @@
+@use "@/shared/ui/styles/colors"
+
+.content-wrapper
+    display: grid
+    grid-template-rows: clamp(100px,15vh,300px) 1fr
+    grid-template-columns: 1fr 5fr
+    grid-template-areas: "header header" "aside main"
+    gap: 0.5rem
+
+    flex: 1
+    padding: 0.5rem
+    background: colors.$pale-bg

@@ -10,7 +10,7 @@
   "frontend:install": "pnpm install",
   "frontend:build": "pnpm run build",
   "frontend:dev:watcher": "pnpm run dev",
-  "frontend:dev:serverUrl": "http://localhost:3030",
+  "frontend:dev:serverUrl": "http://localhost:5173",
   "wailsjsdir": "./frontend/src/shared/lib",
   "author": {
     "name": "DbMireaGolang team"
