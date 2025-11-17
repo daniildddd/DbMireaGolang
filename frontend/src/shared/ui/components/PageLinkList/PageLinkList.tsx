@@ -1,32 +1,24 @@
 "use client";
-import { Link, useLocation } from "react-router-dom";
-import { clsx } from "clsx";
+import { NavLink } from "react-router-dom";
 import s from "./style.module.sass";
+import clsx from "clsx";
+
+function getClassNames({ isActive }: { isActive: boolean }) {
+  return clsx(s["nav-links__item"], { active: isActive });
+}
 
 export default function PageLinkList() {
-  const location = useLocation();
-  const links = [
-    { href: "/database-structure", label: "Структура БД" },
-    { href: "/filtering", label: "Запросы и фильтрация" },
-    { href: "/join", label: "Соединения (JOIN)" },
-  ];
-
   return (
-    <ul className={s["nav-links"]}>
-      {links.map((link) => {
-        const isActive = location.pathname === link.href;
-
-        return (
-          <li
-            key={link.href}
-            className={clsx(s["nav-links__item"], {
-              active: isActive,
-            })}
-          >
-            <Link to={link.href}>{link.label}</Link>
-          </li>
-        );
-      })}
-    </ul>
+    <nav className={s["nav-links"]}>
+      <NavLink to="/database-structure" className={getClassNames}>
+        Схема базы данных
+      </NavLink>
+      <NavLink to="/filtering" className={getClassNames}>
+        SELECT
+      </NavLink>
+      <NavLink to="/join" className={getClassNames}>
+        JOIN
+      </NavLink>
+    </nav>
   );
 }
