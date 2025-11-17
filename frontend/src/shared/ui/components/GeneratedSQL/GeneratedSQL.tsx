@@ -25,9 +25,6 @@ export default function GeneratedSQL({
         <button className={clsx("button", s["actions__execute-button"])}>
           Выполнить
         </button>
-        <button className={clsx("button", s["actions_export-csv-button"])}>
-          Экспорт в CSV
-        </button>
       </div>
     </div>
   );
