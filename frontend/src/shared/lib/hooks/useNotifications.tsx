@@ -1,7 +1,6 @@
-import { toast } from "react-toastify";
+import { Theme, toast } from "react-toastify";
 
 type NotificationType = "warn" | "info" | "error" | "success";
-type Theme = "light" | "dark";
 
 function customToast(
   messageType: NotificationType

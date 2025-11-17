@@ -1,18 +1,19 @@
-// src/app/App.tsx
+"use client";
+
 import "@/shared/ui/styles/global.sass";
-import { ThemeProvider } from "@gravity-ui/uikit";
+
 import "@gravity-ui/uikit/styles/fonts.css";
 import "@gravity-ui/uikit/styles/styles.css";
-import { Outlet } from "react-router-dom"; // Добавь этот импорт
+import { ThemeProvider } from "@gravity-ui/uikit";
+
+import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 export default function App() {
   return (
-    <>
+    <ThemeProvider theme="light">
       <ToastContainer />
-      <ThemeProvider theme="light">
-        <Outlet />
-      </ThemeProvider>
-    </>
+      <Outlet />
+    </ThemeProvider>
   );
 }

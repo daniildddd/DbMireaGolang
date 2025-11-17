@@ -6,7 +6,7 @@ import s from "./style.module.sass";
 export default function FilterSelectionGrid({
   handleOpenModal,
 }: {
-  handleOpenModal: (arg0?: any) => void;
+  handleOpenModal: (modalId?: string) => void;
 }) {
   return (
     <div className={s["join-section__grid"]}>

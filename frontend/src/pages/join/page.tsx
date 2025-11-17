@@ -1,20 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TableSelector from "./ui/TableSelector";
 import SqlOutput from "./ui/SqlOutput";
 import { generateSQL } from "./lib/sqlGenerator";
-import AsideTableSelector from "@/shared/ui/components/AsideTableSelector/AsideTableSelector";
-import useTableNames from "@/shared/lib/hooks/useTableNames";
 import s from "./page.module.sass";
 import clsx from "clsx";
-import Header from "@/shared/ui/components/Header/Header";
-import Main from "@/shared/ui/components/Main/Main";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
+import useTableNames from "@/shared/lib/hooks/useTableNames";
+import { TableContext } from "@/shared/context/TableContext";
 
 export default function JoinPage() {
   const tableNames = useTableNames();
-  const [currentTable, setCurrentTable] = useState<string>(tableNames[0]);
+  const [currentTable, setCurrentTable] = useState("");
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
   const [sql, setSql] = useState("");
 
@@ -23,11 +21,16 @@ export default function JoinPage() {
     setSql(query);
   };
 
+  // Устанавливаем первую таблицу при загрузке
+  useEffect(() => {
+    if (tableNames.length > 0 && !currentTable) {
+      setCurrentTable(tableNames[0]);
+    }
+  }, [tableNames, currentTable]);
+
   return (
-    <ContentWrapper>
-      <Header />
-      <AsideTableSelector setCurrentTable={setCurrentTable} />
-      <Main>
+    <TableContext.Provider value={{ currentTable, setCurrentTable }}>
+      <ContentWrapper>
         <section className={clsx("section", s["join-section"])}>
           <div className={s["join-section__header"]}>
             <h1 className={clsx(s["join-section__title"])}>
@@ -55,7 +58,7 @@ export default function JoinPage() {
           </div>
           {sql && <SqlOutput sql={sql} />}
         </section>
-      </Main>
-    </ContentWrapper>
+      </ContentWrapper>
+    </TableContext.Provider>
   );
 }
