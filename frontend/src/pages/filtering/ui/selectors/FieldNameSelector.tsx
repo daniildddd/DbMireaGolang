@@ -4,6 +4,7 @@ import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 import { Api } from "@/shared/lib/api/types";
 import { GlobalContext } from "@/shared/context/GlobalContext";
+import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 
 export default function FieldNameSelector({
   setFieldName,
@@ -11,13 +12,12 @@ export default function FieldNameSelector({
   setFieldName: (arg0: string) => void;
 }) {
   const notifier = useNotifications();
-  const { globalContext } = useContext(GlobalContext);
-  const currentTable = globalContext.currentTable;
+  const { globalContext } = useGlobalContext();
   const [tableSchema, setTableSchema] = useState<Api.TableSchema>([]);
 
   useEffect(() => {
-    if (currentTable !== "") {
-      ApiMiddleware.getTableSchema(currentTable)
+    if (globalContext.currentTable !== "") {
+      ApiMiddleware.getTableSchema(globalContext.currentTable)
         .then((fields) => {
           setTableSchema(fields);
         })
@@ -25,7 +25,7 @@ export default function FieldNameSelector({
     } else {
       notifier.notify("Сначала выберете таблицу!", "warn");
     }
-  }, [currentTable]);
+  }, [globalContext]);
 
   return (
     <Select onUpdate={(value) => setFieldName(value[0])} multiple={false}>

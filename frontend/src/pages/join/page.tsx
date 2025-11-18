@@ -8,11 +8,11 @@ import s from "./page.module.sass";
 import clsx from "clsx";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
-import { GlobalContext } from "@/shared/context/GlobalContext";
+import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 
 export default function JoinPage() {
   const tableNames = useTableNames();
-  const { globalContext, setGlobalContext } = useContext(GlobalContext);
+  const { globalContext, setGlobalContext } = useGlobalContext();
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
   const [sql, setSql] = useState("");
 

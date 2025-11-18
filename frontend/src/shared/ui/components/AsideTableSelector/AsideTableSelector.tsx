@@ -1,12 +1,11 @@
 import s from "./style.module.sass";
 import clsx from "clsx";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
-import { useContext } from "react";
-import { GlobalContext } from "@/shared/context/GlobalContext";
+import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 
 export default function AsideTableSelector() {
   const tableNames = useTableNames();
-  const { globalContext, setGlobalContext } = useContext(GlobalContext);
+  const { globalContext, setGlobalContext } = useGlobalContext();
 
   return (
     <aside className={s.aside}>

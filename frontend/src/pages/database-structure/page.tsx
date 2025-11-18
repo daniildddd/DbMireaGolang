@@ -8,11 +8,11 @@ import s from "./page.module.sass";
 import SchemaTable from "./ui/SchemaTable";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
-import { GlobalContext } from "@/shared/context/GlobalContext";
+import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 
 export default function DatabaseStructurePage() {
   const tableNames = useTableNames();
-  const { globalContext, setGlobalContext } = useContext(GlobalContext);
+  const { globalContext, setGlobalContext } = useGlobalContext();
   const [tableSchema, setTableSchema] = useState<main.FieldSchema[]>([]);
 
   // Устанавливаем первую таблицу при загрузке

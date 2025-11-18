@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import s from "./page.module.sass";
 import clsx from "clsx";
 import WhereModal from "./ui/modals/WhereModal";
@@ -15,11 +15,11 @@ import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper
 import { generateSqlQuery } from "@/features/sqlQueryGenerator/generateSqlQuery";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
 import { Filters, FilterType } from "./types";
-import { GlobalContext } from "@/shared/context/GlobalContext";
+import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
-  const { globalContext, setGlobalContext } = useContext(GlobalContext);
+  const { globalContext, setGlobalContext } = useGlobalContext();
   const [filters, setFilters] = useState<Filters>({
     [FilterType.aggregate]: [],
     [FilterType.where]: [],
