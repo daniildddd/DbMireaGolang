@@ -14,12 +14,12 @@ import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import { generateSqlQuery } from "@/features/sqlQueryGenerator/generateSqlQuery";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
-import { TableContext } from "@/shared/context/TableContext";
 import { Filters, FilterType } from "./types";
+import { GlobalContext } from "@/shared/context/GlobalContext";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
-  const [currentTable, setCurrentTable] = useState("");
+  const { globalContext, setGlobalContext } = useContext(GlobalContext);
   const [filters, setFilters] = useState<Filters>({
     [FilterType.aggregate]: [],
     [FilterType.where]: [],
@@ -28,8 +28,8 @@ export default function FilteringPage() {
     [FilterType.orderBy]: [],
   });
   const query = useMemo(
-    () => generateSqlQuery("*", currentTable, filters),
-    [currentTable, [...Object.values(filters)]]
+    () => generateSqlQuery("*", globalContext.currentTable, filters),
+    [globalContext, [...Object.values(filters)]]
   );
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
@@ -43,38 +43,36 @@ export default function FilteringPage() {
 
   // Устанавливаем первую таблицу при загрузке
   useEffect(() => {
-    if (tableNames.length > 0 && !currentTable) {
-      setCurrentTable(tableNames[0]);
+    if (tableNames.length > 0 && !globalContext.currentTable) {
+      setGlobalContext({ ...globalContext, currentTable: tableNames[0] });
     }
-  }, [tableNames, currentTable]);
+  }, [tableNames, globalContext]);
 
   return (
     <FilterContext.Provider value={{ filters, setFilters }}>
-      <TableContext.Provider value={{ currentTable, setCurrentTable }}>
-        <ContentWrapper>
-          <section className={clsx("section", s["query-section"])}>
-            <FilterSelectionGrid handleOpenModal={handleOpenModal} />
+      <ContentWrapper>
+        <section className={clsx("section", s["query-section"])}>
+          <FilterSelectionGrid handleOpenModal={handleOpenModal} />
 
-            {/* Рендерим только активную модалку */}
-            {activeModal === "whereModal" && (
-              <WhereModal handleCloseModal={handleCloseModal} />
-            )}
-            {activeModal === "orderByModal" && (
-              <OrderByModal handleCloseModal={handleCloseModal} />
-            )}
-            {activeModal === "groupByModal" && (
-              <GroupByModal handleCloseModal={handleCloseModal} />
-            )}
-            {activeModal === "aggregateModal" && (
-              <AggregateModal handleCloseModal={handleCloseModal} />
-            )}
-            {activeModal === "havingModal" && (
-              <HavingModal handleCloseModal={handleCloseModal} />
-            )}
-            <GeneratedSQL query={query} />
-          </section>
-        </ContentWrapper>
-      </TableContext.Provider>
+          {/* Рендерим только активную модалку */}
+          {activeModal === "whereModal" && (
+            <WhereModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "orderByModal" && (
+            <OrderByModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "groupByModal" && (
+            <GroupByModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "aggregateModal" && (
+            <AggregateModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "havingModal" && (
+            <HavingModal handleCloseModal={handleCloseModal} />
+          )}
+          <GeneratedSQL query={query} />
+        </section>
+      </ContentWrapper>
     </FilterContext.Provider>
   );
 }

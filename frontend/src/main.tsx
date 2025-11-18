@@ -4,7 +4,6 @@ import { router } from "./router";
 import { createRoot } from "react-dom/client";
 
 import "@/shared/ui/styles/global.sass";
-import { ToastContainer } from "react-toastify";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

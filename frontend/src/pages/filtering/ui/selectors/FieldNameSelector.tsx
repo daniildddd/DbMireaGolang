@@ -1,9 +1,9 @@
 import { Select } from "@gravity-ui/uikit";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 import { Api } from "@/shared/lib/api/types";
-import { useTableContext } from "@/shared/lib/hooks/useTableContext";
+import { GlobalContext } from "@/shared/context/GlobalContext";
 
 export default function FieldNameSelector({
   setFieldName,
@@ -11,7 +11,8 @@ export default function FieldNameSelector({
   setFieldName: (arg0: string) => void;
 }) {
   const notifier = useNotifications();
-  const { currentTable } = useTableContext();
+  const { globalContext } = useContext(GlobalContext);
+  const currentTable = globalContext.currentTable;
   const [tableSchema, setTableSchema] = useState<Api.TableSchema>([]);
 
   useEffect(() => {

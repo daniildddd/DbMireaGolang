@@ -1,11 +1,12 @@
 import s from "./style.module.sass";
 import clsx from "clsx";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
-import { useTableContext } from "@/shared/lib/hooks/useTableContext";
+import { useContext } from "react";
+import { GlobalContext } from "@/shared/context/GlobalContext";
 
 export default function AsideTableSelector() {
   const tableNames = useTableNames();
-  const { currentTable, setCurrentTable } = useTableContext();
+  const { globalContext, setGlobalContext } = useContext(GlobalContext);
 
   return (
     <aside className={s.aside}>
@@ -15,9 +16,11 @@ export default function AsideTableSelector() {
         {tableNames.map((name) => (
           <li className={s["table-list__item"]} key={name}>
             <button
-              className={clsx("button", { active: name === currentTable })}
+              className={clsx("button", {
+                active: name === globalContext.currentTable,
+              })}
               onClick={() => {
-                setCurrentTable(name);
+                setGlobalContext({ ...globalContext, currentTable: name });
               }}
             >
               {name}
