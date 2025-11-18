@@ -17,7 +17,11 @@ function customToast(
   }
 }
 
-export default function useNotifications() {
+export interface Notifier {
+  notify: (...args: any) => void;
+}
+
+export default function useNotifications(): Notifier {
   return {
     notify: (
       message: string,

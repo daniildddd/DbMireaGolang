@@ -1,4 +1,4 @@
-import { Label, NumberInput } from "@gravity-ui/uikit";
+import { Label } from "@gravity-ui/uikit";
 import { Operator } from "@/types";
 import { useContext, useState } from "react";
 import FieldNameSelector from "../selectors/FieldNameSelector";
@@ -22,9 +22,10 @@ export default function WhereModal({
   min = -Infinity,
   max = +Infinity,
 }: WhereModalParams) {
+  const initialNumberValue = min < 0 ? 0 : min;
   const [fieldName, setFieldName] = useState<string>();
   const [operator, setOperator] = useState<Operator>();
-  const [inputNumber, setInputNumber] = useState<number>(0);
+  const [inputNumber, setInputNumber] = useState<number>(initialNumberValue);
   const { filters, setFilters } = useContext(FilterContext);
 
   return (
@@ -55,12 +56,15 @@ export default function WhereModal({
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
-          <OperatorSelector onUpdate={(value) => setOperator(value[0])} />
+          <OperatorSelector setOperator={setOperator} required={true} />
         </div>
         <div className={s["form__row"]}>
           <Label>Число</Label>
-          <NumberInput
-            placeholder="0"
+          <input
+            required
+            aria-required="true"
+            type="number"
+            placeholder={initialNumberValue.toString()}
             value={inputNumber}
             step={step}
             min={min}

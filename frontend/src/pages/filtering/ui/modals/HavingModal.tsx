@@ -55,7 +55,7 @@ export default function HavingModal({
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
-          <OperatorSelector onUpdate={(value) => setOperator(value[0])} />
+          <OperatorSelector setOperator={setOperator} required={true} />
         </div>
         <div className={s["form__row"]}>
           <Label>Число</Label>

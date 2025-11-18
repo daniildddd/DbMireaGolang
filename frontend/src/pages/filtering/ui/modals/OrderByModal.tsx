@@ -45,7 +45,7 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
-          <OrderingSelector onUpdate={(value) => setOrdering(value[0])} />
+          <OrderingSelector setOrdering={setOrdering} required={true} />
         </div>
       </form>
     </AbstractModal>
