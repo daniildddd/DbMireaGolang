@@ -2,7 +2,6 @@ import { Label } from "@gravity-ui/uikit";
 import { useContext, useState } from "react";
 import FieldNameSelector from "../selectors/FieldNameSelector";
 import s from "./style.module.sass";
-import AggregateSelector from "../selectors/AggregateSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
@@ -45,7 +44,19 @@ export default function AggregateModal({
         </div>
         <div className={s["form__row"]}>
           <Label>Агрегатная функция</Label>
-          <AggregateSelector onUpdate={(value) => setAggregate(value[0])} />
+          <select
+            className="select"
+            multiple={false}
+            required={true}
+            aria-required={true}
+            onChange={(e) => setAggregate(e.target.value)}
+          >
+            <option value="SUM">SUM</option>
+            <option value="COUNT">COUNT</option>
+            <option value="AVG">AVG</option>
+            <option value="MAX">MAX</option>
+            <option value="MIN">MIN</option>
+          </select>
         </div>
       </form>
     </AbstractModal>
