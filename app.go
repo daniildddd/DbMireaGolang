@@ -112,11 +112,13 @@ type SearchFilter struct {
 type SearchOperator string
 
 const (
-	LikeOperator       SearchOperator = "LIKE" // Регистрозависимый LIKE
-	RegexpOperator     SearchOperator = "~"    // Соответствует регулярному выражению (регистрозависимый)
-	IRegexpOperator    SearchOperator = "~*"   // Соответствует регулярному выражению (регистроНЕзависимый)
-	NotRegexpOperator  SearchOperator = "!~"   // НЕ соответствует регулярному выражению (регистрозависимый)
-	NotIRegexpOperator SearchOperator = "!~*"  // НЕ соответствует регулярному выражению (регистроНЕзависимый)
+	LikeOperator         SearchOperator = "LIKE" // Регистрозависимый LIKE
+	RegexpOperator       SearchOperator = "~"    // Соответствует регулярному выражению (регистрозависимый)
+	IRegexpOperator      SearchOperator = "~*"   // Соответствует регулярному выражению (регистроНЕзависимый)
+	NotRegexpOperator    SearchOperator = "!~"   // НЕ соответствует регулярному выражению (регистрозависимый)
+	NotIRegexpOperator   SearchOperator = "!~*"  // НЕ соответствует регулярному выражению (регистроНЕзависимый)
+	SimilarToOperator    SearchOperator = "SIMILAR TO"
+	NotSimilarToOperator SearchOperator = "NOT SIMILAR TO"
 )
 
 // RenameTableRequest - запрос на переименование таблицы
@@ -185,11 +187,13 @@ func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
 
 	// Валидация оператора
 	validOperators := map[SearchOperator]bool{
-		LikeOperator:       true,
-		RegexpOperator:     true,
-		IRegexpOperator:    true,
-		NotRegexpOperator:  true,
-		NotIRegexpOperator: true,
+		LikeOperator:         true,
+		RegexpOperator:       true,
+		IRegexpOperator:      true,
+		NotRegexpOperator:    true,
+		NotIRegexpOperator:   true,
+		SimilarToOperator:    true,
+		NotSimilarToOperator: true,
 	}
 	if !validOperators[req.Filters.Operator] {
 		return TableDataResponse{Error: fmt.Sprintf("Недопустимый оператор поиска: %s", req.Filters.Operator)}
