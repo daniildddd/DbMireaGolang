@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons";
+import Form from "@/shared/ui/components/Form/Form";
 
 interface GroupByModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -41,11 +42,7 @@ export default function GroupByModal({ handleCloseModal }: GroupByModalParams) {
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">Добавить агрегатную функцию</h1>
-      <form
-        id={formId.current}
-        className="form"
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow>
           <Label>Поле</Label>
           <FieldNameSelector register={register} options={{ required: true }} />
@@ -54,7 +51,7 @@ export default function GroupByModal({ handleCloseModal }: GroupByModalParams) {
           handleCloseModal={handleCloseModal}
           formId={formId.current}
         />
-      </form>
+      </Form>
     </AbstractModal>
   );
 }

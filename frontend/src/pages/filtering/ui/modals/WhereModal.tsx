@@ -11,6 +11,7 @@ import { Operator } from "@/types";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons";
+import Form from "@/shared/ui/components/Form/Form";
 
 interface WhereModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -52,11 +53,7 @@ export default function WhereModal({
       <h1 className="h1 filter-modal__title">
         Добавить фильтр (<code className="code">WHERE</code>)
       </h1>
-      <form
-        id={formId.current}
-        className="form"
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow>
           <Label>Поле</Label>
           <FieldNameSelector register={register} />
@@ -81,7 +78,7 @@ export default function WhereModal({
           handleCloseModal={handleCloseModal}
           formId={formId.current}
         />
-      </form>
+      </Form>
     </AbstractModal>
   );
 }

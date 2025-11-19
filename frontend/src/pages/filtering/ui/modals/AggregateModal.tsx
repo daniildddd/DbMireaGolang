@@ -10,6 +10,7 @@ import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons";
 import { Select } from "@/shared/ui/components/Inputs";
+import Form from "@/shared/ui/components/Form/Form";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -48,11 +49,7 @@ export default function AggregateModal({
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">Добавить агрегатную функцию</h1>
-      <form
-        id={formId.current}
-        className="form"
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow>
           <Label>Поле</Label>
           <FieldNameSelector register={register} />
@@ -71,7 +68,7 @@ export default function AggregateModal({
           handleCloseModal={handleCloseModal}
           formId={formId.current}
         />
-      </form>
+      </Form>
     </AbstractModal>
   );
 }

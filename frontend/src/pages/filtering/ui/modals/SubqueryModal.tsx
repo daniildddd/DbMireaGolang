@@ -15,6 +15,7 @@ import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons";
+import Form from "@/shared/ui/components/Form/Form";
 
 interface SubqueryModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -63,11 +64,7 @@ export default function SubqueryModal({
       <h1 className="h1 filter-modal__title">
         Добавить фильтр (<code className="code">WHERE</code>)
       </h1>
-      <form
-        id={formId.current}
-        className="form"
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow>
           <Label>
             Коррелированный подзапрос (добавить в <code>SELECT</code>)
@@ -170,7 +167,7 @@ export default function SubqueryModal({
           handleCloseModal={handleCloseModal}
           formId={formId.current}
         />
-      </form>
+      </Form>
     </AbstractModal>
   );
 }
