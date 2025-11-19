@@ -1,4 +1,4 @@
-import { Label, NumberInput } from "@gravity-ui/uikit";
+import { Label, TextInput } from "@gravity-ui/uikit";
 import { Operator } from "@/types";
 import { useContext, useState } from "react";
 import FieldNameSelector from "../selectors/FieldNameSelector";
@@ -11,35 +11,30 @@ import { FilterType } from "@/pages/filtering/types";
 
 interface WhereModalParams {
   handleCloseModal: (arg0: boolean) => void;
-  step?: number;
-  min?: number;
-  max?: number;
 }
 
-export default function WhereModal({
-  handleCloseModal,
-  step = 1,
-  min = -Infinity,
-  max = +Infinity,
-}: WhereModalParams) {
-  const [fieldName, setFieldName] = useState<string>();
-  const [operator, setOperator] = useState<Operator>();
-  const [inputNumber, setInputNumber] = useState<number>(0);
+export default function WhereModal({ handleCloseModal }: WhereModalParams) {
+  const [fieldName, setFieldName] = useState<string>("");
+  const [operator, setOperator] = useState<Operator>("=");
+  const [inputValue, setInputValue] = useState<string>("");
   const { filters, setFilters } = useContext(FilterContext);
 
+  const handleSubmit = () => {
+    if (!fieldName || !operator || !inputValue.trim()) {
+      alert("Заполните все поля");
+      return;
+    }
+
+    // Если значение - число, не берем в кавычки, иначе берем
+    const value = isNaN(Number(inputValue)) ? `'${inputValue}'` : inputValue;
+    const whereFilter = `${fieldName} ${operator} ${value}`;
+
+    updateFilterValueByType(filters, setFilters, FilterType.where, whereFilter);
+    handleCloseModal(false);
+  };
+
   return (
-    <AbstractModal
-      handleCloseModal={handleCloseModal}
-      onSubmit={() => {
-        const whereFilter = `${fieldName} ${operator} ${inputNumber}`;
-        updateFilterValueByType(
-          filters,
-          setFilters,
-          FilterType.where,
-          whereFilter
-        );
-      }}
-    >
+    <AbstractModal handleCloseModal={handleCloseModal} onSubmit={handleSubmit}>
       <h1 className="h1 filter-modal__title">
         Добавить фильтр (<code className="code">WHERE</code>)
       </h1>
@@ -58,16 +53,11 @@ export default function WhereModal({
           <OperatorSelector onUpdate={(value) => setOperator(value[0])} />
         </div>
         <div className={s["form__row"]}>
-          <Label>Число</Label>
-          <NumberInput
-            placeholder="0"
-            value={inputNumber}
-            step={step}
-            min={min}
-            max={max}
-            onChange={(e) => {
-              setInputNumber(+e.target.value);
-            }}
+          <Label>Значение</Label>
+          <TextInput
+            placeholder="Введите значение для сравнения"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
           />
         </div>
       </form>

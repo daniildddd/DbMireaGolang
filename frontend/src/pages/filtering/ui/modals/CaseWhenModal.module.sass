@@ -1,0 +1,210 @@
+.modal-overlay
+  position: fixed
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  background-color: rgba(0, 0, 0, 0.5)
+  display: flex
+  align-items: center
+  justify-content: center
+  z-index: 1000
+
+.modal
+  background: white
+  border-radius: 8px
+  padding: 24px
+  max-width: 600px
+  width: 90%
+  max-height: 85vh
+  overflow-y: auto
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15)
+
+.modal-title
+  margin: 0 0 20px 0
+  font-size: 20px
+  font-weight: 600
+  color: #333
+
+.mode-selector
+  display: flex
+  gap: 8px
+  margin-bottom: 24px
+  flex-wrap: wrap
+
+.mode-btn
+  padding: 10px 18px
+  border: 1px solid #999
+  background-color: #f5f5f5
+  border-radius: 6px
+  cursor: pointer
+  font-weight: 500
+  font-size: 14px
+  transition: all 0.2s ease
+  color: #333
+  
+  &:hover
+    border-color: #666
+  
+  &.active
+    background: #6b5bb3
+    color: white
+    border-color: #6b5bb3
+
+
+.form-group
+  margin-bottom: 16px
+
+.label
+  display: block
+  margin-bottom: 8px
+  font-weight: 500
+  color: #555
+  font-size: 14px
+
+.input
+  width: 100%
+  padding: 10px 12px
+  border: 1px solid #ddd
+  border-radius: 4px
+  font-size: 14px
+  font-family: inherit
+  
+  &:focus
+    outline: none
+    border-color: #2196F3
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1)
+
+.input-select
+  width: 100%
+  padding: 10px 12px
+  border: 1px solid #ddd
+  border-radius: 4px
+  font-size: 14px
+  font-family: inherit
+  background-color: white
+  cursor: pointer
+  min-height: 38px
+  
+  &:focus
+    outline: none
+    border-color: #2196F3
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1)
+
+.when-then-row
+  display: flex
+  gap: 8px
+  margin-bottom: 12px
+  align-items: flex-start
+
+.when-then-inputs
+  display: grid
+  grid-template-columns: 2fr 1fr 1.5fr 1.5fr
+  gap: 8px
+  flex: 1
+  align-items: flex-start
+
+.coalesce-row
+  display: flex
+  gap: 8px
+  margin-bottom: 8px
+  align-items: center
+
+.btn-add-small
+  width: 100%
+  padding: 12px 16px
+  background: #6b5bb3
+  color: white
+  border: none
+  border-radius: 6px
+  cursor: pointer
+  font-weight: 600
+  font-size: 14px
+  margin-top: 12px
+  transition: all 0.2s ease
+  
+  &:hover
+    background: #5a4a9e
+
+.btn-remove-small
+  padding: 8px 12px
+  background-color: #ff4444
+  color: white
+  border: none
+  border-radius: 4px
+  cursor: pointer
+  font-weight: 600
+  transition: all 0.3s ease
+  min-width: 40px
+  flex-shrink: 0
+  
+  &:hover
+    background-color: #cc0000
+
+.description
+  font-size: 12px
+  color: #666
+  margin-top: 8px
+  font-style: italic
+
+.generated-sql
+  background-color: #f5f5f5
+  border: 1px solid #ddd
+  border-radius: 4px
+  padding: 12px
+  margin: 20px 0 16px 0
+
+.sql-label
+  font-size: 12px
+  font-weight: 600
+  color: #333
+  margin: 0 0 8px 0
+  text-transform: uppercase
+  letter-spacing: 0.5px
+
+.sql-code
+  display: block
+  background-color: white
+  border: 1px solid #ddd
+  border-radius: 4px
+  padding: 10px
+  font-family: 'Courier New', monospace
+  font-size: 13px
+  color: #2196F3
+  word-break: break-all
+  margin: 0
+
+.modal-actions
+  display: flex
+  gap: 12px
+  justify-content: flex-end
+  margin-top: 24px
+  padding-top: 16px
+  border-top: 1px solid #eee
+
+.btn-cancel
+  padding: 10px 20px
+  background-color: #f5f5f5
+  color: #333
+  border: 1px solid #ddd
+  border-radius: 4px
+  cursor: pointer
+  font-weight: 500
+  transition: all 0.2s ease
+  
+  &:hover
+    background-color: #eeeeee
+    border-color: #999
+
+.btn-submit
+  padding: 10px 20px
+  background: #6b5bb3
+  color: white
+  border: none
+  border-radius: 4px
+  cursor: pointer
+  font-weight: 600
+  transition: all 0.2s ease
+  
+  &:hover
+    background: #5a4a9e

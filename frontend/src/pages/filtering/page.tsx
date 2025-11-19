@@ -10,6 +10,8 @@ import HavingModal from "./ui/modals/HavingModal";
 import AggregateModal from "./ui/modals/AggregateModal";
 import GroupByModal from "./ui/modals/GroupByModal";
 import OrderByModal from "./ui/modals/OrderByModal";
+import CaseWhenModal from "./ui/modals/CaseWhenModal";
+import SubqueryModal from "./ui/modals/SubqueryModal";
 import FilterSelectionGrid from "./ui/FilterSelectionGrid/FilterSelectionGrid";
 import FilterContext from "../../shared/context/FilterContext";
 import { CurrentTableContext } from "../../shared/context/CurrentTableContext";
@@ -57,6 +59,12 @@ export default function FilteringPage() {
               )}
               {activeModal === "havingModal" && (
                 <HavingModal handleCloseModal={handleCloseModal} />
+              )}
+              {activeModal === "caseWhenModal" && (
+                <CaseWhenModal handleCloseModal={handleCloseModal} />
+              )}
+              {activeModal === "subqueryModal" && (
+                <SubqueryModal handleCloseModal={handleCloseModal} />
               )}
               <GeneratedSQL currentTable={currentTable} />
             </section>

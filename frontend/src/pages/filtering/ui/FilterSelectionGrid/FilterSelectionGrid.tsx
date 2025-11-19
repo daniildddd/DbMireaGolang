@@ -51,6 +51,22 @@ export default function FilterSelectionGrid({
           onOpenModal={handleOpenModal}
         />
       </JoinSectionCard>
+      <JoinSectionCard>
+        <FilterRow
+          filterType={FilterType.caseWhen}
+          title="Вычисляемые поля (CASE)"
+          buttonText="Добавить CASE"
+          modalId="caseWhenModal"
+          onOpenModal={handleOpenModal}
+        />
+        <FilterRow
+          filterType={FilterType.subquery}
+          title="Подзапросы (EXISTS/ANY/ALL)"
+          buttonText="Добавить подзапрос"
+          modalId="subqueryModal"
+          onOpenModal={handleOpenModal}
+        />
+      </JoinSectionCard>
     </div>
   );
 }

@@ -11,6 +11,8 @@ const FilterContext = createContext<{
     [FilterType.having]: [],
     [FilterType.orderBy]: [],
     [FilterType.groupBy]: [],
+    [FilterType.caseWhen]: [],
+    [FilterType.subquery]: [],
   },
   setFilters: (filters: Filters) => {},
 });

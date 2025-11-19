@@ -11,13 +11,16 @@ export default function PageLinkList() {
   return (
     <nav className={s["nav-links"]}>
       <NavLink to="/database-structure" className={getClassNames}>
-        Схема базы данных
+        Структура БД
       </NavLink>
       <NavLink to="/filtering" className={getClassNames}>
-        SELECT
+        Запросы и фильтрация
       </NavLink>
       <NavLink to="/join" className={getClassNames}>
-        JOIN
+        Соединения (JOIN)
+      </NavLink>
+      <NavLink to="/custom-types" className={getClassNames}>
+        Пользовательские типы
       </NavLink>
     </nav>
   );

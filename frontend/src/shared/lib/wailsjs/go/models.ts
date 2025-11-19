@@ -1,5 +1,55 @@
 export namespace main {
 	
+	export class CustomTypeField {
+	    name: string;
+	    type: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CustomTypeField(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.type = source["type"];
+	    }
+	}
+	export class CreateCustomTypeRequest {
+	    typeName: string;
+	    typeKind: string;
+	    enumValues?: string[];
+	    fields?: CustomTypeField[];
+	
+	    static createFrom(source: any = {}) {
+	        return new CreateCustomTypeRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.typeName = source["typeName"];
+	        this.typeKind = source["typeKind"];
+	        this.enumValues = source["enumValues"];
+	        this.fields = this.convertValues(source["fields"], CustomTypeField);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class CustomQueryRequest {
 	    query: string;
 	
@@ -11,6 +61,77 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.query = source["query"];
 	    }
+	}
+	
+	export class CustomTypeInfo {
+	    typeName: string;
+	    typeKind: string;
+	    definition: string;
+	    fields?: CustomTypeField[];
+	    enumValues?: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new CustomTypeInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.typeName = source["typeName"];
+	        this.typeKind = source["typeKind"];
+	        this.definition = source["definition"];
+	        this.fields = this.convertValues(source["fields"], CustomTypeField);
+	        this.enumValues = source["enumValues"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class CustomTypesListResponse {
+	    types: CustomTypeInfo[];
+	    error?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CustomTypesListResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.types = this.convertValues(source["types"], CustomTypeInfo);
+	        this.error = source["error"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 	export class DeleteFieldRequest {
 	    tableName: string;
@@ -24,6 +145,18 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.tableName = source["tableName"];
 	        this.fieldName = source["fieldName"];
+	    }
+	}
+	export class DropCustomTypeRequest {
+	    typeName: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DropCustomTypeRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.typeName = source["typeName"];
 	    }
 	}
 	export class ForeignKeyConstraint {
@@ -332,6 +465,44 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.tableName = source["tableName"];
 	    }
+	}
+	export class UpdateCustomTypeRequest {
+	    currentTypeName: string;
+	    newTypeName?: string;
+	    typeKind: string;
+	    newEnumValues?: string[];
+	    newFields?: CustomTypeField[];
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateCustomTypeRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.currentTypeName = source["currentTypeName"];
+	        this.newTypeName = source["newTypeName"];
+	        this.typeKind = source["typeKind"];
+	        this.newEnumValues = source["newEnumValues"];
+	        this.newFields = this.convertValues(source["newFields"], CustomTypeField);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 	export class UpdateFieldRequest {
 	    tableName: string;
