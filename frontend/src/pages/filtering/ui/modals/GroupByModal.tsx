@@ -1,14 +1,13 @@
 import { Label } from "@gravity-ui/uikit";
 import { useContext, useRef, useState } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
-import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { useForm } from "react-hook-form";
-import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
+import ModalActionButtons from "./ui/ModalActionButtons";
 
 interface GroupByModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -51,16 +50,10 @@ export default function GroupByModal({ handleCloseModal }: GroupByModalParams) {
           <Label>Поле</Label>
           <FieldNameSelector register={register} options={{ required: true }} />
         </FormRow>
-        <div className="filter-modal__buttons">
-          <CancelButton handleCloseModal={handleCloseModal} />
-          <button
-            type="submit"
-            form={formId.current}
-            className="button important"
-          >
-            Применить
-          </button>
-        </div>
+        <ModalActionButtons
+          handleCloseModal={handleCloseModal}
+          formId={formId.current}
+        />
       </form>
     </AbstractModal>
   );

@@ -13,6 +13,7 @@ import { OperatorOptionSet } from "./ui/predefinedOptionSets";
 import { Operator } from "@/types";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
+import ModalActionButtons from "./ui/ModalActionButtons";
 
 interface WhereModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -79,16 +80,10 @@ export default function WhereModal({
             errors={errors}
           />
         </FormRow>
-        <div className="filter-modal__buttons">
-          <CancelButton handleCloseModal={handleCloseModal} />
-          <button
-            type="submit"
-            form={formId.current}
-            className="button important"
-          >
-            Применить
-          </button>
-        </div>
+        <ModalActionButtons
+          handleCloseModal={handleCloseModal}
+          formId={formId.current}
+        />
       </form>
     </AbstractModal>
   );

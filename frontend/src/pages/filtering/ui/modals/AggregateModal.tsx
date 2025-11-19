@@ -1,16 +1,15 @@
 import { Label } from "@gravity-ui/uikit";
-import { useContext, useRef, useState } from "react";
+import { useContext, useRef } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
-import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { useForm } from "react-hook-form";
 import Select from "@/shared/ui/components/Select/Select";
-import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 import { AggregateOptionSet } from "./ui/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
+import ModalActionButtons from "./ui/ModalActionButtons";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -68,16 +67,10 @@ export default function AggregateModal({
             <AggregateOptionSet />
           </Select>
         </FormRow>
-        <div className="filter-modal__buttons">
-          <CancelButton handleCloseModal={handleCloseModal} />
-          <button
-            type="submit"
-            form={formId.current}
-            className="button important"
-          >
-            Применить
-          </button>
-        </div>
+        <ModalActionButtons
+          handleCloseModal={handleCloseModal}
+          formId={formId.current}
+        />
       </form>
     </AbstractModal>
   );

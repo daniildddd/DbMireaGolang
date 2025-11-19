@@ -5,11 +5,11 @@ import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { useForm } from "react-hook-form";
-import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 import Select from "@/shared/ui/components/Select/Select";
 import { OrderingOptionSet } from "./ui/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
+import ModalActionButtons from "./ui/ModalActionButtons";
 
 interface OrderByModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -66,16 +66,10 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
             <OrderingOptionSet />
           </Select>
         </FormRow>
-        <div className="filter-modal__buttons">
-          <CancelButton handleCloseModal={handleCloseModal} />
-          <button
-            type="submit"
-            form={formId.current}
-            className="button important"
-          >
-            Применить
-          </button>
-        </div>
+        <ModalActionButtons
+          handleCloseModal={handleCloseModal}
+          formId={formId.current}
+        />
       </form>
     </AbstractModal>
   );
