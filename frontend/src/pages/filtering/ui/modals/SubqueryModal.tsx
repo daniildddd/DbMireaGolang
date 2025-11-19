@@ -15,6 +15,7 @@ import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
+import CheckboxInput from "@/shared/ui/components/Inputs/CheckboxInput";
 
 interface SubqueryModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -65,9 +66,10 @@ export default function SubqueryModal({
       </h1>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow label="Коррелированный подзапрос (добавить в SELECT)">
-          <input
-            type="checkbox"
-            {...register("isCorrelated", { required: false })}
+          <CheckboxInput
+            register={register}
+            options={{ required: true }}
+            name="isCorrelated"
           />
         </FormRow>
         {watchIsCorellated && (
@@ -115,9 +117,10 @@ export default function SubqueryModal({
           </Select>
         </FormRow>
         <FormRow label="Добавить условие WHERE">
-          <input
-            type="checkbox"
-            {...register("addWhere", { required: false })}
+          <CheckboxInput
+            name="addWhere"
+            register={register}
+            options={{ required: true }}
           />
         </FormRow>
         {watchAddWhere && (
