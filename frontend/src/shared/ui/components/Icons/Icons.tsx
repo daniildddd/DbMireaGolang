@@ -9,6 +9,8 @@ import {
   BranchesRight,
   Magnifier,
   Layers,
+  TrashBin,
+  Pencil,
 } from "@gravity-ui/icons";
 
 import clsx from "clsx";
@@ -33,6 +35,8 @@ const Icons: { [key: string]: IconComponent } = {
   BranchesRight: addClasses(BranchesRight, "branches-right"),
   Magnifier: addClasses(Magnifier, "magnifier"),
   Stack: addClasses(Layers, "layers"),
+  TrashBin: addClasses(TrashBin, "trash-bin"),
+  Pencil: addClasses(Pencil, "pencil"),
 };
 
 export default Icons;
