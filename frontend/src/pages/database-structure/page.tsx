@@ -3,17 +3,19 @@
 import { useContext, useEffect, useState } from "react";
 import clsx from "clsx";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
-import { main } from "@/shared/lib/wailsjs/go/models";
 import s from "./page.module.sass";
 import SchemaTable from "./ui/SchemaTable";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
 import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
+import useTableSchema from "@/shared/lib/hooks/useTableSchema";
 
 export default function DatabaseStructurePage() {
   const tableNames = useTableNames();
   const { globalContext, setGlobalContext } = useGlobalContext();
-  const [tableSchema, setTableSchema] = useState<main.FieldSchema[]>([]);
+  const { tableSchema, isLoading, refetch } = useTableSchema(
+    globalContext.currentTable
+  );
 
   // Устанавливаем первую таблицу при загрузке
   useEffect(() => {
@@ -23,9 +25,7 @@ export default function DatabaseStructurePage() {
   }, [tableNames, globalContext]);
 
   useEffect(() => {
-    ApiMiddleware.getTableSchema(globalContext.currentTable).then((schema) =>
-      setTableSchema(schema)
-    );
+    refetch();
   }, [globalContext]);
 
   return (
@@ -34,7 +34,11 @@ export default function DatabaseStructurePage() {
         <h2 className={clsx("h2", s["table-section__title"])}>
           Структура таблицы: {globalContext.currentTable}
         </h2>
-        <SchemaTable data={tableSchema} />
+        <SchemaTable
+          tableName={globalContext.currentTable}
+          tableSchema={tableSchema}
+          onRefreshSchema={refetch}
+        />
       </section>
     </ContentWrapper>
   );

@@ -13,7 +13,7 @@ export default function FieldNameSelector({
   options?: object;
   name?: string;
 }) {
-  const tableSchema = useTableSchema();
+  const { tableSchema } = useTableSchema();
 
   return (
     <Select

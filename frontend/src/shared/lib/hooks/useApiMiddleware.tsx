@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import ApiMiddleware from "../api/ApiMiddleware";
 
-export default function useApi() {
+export default function useApiMiddleware() {
   const apiMiddleware = useRef(ApiMiddleware);
-  return apiMiddleware.current;
+  return { apiMiddleware: apiMiddleware.current };
 }
