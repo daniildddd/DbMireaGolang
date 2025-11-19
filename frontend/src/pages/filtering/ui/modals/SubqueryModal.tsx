@@ -36,6 +36,21 @@ interface FormData {
   whereValue: string;
 }
 
+function getSubquerySqlExpression(d: FormData): string {
+  let query = `${d.subqueryOperator} `;
+
+  if (!d.addWhere) {
+    query = `(SELECT ${d.subqueryFieldName} FROM ${d.subqueryTableName})`;
+  } else {
+    query = `(SELECT ${d.subqueryFieldName} FROM ${d.subqueryTableName} WHERE ${d.whereFieldName} ${d.whereOperator} ${d.whereValue})`;
+  }
+
+  if (d.isCorrelated) {
+    query += ` AS ${d.alias}`;
+  }
+  return query;
+}
+
 export default function SubqueryModal({
   handleCloseModal,
 }: SubqueryModalParams) {
@@ -52,9 +67,8 @@ export default function SubqueryModal({
   const watchAddWhere = watch("addWhere");
   const { filters, setFilters } = useContext(FilterContext);
 
-  const onSubmit = (values: FormData) => {
-    console.log(values);
-    const filter = "";
+  const onSubmit = (d: FormData) => {
+    const filter = getSubquerySqlExpression(d);
     updateFilterValueByType(filters, setFilters, FilterType.subquery, filter);
     handleCloseModal(false);
   };

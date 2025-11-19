@@ -7,6 +7,30 @@ function isFilterTypePresent(filters: Filters, type: FilterType): boolean {
   return filters[type].length > 0;
 }
 
+function getFilterIfPresent(
+  filterType: FilterType,
+  filters: Filters,
+  filterName: string = ""
+) {
+  if (isFilterTypePresent(filters, filterType)) {
+    return `\t${filterName.toLocaleUpperCase()} ${filters[filterType].join(
+      " AND "
+    )}\n`; // TODO: сделать умнее если нужно
+  }
+}
+
+function getComplexWhereQuery(filters: Filters) {
+  let query = `WHERE\n`;
+
+  query += getFilterIfPresent(FilterType.where, filters);
+  query += getFilterIfPresent(FilterType.aggregate, filters);
+  query += getFilterIfPresent(FilterType.nullHandlingRule, filters);
+  query += getFilterIfPresent(FilterType.regex, filters);
+  query += getFilterIfPresent(FilterType.subquery, filters);
+
+  return query;
+}
+
 function getSelectFromQuery(
   select: Select = "*",
   tableName: string,
@@ -14,51 +38,25 @@ function getSelectFromQuery(
 ): string {
   let query =
     select === "*"
-      ? "SELECT *"
-      : `${select.map((pair) => `${pair.column}${pair?.as}`).join(", ")} `;
+      ? "SELECT * "
+      : `${select
+          .map((pair) => `${pair.column}${pair?.as}`)
+          .join(", ")} FROM ${tableName}`;
 
-  if (isFilterTypePresent(filters, FilterType.aggregate)) {
-    query += `\tWHERE ${filters[FilterType.aggregate].join(" AND ")}\n`; // TODO: сделать умнее если нужно
+  if (
+    [
+      FilterType.where,
+      FilterType.aggregate,
+      FilterType.nullHandlingRule,
+      FilterType.regex,
+      FilterType.subquery,
+    ].some((type) => isFilterTypePresent(filters, type))
+  ) {
+    query += getComplexWhereQuery(filters);
   }
 
-  if (isFilterTypePresent(filters, FilterType.nullHandlingRule)) {
-    query += `\tWHERE ${filters[FilterType.nullHandlingRule].join(" AND ")}\n`;
-  }
-
-  query += ` FROM ${tableName}\n`;
+  query += `\tFROM ${tableName}`;
   return query;
-}
-
-function getWhereQuery(filters: Filters): string {
-  if (isFilterTypePresent(filters, FilterType.where)) {
-    return `\tWHERE ${filters[FilterType.where].join(" AND ")}\n`; // TODO: сделать умнее если нужно
-  } else {
-    return "";
-  }
-}
-
-function getGroupByQuery(filters: Filters): string {
-  if (isFilterTypePresent(filters, FilterType.groupBy)) {
-    return `\tGROUP BY ${filters[FilterType.groupBy].join(" AND ")}\n`; // TODO: сделать умнее если нужно
-  } else {
-    return "";
-  }
-}
-
-function getHavingQuery(filters: Filters): string {
-  if (isFilterTypePresent(filters, FilterType.having)) {
-    return `\tHAVING ${filters[FilterType.having].join(" AND ")}\n`; // TODO: сделать умнее если нужно
-  } else {
-    return "";
-  }
-}
-
-function getOrderByQuery(filters: Filters): string {
-  if (isFilterTypePresent(filters, FilterType.orderBy)) {
-    return `\tORDER BY ${filters[FilterType.orderBy].join(", ")}`;
-  } else {
-    return "";
-  }
 }
 
 export function generateSqlQuery(
@@ -67,10 +65,9 @@ export function generateSqlQuery(
   filters: Filters
 ) {
   let query = getSelectFromQuery(select, tableName, filters);
-  query += getWhereQuery(filters);
-  query += getGroupByQuery(filters);
-  query += getHavingQuery(filters);
-  query += getOrderByQuery(filters);
+  query += getFilterIfPresent(FilterType.groupBy, filters, "GROUP BY");
+  query += getFilterIfPresent(FilterType.having, filters, "HAVING");
+  query += getFilterIfPresent(FilterType.orderBy, filters, "ORDER BY");
   query = query.trim() + ";";
 
   return query;
