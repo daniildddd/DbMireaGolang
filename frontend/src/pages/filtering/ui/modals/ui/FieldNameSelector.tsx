@@ -6,16 +6,18 @@ export default function FieldNameSelector({
   register,
   multiple = false,
   options = {},
+  name = "fieldName",
 }: {
   register: UseFormRegister<any>;
   multiple?: boolean;
   options?: object;
+  name?: string;
 }) {
   const tableSchema = useTableSchema();
 
   return (
     <Select
-      name="fieldName"
+      name={name}
       multiple={multiple}
       register={register}
       options={{ ...options, required: true }}

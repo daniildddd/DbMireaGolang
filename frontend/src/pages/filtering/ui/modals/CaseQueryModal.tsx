@@ -1,9 +1,143 @@
+import { useContext, useRef } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import FilterContext from "@/shared/context/FilterContext";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
+import FormRow from "../FormRow/FormRow";
+import Form from "@/shared/ui/components/Form/Form";
+import ModalActionButtons from "./ui/ModalActionButtons";
+import { WhenThenCondition } from "@/types";
+import WhenThenRow from "./ui/WhenThenRow";
+import { FilterType } from "@/shared/types/filtering";
+import s from "./style.module.sass";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
 
+interface FormData {
+  resultingFieldName: string;
+  conditions: WhenThenCondition[];
+  elseValue: string;
+}
+
 export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
-  return <AbstractModal handleCloseModal={handleCloseModal}></AbstractModal>;
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
+    defaultValues: {
+      resultingFieldName: "",
+      conditions: [],
+      elseValue: "NULL",
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "conditions",
+  });
+
+  const formId = useRef("case-query-form");
+  const { setFilters } = useContext(FilterContext);
+
+  const onSubmit = (data: FormData) => {
+    console.log("Form Data:", data);
+
+    // Здесь можно обработать данные и добавить фильтр
+    const caseExpression = `CASE ${data.conditions
+      .map(
+        (cond) =>
+          `WHEN ${cond.fieldName} ${cond.operator} ${cond.value} THEN ${cond.resultingValue}`
+      )
+      .join(" ")} ELSE ${data.elseValue} END AS ${data.resultingFieldName}`;
+
+    // Пример обновления фильтров
+    setFilters((prev) => ({
+      ...prev,
+      custom: [...(prev[FilterType.caseQuery] || []), caseExpression],
+    }));
+
+    handleCloseModal(false);
+    reset();
+  };
+
+  return (
+    <AbstractModal handleCloseModal={handleCloseModal}>
+      <Form onSubmit={handleSubmit(onSubmit)} formId={formId.current}>
+        <h2 className="h1 filter-modal__title">
+          Добавить <code>CASE</code> выражение
+        </h2>
+
+        <FormRow label="Имя результирующего поля">
+          <input
+            type="text"
+            {...register("resultingFieldName", {
+              required: "Это поле обязательно",
+            })}
+            className={errors.resultingFieldName ? "input error" : "input"}
+          />
+          {errors.resultingFieldName && (
+            <span className="error-message">
+              {errors.resultingFieldName.message}
+            </span>
+          )}
+        </FormRow>
+
+        <div className={s["when-then-condition-set"]}>
+          <h3>
+            Условия <code>WHEN-THEN</code>
+          </h3>
+
+          <div className={s.conditions}>
+            {fields.map((field, index) => (
+              <WhenThenRow
+                key={field.id}
+                i={index}
+                register={register}
+                removeCondition={() => remove(index)}
+                errors={errors.conditions?.[index]}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              append({
+                fieldName: "",
+                operator: "=",
+                value: "",
+                resultingValue: "",
+              })
+            }
+            className="button add-condition"
+          >
+            + Добавить условие <code>WHEN-THEN</code>
+          </button>
+        </div>
+
+        <FormRow label="ELSE (значение поля по умолчанию)">
+          <input
+            placeholder="NULL"
+            type="text"
+            {...register("elseValue", {
+              required: "Укажите значение по умолчанию",
+            })}
+            className={errors.elseValue ? "input error" : "input"}
+          />
+          {errors.elseValue && (
+            <span className="error-message">{errors.elseValue.message}</span>
+          )}
+        </FormRow>
+
+        <ModalActionButtons
+          handleCloseModal={handleCloseModal}
+          formId={formId.current}
+        />
+      </Form>
+    </AbstractModal>
+  );
 }
