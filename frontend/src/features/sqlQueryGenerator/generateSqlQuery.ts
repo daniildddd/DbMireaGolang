@@ -1,4 +1,4 @@
-import { Filters, FilterType } from "@/app/(pages)/types";
+import { Filters, FilterType } from "@/pages/filtering/types";
 
 export function generateSqlQuery(
   select: { column: string; as?: string }[] | "*" = "*",

@@ -6,20 +6,22 @@
     font-size: inherit
 
 :root
-    width: 100vw
-    height: 100vh
     color: black
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
     font-size: 24px
     overflow: hidden
 
 body
-    height: 100%
+    width: 100vw
+    height: 100vh
 
+#root
+    width: 100%
+    height: 100%
     display: flex
     flex-direction: column
 
-hr
+hr,.hr
     width: 100%
     border-color: colors.$pale-gray-border-clr
 
@@ -41,31 +43,6 @@ hr
 .smaller
     font-size: 0.8em
     color: grey
-
-// === Кнопки ===
-
-.header
-    display: flex
-    flex-direction: column
-    align-items: stretch
-
-    height: clamp(200px,10vh,400px)
-    width: 100%
-    > *
-        padding: 1rem
-
-// === main ===
-.main
-    background: colors.$pale-bg
-    padding: 1rem
-    flex: 1
-    display: flex
-    gap: 1rem
-    >.aside
-        background: white
-    >.section
-        background: white
-        flex: 3
 
 .section
     padding: 1rem

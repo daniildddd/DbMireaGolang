@@ -34,7 +34,7 @@ package.json.md5
 # Frontend
 node_modules
 frontend/.github
-.next
+*.tsbuildinfo
 
 # Output
 coverage/
