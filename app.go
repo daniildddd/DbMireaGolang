@@ -158,6 +158,49 @@ type ForeignKeyConstraint struct {
 	OnUpdate   string   `json:"onUpdate,omitempty"`
 }
 
+// CustomTypeField - описание поля COMPOSITE типа
+type CustomTypeField struct {
+	Name string `json:"name"` // Имя поля
+	Type string `json:"type"` // Тип данных (TEXT, INT, BOOLEAN)
+}
+
+// CreateCustomTypeRequest - запрос на создание нового пользовательского типа
+type CreateCustomTypeRequest struct {
+	TypeName   string            `json:"typeName"`             // Имя нового типа
+	TypeKind   string            `json:"typeKind"`             // "ENUM" или "COMPOSITE"
+	EnumValues []string          `json:"enumValues,omitempty"` // Значения для ENUM
+	Fields     []CustomTypeField `json:"fields,omitempty"`     // Поля для COMPOSITE
+}
+
+// CustomTypeInfo - информация о существующем пользовательском типе
+type CustomTypeInfo struct {
+	TypeName   string            `json:"typeName"`
+	TypeKind   string            `json:"typeKind"`             // ENUM или COMPOSITE
+	Definition string            `json:"definition"`           // Строковое представление
+	Fields     []CustomTypeField `json:"fields,omitempty"`     // Поля для COMPOSITE-типа
+	EnumValues []string          `json:"enumValues,omitempty"` // Значения для ENUM
+}
+
+// CustomTypesListResponse - ответ со списком пользовательских типов
+type CustomTypesListResponse struct {
+	Types []CustomTypeInfo `json:"types"`
+	Error string           `json:"error,omitempty"`
+}
+
+// UpdateCustomTypeRequest - запрос на редактирование типа
+type UpdateCustomTypeRequest struct {
+	CurrentTypeName string            `json:"currentTypeName"`         // Текущее имя типа
+	NewTypeName     string            `json:"newTypeName,omitempty"`   // Новое имя (если переименовываем)
+	TypeKind        string            `json:"typeKind"`                // "ENUM" или "COMPOSITE"
+	NewEnumValues   []string          `json:"newEnumValues,omitempty"` // Новые значения для ENUM
+	NewFields       []CustomTypeField `json:"newFields,omitempty"`     // Новые поля для COMPOSITE
+}
+
+// DropCustomTypeRequest - запрос на удаление пользовательского типа
+type DropCustomTypeRequest struct {
+	TypeName string `json:"typeName"`
+}
+
 // SearchInTable - выполняет поиск по таблице с использованием LIKE или регулярных выражений
 func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
 	if database.DB == nil {
@@ -1031,5 +1074,405 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 	return TableDataResponse{
 		Columns: cols,
 		Rows:    rows,
+	}
+}
+
+// CreateCustomType - создание нового типа (ENUM или COMPOSITE)
+func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.TypeName == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Имя типа не указано",
+			Error:   "type name empty",
+		}
+	}
+
+	if req.TypeKind != "ENUM" && req.TypeKind != "COMPOSITE" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Тип должен быть ENUM или COMPOSITE",
+			Error:   "invalid type kind",
+		}
+	}
+
+	// Проверяем, существует ли уже такой тип
+	var count int64
+	database.DB.Raw(`
+		SELECT COUNT(*) 
+		FROM pg_type t
+		JOIN pg_namespace n ON t.typnamespace = n.oid
+		WHERE n.nspname = 'public' AND t.typname = ?
+	`, req.TypeName).Scan(&count)
+
+	if count > 0 {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Тип '%s' уже существует", req.TypeName),
+			Error:   "type already exists",
+		}
+	}
+
+	var sqlQuery string
+
+	if req.TypeKind == "ENUM" {
+		if len(req.EnumValues) == 0 {
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Для ENUM типа необходимо указать хотя бы одно значение",
+				Error:   "no enum values",
+			}
+		}
+
+		// Экранируем значения для ENUM
+		var escapedValues []string
+		for _, val := range req.EnumValues {
+			escapedValues = append(escapedValues, fmt.Sprintf("'%s'", strings.ReplaceAll(val, "'", "''")))
+		}
+
+		sqlQuery = fmt.Sprintf("CREATE TYPE %s AS ENUM (%s)",
+			req.TypeName,
+			strings.Join(escapedValues, ", "))
+
+	} else { // COMPOSITE
+		if len(req.Fields) == 0 {
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Для COMPOSITE типа необходимо указать хотя бы одно поле",
+				Error:   "no fields",
+			}
+		}
+
+		// Формируем список полей
+		var fieldDefinitions []string
+		for _, field := range req.Fields {
+			if field.Name == "" || field.Type == "" {
+				return RecreateTablesResult{
+					Success: false,
+					Message: "Все поля должны иметь имя и тип",
+					Error:   "invalid field definition",
+				}
+			}
+			fieldDefinitions = append(fieldDefinitions, fmt.Sprintf("%s %s", field.Name, field.Type))
+		}
+
+		sqlQuery = fmt.Sprintf("CREATE TYPE %s AS (%s)",
+			req.TypeName,
+			strings.Join(fieldDefinitions, ", "))
+	}
+
+	err := database.DB.Exec(sqlQuery).Error
+	if err != nil {
+		logger.Error("Ошибка создания типа %s: %v", req.TypeName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось создать тип",
+			Error:   err.Error(),
+		}
+	}
+
+	logger.Info("Тип успешно создан: %s (%s)", req.TypeName, req.TypeKind)
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Тип '%s' успешно создан", req.TypeName),
+	}
+}
+
+// GetCustomTypes - получение списка всех пользовательских типов
+func (a *App) GetCustomTypes() CustomTypesListResponse {
+	if database.DB == nil {
+		return CustomTypesListResponse{Error: "База данных не инициализирована"}
+	}
+
+	// Получаем ENUM типы
+	var enumTypes []struct {
+		TypeName  string
+		EnumLabel string
+	}
+	database.DB.Raw(`
+		SELECT t.typname as type_name, e.enumlabel as enum_label
+		FROM pg_type t
+		JOIN pg_enum e ON t.oid = e.enumtypid
+		JOIN pg_namespace n ON t.typnamespace = n.oid
+		WHERE n.nspname = 'public'
+		ORDER BY t.typname, e.enumsortorder
+	`).Scan(&enumTypes)
+
+	// Группируем ENUM значения по типам
+	enumMap := make(map[string][]string)
+	for _, et := range enumTypes {
+		enumMap[et.TypeName] = append(enumMap[et.TypeName], et.EnumLabel)
+	}
+
+	// Получаем COMPOSITE типы
+	var compositeTypes []struct {
+		TypeName string
+		AttrName string
+		TypeDef  string
+		AttrNum  int
+	}
+	database.DB.Raw(`
+		SELECT 
+			t.typname as type_name,
+			a.attname as attr_name,
+			pg_catalog.format_type(a.atttypid, a.atttypmod) as type_def,
+			a.attnum as attr_num
+		FROM pg_type t
+		JOIN pg_class c ON t.typrelid = c.oid
+		JOIN pg_attribute a ON c.oid = a.attrelid
+		JOIN pg_namespace n ON t.typnamespace = n.oid
+		WHERE n.nspname = 'public' 
+			AND t.typtype = 'c'
+			AND a.attnum > 0
+			AND NOT a.attisdropped
+		ORDER BY t.typname, a.attnum
+	`).Scan(&compositeTypes)
+
+	// Группируем поля COMPOSITE типов
+	compositeMap := make(map[string][]CustomTypeField)
+	for _, ct := range compositeTypes {
+		compositeMap[ct.TypeName] = append(compositeMap[ct.TypeName], CustomTypeField{
+			Name: ct.AttrName,
+			Type: ct.TypeDef,
+		})
+	}
+
+	var result []CustomTypeInfo
+
+	// Добавляем ENUM типы
+	for typeName, values := range enumMap {
+		result = append(result, CustomTypeInfo{
+			TypeName:   typeName,
+			TypeKind:   "ENUM",
+			EnumValues: values,
+			Definition: fmt.Sprintf("ENUM(%s)", strings.Join(values, ", ")),
+		})
+	}
+
+	// Добавляем COMPOSITE типы
+	for typeName, fields := range compositeMap {
+		var fieldStrs []string
+		for _, f := range fields {
+			fieldStrs = append(fieldStrs, fmt.Sprintf("%s %s", f.Name, f.Type))
+		}
+		result = append(result, CustomTypeInfo{
+			TypeName:   typeName,
+			TypeKind:   "COMPOSITE",
+			Fields:     fields,
+			Definition: fmt.Sprintf("(%s)", strings.Join(fieldStrs, ", ")),
+		})
+	}
+
+	return CustomTypesListResponse{Types: result}
+}
+
+// UpdateCustomType - редактирование существующего типа
+func (a *App) UpdateCustomType(req UpdateCustomTypeRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.CurrentTypeName == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Имя текущего типа не указано",
+			Error:   "current type name empty",
+		}
+	}
+
+	// Проверяем существование типа
+	var count int64
+	database.DB.Raw(`
+		SELECT COUNT(*) 
+		FROM pg_type t
+		JOIN pg_namespace n ON t.typnamespace = n.oid
+		WHERE n.nspname = 'public' AND t.typname = ?
+	`, req.CurrentTypeName).Scan(&count)
+
+	if count == 0 {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Тип '%s' не найден", req.CurrentTypeName),
+			Error:   "type not found",
+		}
+	}
+
+	tx := database.DB.Begin()
+	if tx.Error != nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось начать транзакцию",
+			Error:   tx.Error.Error(),
+		}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Переименование типа (если требуется)
+	if req.NewTypeName != "" && req.NewTypeName != req.CurrentTypeName {
+		err := tx.Exec(fmt.Sprintf("ALTER TYPE %s RENAME TO %s",
+			req.CurrentTypeName, req.NewTypeName)).Error
+		if err != nil {
+			tx.Rollback()
+			logger.Error("Ошибка переименования типа %s -> %s: %v", req.CurrentTypeName, req.NewTypeName, err)
+			return RecreateTablesResult{
+				Success: false,
+				Message: "Не удалось переименовать тип",
+				Error:   err.Error(),
+			}
+		}
+		logger.Info("Тип переименован: %s -> %s", req.CurrentTypeName, req.NewTypeName)
+	}
+
+	typeName := req.NewTypeName
+	if typeName == "" {
+		typeName = req.CurrentTypeName
+	}
+
+	// Добавление новых значений для ENUM
+	if req.TypeKind == "ENUM" && len(req.NewEnumValues) > 0 {
+		for _, value := range req.NewEnumValues {
+			err := tx.Exec(fmt.Sprintf("ALTER TYPE %s ADD VALUE IF NOT EXISTS '%s'",
+				typeName, strings.ReplaceAll(value, "'", "''"))).Error
+			if err != nil {
+				tx.Rollback()
+				logger.Error("Ошибка добавления значения '%s' в ENUM %s: %v", value, typeName, err)
+				return RecreateTablesResult{
+					Success: false,
+					Message: fmt.Sprintf("Не удалось добавить значение '%s'", value),
+					Error:   err.Error(),
+				}
+			}
+		}
+	}
+
+	// Добавление новых полей для COMPOSITE
+	if req.TypeKind == "COMPOSITE" && len(req.NewFields) > 0 {
+		for _, field := range req.NewFields {
+			if field.Name == "" || field.Type == "" {
+				tx.Rollback()
+				return RecreateTablesResult{
+					Success: false,
+					Message: "Все поля должны иметь имя и тип",
+					Error:   "invalid field definition",
+				}
+			}
+			err := tx.Exec(fmt.Sprintf("ALTER TYPE %s ADD ATTRIBUTE %s %s",
+				typeName, field.Name, field.Type)).Error
+			if err != nil {
+				tx.Rollback()
+				logger.Error("Ошибка добавления поля %s в COMPOSITE %s: %v", field.Name, typeName, err)
+				return RecreateTablesResult{
+					Success: false,
+					Message: fmt.Sprintf("Не удалось добавить поле '%s'", field.Name),
+					Error:   err.Error(),
+				}
+			}
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		logger.Error("Ошибка фиксации изменений типа %s: %v", typeName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось зафиксировать изменения",
+			Error:   err.Error(),
+		}
+	}
+
+	logger.Info("Тип успешно обновлен: %s", typeName)
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Тип '%s' успешно обновлен", typeName),
+	}
+}
+
+// DropCustomType - удаление пользовательского типа
+func (a *App) DropCustomType(req DropCustomTypeRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.TypeName == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Имя типа не указано",
+			Error:   "type name empty",
+		}
+	}
+
+	// Проверяем существование типа
+	var count int64
+	database.DB.Raw(`
+		SELECT COUNT(*) 
+		FROM pg_type t
+		JOIN pg_namespace n ON t.typnamespace = n.oid
+		WHERE n.nspname = 'public' AND t.typname = ?
+	`, req.TypeName).Scan(&count)
+
+	if count == 0 {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Тип '%s' не найден", req.TypeName),
+			Error:   "type not found",
+		}
+	}
+
+	// Проверяем, не используется ли тип в таблицах
+	var usageCount int64
+	database.DB.Raw(`
+		SELECT COUNT(*)
+		FROM pg_attribute a
+		JOIN pg_class c ON a.attrelid = c.oid
+		JOIN pg_type t ON a.atttypid = t.oid
+		JOIN pg_namespace n ON t.typnamespace = n.oid
+		WHERE n.nspname = 'public' 
+			AND t.typname = ?
+			AND c.relkind = 'r'
+			AND a.attnum > 0
+			AND NOT a.attisdropped
+	`, req.TypeName).Scan(&usageCount)
+
+	if usageCount > 0 {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Тип '%s' используется в таблицах и не может быть удален", req.TypeName),
+			Error:   "type in use",
+		}
+	}
+
+	// Удаляем тип (CASCADE удалит зависимости)
+	err := database.DB.Exec(fmt.Sprintf("DROP TYPE IF EXISTS %s CASCADE", req.TypeName)).Error
+	if err != nil {
+		logger.Error("Ошибка удаления типа %s: %v", req.TypeName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось удалить тип",
+			Error:   err.Error(),
+		}
+	}
+
+	logger.Info("Тип успешно удален: %s", req.TypeName)
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Тип '%s' успешно удален", req.TypeName),
 	}
 }
