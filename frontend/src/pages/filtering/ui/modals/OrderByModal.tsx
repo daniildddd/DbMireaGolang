@@ -1,4 +1,3 @@
-import { Label } from "@gravity-ui/uikit";
 import { useContext, useRef } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
@@ -48,12 +47,10 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
         Добавить сортировку (<code className="code">ORDER BY</code>)
       </h1>
       <Form formId={formId.current} onSubmit={handleSubmit(onSumbit)}>
-        <FormRow>
-          <Label>Агрегат или поле</Label>
+        <FormRow label="Агрегат или поле">
           <FieldNameSelector register={register} />
         </FormRow>
-        <FormRow>
-          <Label>Оператор</Label>
+        <FormRow label="Оператор">
           <Select
             options={{ required: true }}
             name="ordering"

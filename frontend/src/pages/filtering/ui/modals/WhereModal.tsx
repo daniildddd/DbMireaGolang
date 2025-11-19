@@ -1,4 +1,3 @@
-import { Label } from "@gravity-ui/uikit";
 import { useContext, useRef, useState } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
@@ -54,18 +53,15 @@ export default function WhereModal({
         Добавить фильтр (<code className="code">WHERE</code>)
       </h1>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
-        <FormRow>
-          <Label>Поле</Label>
+        <FormRow label="Поле">
           <FieldNameSelector register={register} />
         </FormRow>
-        <FormRow>
-          <Label>Оператор</Label>
+        <FormRow label="Оператор">
           <Select required={true} register={register} name="operator">
             <OperatorOptionSet />
           </Select>
         </FormRow>
-        <FormRow>
-          <Label>Число</Label>
+        <FormRow label="Число">
           <NumberInput
             options={{ min, max, step, required: true }}
             register={register}

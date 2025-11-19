@@ -1,4 +1,3 @@
-import { Label } from "@gravity-ui/uikit";
 import { useContext, useRef } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
@@ -50,12 +49,10 @@ export default function AggregateModal({
     <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">Добавить агрегатную функцию</h1>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
-        <FormRow>
-          <Label>Поле</Label>
+        <FormRow label="Поле">
           <FieldNameSelector register={register} />
         </FormRow>
-        <FormRow>
-          <Label>Агрегатная функция</Label>
+        <FormRow label="Агрегатная функция">
           <Select
             name="aggregate"
             register={register}
