@@ -1,7 +1,6 @@
 import { Label } from "@gravity-ui/uikit";
 import { useContext, useRef } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
-import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
@@ -10,6 +9,7 @@ import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelBut
 import Select from "@/shared/ui/components/Select/Select";
 import { OrderingOptionSet } from "./ui/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
+import FormRow from "../FormRow/FormRow";
 
 interface OrderByModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -51,11 +51,11 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
         className="form"
         onSubmit={handleSubmit(onSumbit)}
       >
-        <div className={s["form__row"]}>
+        <FormRow>
           <Label>Агрегат или поле</Label>
           <FieldNameSelector register={register} />
-        </div>
-        <div className={s["form__row"]}>
+        </FormRow>
+        <FormRow>
           <Label>Оператор</Label>
           <Select
             options={{ required: true }}
@@ -65,7 +65,7 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
           >
             <OrderingOptionSet />
           </Select>
-        </div>
+        </FormRow>
         <div className="filter-modal__buttons">
           <CancelButton handleCloseModal={handleCloseModal} />
           <button

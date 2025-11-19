@@ -12,6 +12,7 @@ import Select from "@/shared/ui/components/Select/Select";
 import { Operator } from "@/types";
 import { OperatorOptionSet } from "./ui/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
+import FormRow from "../FormRow/FormRow";
 
 interface HavingModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -62,11 +63,11 @@ export default function HavingModal({
         className="form"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className={s["form__row"]}>
+        <FormRow>
           <Label>Агрегат или поле</Label>
           <FieldNameSelector register={register} />
-        </div>
-        <div className={s["form__row"]}>
+        </FormRow>
+        <FormRow>
           <Label>Оператор</Label>
           <Select
             register={register}
@@ -75,8 +76,8 @@ export default function HavingModal({
           >
             <OperatorOptionSet />
           </Select>
-        </div>
-        <div className={s["form__row"]}>
+        </FormRow>
+        <FormRow>
           <Label>Число</Label>
           <NumberInput
             required={true}
@@ -85,7 +86,7 @@ export default function HavingModal({
             register={register}
             errors={errors}
           />
-        </div>
+        </FormRow>
         <div className="filter-modal__buttons">
           <CancelButton handleCloseModal={handleCloseModal} />
           <button

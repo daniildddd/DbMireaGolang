@@ -10,6 +10,7 @@ import Select from "@/shared/ui/components/Select/Select";
 import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 import { AggregateOptionSet } from "./ui/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
+import FormRow from "../FormRow/FormRow";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -53,11 +54,11 @@ export default function AggregateModal({
         className="form"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className={s["form__row"]}>
+        <FormRow>
           <Label>Поле</Label>
           <FieldNameSelector register={register} />
-        </div>
-        <div className={s["form__row"]}>
+        </FormRow>
+        <FormRow>
           <Label>Агрегатная функция</Label>
           <Select
             name="aggregate"
@@ -66,7 +67,7 @@ export default function AggregateModal({
           >
             <AggregateOptionSet />
           </Select>
-        </div>
+        </FormRow>
         <div className="filter-modal__buttons">
           <CancelButton handleCloseModal={handleCloseModal} />
           <button

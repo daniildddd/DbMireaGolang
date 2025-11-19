@@ -16,6 +16,7 @@ import useTableNames from "@/shared/lib/hooks/useTableNames";
 import useTableSchema from "@/shared/lib/hooks/useTableSchema";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/shared/types/filtering";
+import FormRow from "../FormRow/FormRow";
 
 interface SubqueryModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -69,7 +70,7 @@ export default function SubqueryModal({
         className="form"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className={s["form__row"]}>
+        <FormRow>
           <Label>
             Коррелированный подзапрос (добавить в <code>SELECT</code>)
           </Label>
@@ -77,36 +78,36 @@ export default function SubqueryModal({
             type="checkbox"
             {...register("isCorrelated", { required: false })}
           />
-        </div>
+        </FormRow>
         {watchIsCorellated && (
-          <div className={s["form__row"]}>
+          <FormRow>
             <Label>
               Имя поля (<code>alias</code>)
             </Label>
             <input type="text" {...register("alias")} />
-          </div>
+          </FormRow>
         )}
         {!watchIsCorellated && (
           <>
-            <div className="form__row">
+            <FormRow>
               <Label>Тип подзапроса</Label>
               <Select name="subqueryType" register={register}>
                 <SubqueryOptionSet />
               </Select>
-            </div>
-            <div className="form__row">
+            </FormRow>
+            <FormRow>
               <Label>Поле для сравнения</Label>
               <FieldNameSelector register={register} />
-            </div>
-            <div className="form__row">
+            </FormRow>
+            <FormRow>
               <Label>Оператор</Label>
               <Select register={register} name="operator">
                 <OperatorOptionSet />
               </Select>
-            </div>
+            </FormRow>
           </>
         )}
-        <div className="form__row">
+        <FormRow>
           <Label>Таблица подзапроса</Label>
           <Select register={register} name="subqueryTableName">
             {tableNames.map((name) => (
@@ -115,8 +116,8 @@ export default function SubqueryModal({
               </option>
             ))}
           </Select>
-        </div>
-        <div className="form__row">
+        </FormRow>
+        <FormRow>
           <Label>Поле для выборки</Label>
           <Select register={register} name="subqueryFieldName">
             {/*            
@@ -129,8 +130,8 @@ export default function SubqueryModal({
               </option>
             ))} */}
           </Select>
-        </div>
-        <div className={s["form__row"]}>
+        </FormRow>
+        <FormRow>
           <Label>
             Добавить условие <code>WHERE</code>
           </Label>
@@ -138,12 +139,13 @@ export default function SubqueryModal({
             type="checkbox"
             {...register("addWhere", { required: false })}
           />
-        </div>
+        </FormRow>
         {watchAddWhere && (
           <>
-            <Label>Поле</Label>
-            <Select register={register} name="whereFieldName">
-              {/*             
+            <FormRow>
+              <Label>Поле</Label>
+              <Select register={register} name="whereFieldName">
+                {/*             
             {useTableSchema().map((field) => (
                 <option
                   key={`${field.name}-${field.type}`}
@@ -152,17 +154,18 @@ export default function SubqueryModal({
                   {field.name} ({field.type})
                 </option>
               ))} */}
-            </Select>
-            <div className="form__row">
+              </Select>
+            </FormRow>
+            <FormRow>
               <Label>Оператор</Label>
               <Select register={register} name="whereOperator">
                 <OperatorOptionSet />
               </Select>
-            </div>
-            <div className="form__row">
+            </FormRow>
+            <FormRow>
               <Label>Значение</Label>
               <input type="text" {...register("whereValue")} />
-            </div>
+            </FormRow>
           </>
         )}
         <div className="filter-modal__buttons">

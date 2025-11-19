@@ -8,6 +8,7 @@ import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { useForm } from "react-hook-form";
 import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 import { FilterType } from "@/shared/types/filtering";
+import FormRow from "../FormRow/FormRow";
 
 interface GroupByModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -46,10 +47,10 @@ export default function GroupByModal({ handleCloseModal }: GroupByModalParams) {
         className="form"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className={s["form__row"]}>
+        <FormRow>
           <Label>Поле</Label>
           <FieldNameSelector register={register} options={{ required: true }} />
-        </div>
+        </FormRow>
         <div className="filter-modal__buttons">
           <CancelButton handleCloseModal={handleCloseModal} />
           <button

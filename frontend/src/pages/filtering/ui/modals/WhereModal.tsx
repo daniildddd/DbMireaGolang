@@ -12,6 +12,7 @@ import Select from "@/shared/ui/components/Select/Select";
 import { OperatorOptionSet } from "./ui/predefinedOptionSets";
 import { Operator } from "@/types";
 import { FilterType } from "@/shared/types/filtering";
+import FormRow from "../FormRow/FormRow";
 
 interface WhereModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -58,17 +59,17 @@ export default function WhereModal({
         className="form"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className={s["form__row"]}>
+        <FormRow>
           <Label>Поле</Label>
           <FieldNameSelector register={register} />
-        </div>
-        <div className={s["form__row"]}>
+        </FormRow>
+        <FormRow>
           <Label>Оператор</Label>
           <Select required={true} register={register} name="operator">
             <OperatorOptionSet />
           </Select>
-        </div>
-        <div className={s["form__row"]}>
+        </FormRow>
+        <FormRow>
           <Label>Число</Label>
           <NumberInput
             required={true}
@@ -77,7 +78,7 @@ export default function WhereModal({
             name="number"
             errors={errors}
           />
-        </div>
+        </FormRow>
         <div className="filter-modal__buttons">
           <CancelButton handleCloseModal={handleCloseModal} />
           <button
