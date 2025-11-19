@@ -1,13 +1,17 @@
 import { Label } from "@gravity-ui/uikit";
-import { Operator } from "@/types";
-import { useContext, useState } from "react";
-import FieldNameSelector from "../selectors/FieldNameSelector";
-import OperatorSelector from "../selectors/OperatorSelector";
+import { useContext, useRef, useState } from "react";
+import FieldNameSelector from "./ui/FieldNameSelector";
 import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/pages/filtering/types";
+import { useForm } from "react-hook-form";
+import NumberInput from "@/shared/ui/components/NumberInput/NumberInput";
+import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
+import Select from "@/shared/ui/components/Select/Select";
+import { OperatorOptionSet } from "./ui/predefinedOptionSets";
+import { Operator } from "@/types";
 
 interface WhereModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -16,63 +20,73 @@ interface WhereModalParams {
   max?: number;
 }
 
+interface FormData {
+  fieldName: string;
+  operator: Operator;
+  number: number;
+}
+
 export default function WhereModal({
   handleCloseModal,
   step = 1,
   min = -Infinity,
   max = +Infinity,
 }: WhereModalParams) {
-  const initialNumberValue = min < 0 ? 0 : min;
-  const [fieldName, setFieldName] = useState<string>();
-  const [operator, setOperator] = useState<Operator>();
-  const [inputNumber, setInputNumber] = useState<number>(initialNumberValue);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+  const formId = useRef("where-form");
   const { filters, setFilters } = useContext(FilterContext);
 
+  const onSubmit = (values: FormData) => {
+    const whereFilter = `${values.fieldName} ${values.operator} ${values.number}`;
+
+    updateFilterValueByType(filters, setFilters, FilterType.where, whereFilter);
+
+    handleCloseModal(false);
+  };
+
   return (
-    <AbstractModal
-      handleCloseModal={handleCloseModal}
-      onSubmit={() => {
-        const whereFilter = `${fieldName} ${operator} ${inputNumber}`;
-        updateFilterValueByType(
-          filters,
-          setFilters,
-          FilterType.where,
-          whereFilter
-        );
-      }}
-    >
+    <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">
         Добавить фильтр (<code className="code">WHERE</code>)
       </h1>
       <form
-        action="."
-        method="post"
-        id="where-form"
-        className="form where-form"
+        id={formId.current}
+        className="form"
+        onSubmit={handleSubmit(onSubmit)}
       >
         <div className={s["form__row"]}>
           <Label>Поле</Label>
-          <FieldNameSelector setFieldName={setFieldName} />
+          <FieldNameSelector register={register} />
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
-          <OperatorSelector setOperator={setOperator} required={true} />
+          <Select required={true} register={register} name="operator">
+            <OperatorOptionSet />
+          </Select>
         </div>
         <div className={s["form__row"]}>
           <Label>Число</Label>
-          <input
-            required
-            aria-required="true"
-            type="number"
-            placeholder={initialNumberValue.toString()}
-            value={inputNumber}
-            step={step}
-            min={min}
-            max={max}
-            onChange={(e) => {
-              setInputNumber(+e.target.value);
-            }}
+          <NumberInput
+            required={true}
+            options={{ min, max, step }}
+            register={register}
+            name="number"
+            errors={errors}
           />
+        </div>
+        <div className="filter-modal__buttons">
+          <CancelButton handleCloseModal={handleCloseModal} />
+          <button
+            type="submit"
+            form={formId.current}
+            className="button important"
+          >
+            Применить
+          </button>
         </div>
       </form>
     </AbstractModal>

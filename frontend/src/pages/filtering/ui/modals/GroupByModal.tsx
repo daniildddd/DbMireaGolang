@@ -1,43 +1,64 @@
 import { Label } from "@gravity-ui/uikit";
-import { useContext, useState } from "react";
-import FieldNameSelector from "../selectors/FieldNameSelector";
+import { useContext, useRef, useState } from "react";
+import FieldNameSelector from "./ui/FieldNameSelector";
 import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/pages/filtering/types";
+import { useForm } from "react-hook-form";
+import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 
 interface GroupByModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
 
+interface FormData {
+  fieldName: string;
+}
+
 export default function GroupByModal({ handleCloseModal }: GroupByModalParams) {
-  const [fieldName, setFieldName] = useState<string>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+  const formId = useRef("group-by-form");
   const { filters, setFilters } = useContext(FilterContext);
 
+  const onSubmit = (values: FormData) => {
+    const groupByFilter = `${values.fieldName}`;
+    updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.groupBy,
+      groupByFilter
+    );
+
+    handleCloseModal(false);
+  };
+
   return (
-    <AbstractModal
-      handleCloseModal={handleCloseModal}
-      onSubmit={() => {
-        const groupByFilter = `${fieldName}`;
-        updateFilterValueByType(
-          filters,
-          setFilters,
-          FilterType.groupBy,
-          groupByFilter
-        );
-      }}
-    >
+    <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">Добавить агрегатную функцию</h1>
       <form
-        action="."
-        method="post"
-        id="where-form"
-        className="form where-form"
+        id={formId.current}
+        className="form"
+        onSubmit={handleSubmit(onSubmit)}
       >
         <div className={s["form__row"]}>
           <Label>Поле</Label>
-          <FieldNameSelector setFieldName={setFieldName} />
+          <FieldNameSelector register={register} options={{ required: true }} />
+        </div>
+        <div className="filter-modal__buttons">
+          <CancelButton handleCloseModal={handleCloseModal} />
+          <button
+            type="submit"
+            form={formId.current}
+            className="button important"
+          >
+            Применить
+          </button>
         </div>
       </form>
     </AbstractModal>

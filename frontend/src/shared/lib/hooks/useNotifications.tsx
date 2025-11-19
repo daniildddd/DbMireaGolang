@@ -17,23 +17,32 @@ function customToast(
   }
 }
 
+function notify(
+  message: string,
+  type: NotificationType = "info",
+  theme: Theme = "light"
+) {
+  customToast(type)(message, {
+    position: "bottom-right",
+    autoClose: 5000,
+    pauseOnHover: true,
+    theme,
+  });
+}
+
 export interface Notifier {
-  notify: (...args: any) => void;
+  notify: (message: string, type: NotificationType, theme?: Theme) => void;
+  error: (message: string, theme?: Theme) => void;
+  warn: (message: string, theme?: Theme) => void;
+  success: (message: string, theme?: Theme) => void;
 }
 
 export default function useNotifications(): Notifier {
-  return {
-    notify: (
-      message: string,
-      type: NotificationType = "info",
-      theme: Theme = "light"
-    ) => {
-      customToast(type)(message, {
-        position: "bottom-right",
-        autoClose: 5000,
-        pauseOnHover: true,
-        theme,
-      });
-    },
+  const notifier: Notifier = {
+    notify: notify,
+    warn: (message, theme) => notify(message, "warn", theme),
+    error: (message, theme) => notify(message, "error", theme),
+    success: (message, theme) => notify(message, "success", theme),
   };
+  return notifier;
 }

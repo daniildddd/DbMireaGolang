@@ -1,51 +1,81 @@
 import { Label } from "@gravity-ui/uikit";
-import { useState, useContext } from "react";
-import FieldNameSelector from "../selectors/FieldNameSelector";
+import { useContext, useRef } from "react";
+import FieldNameSelector from "./ui/FieldNameSelector";
 import s from "./style.module.sass";
-import OrderingSelector from "../selectors/OrderingSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/pages/filtering/types";
+import { useForm } from "react-hook-form";
+import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
+import Select from "@/shared/ui/components/Select/Select";
+import { OrderingOptionSet } from "./ui/predefinedOptionSets";
+import { Operator } from "@/types";
 
 interface OrderByModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
 
+interface FormData {
+  fieldName: string;
+  ordering: string;
+}
+
 export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
-  const [fieldName, setFieldName] = useState<string>();
-  const [ordering, setOrdering] = useState<string>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+  const formId = useRef("order-by-form");
   const { filters, setFilters } = useContext(FilterContext);
 
+  const onSumbit = (values: FormData) => {
+    const orderByFilter = `${values.fieldName} ${values.ordering}`;
+    updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.orderBy,
+      orderByFilter
+    );
+
+    handleCloseModal(false);
+  };
+
   return (
-    <AbstractModal
-      handleCloseModal={handleCloseModal}
-      onSubmit={() => {
-        const orderByFilter = `${fieldName} ${ordering}`;
-        updateFilterValueByType(
-          filters,
-          setFilters,
-          FilterType.orderBy,
-          orderByFilter
-        );
-      }}
-    >
+    <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">
         Добавить сортировку (<code className="code">ORDER BY</code>)
       </h1>
       <form
-        action="."
-        method="post"
-        id="where-form"
-        className="form where-form"
+        id={formId.current}
+        className="form"
+        onSubmit={handleSubmit(onSumbit)}
       >
         <div className={s["form__row"]}>
           <Label>Агрегат или поле</Label>
-          <FieldNameSelector setFieldName={setFieldName} />
+          <FieldNameSelector register={register} />
         </div>
         <div className={s["form__row"]}>
           <Label>Оператор</Label>
-          <OrderingSelector setOrdering={setOrdering} required={true} />
+          <Select
+            options={{ required: true }}
+            name="ordering"
+            multiple={false}
+            register={register}
+          >
+            <OrderingOptionSet />
+          </Select>
+        </div>
+        <div className="filter-modal__buttons">
+          <CancelButton handleCloseModal={handleCloseModal} />
+          <button
+            type="submit"
+            form={formId.current}
+            className="button important"
+          >
+            Применить
+          </button>
         </div>
       </form>
     </AbstractModal>

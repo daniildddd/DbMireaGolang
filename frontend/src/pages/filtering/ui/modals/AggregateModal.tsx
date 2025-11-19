@@ -1,62 +1,81 @@
 import { Label } from "@gravity-ui/uikit";
-import { useContext, useState } from "react";
-import FieldNameSelector from "../selectors/FieldNameSelector";
+import { useContext, useRef, useState } from "react";
+import FieldNameSelector from "./ui/FieldNameSelector";
 import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/pages/filtering/types";
+import { useForm } from "react-hook-form";
+import Select from "@/shared/ui/components/Select/Select";
+import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
+import { AggregateOptionSet } from "./ui/predefinedOptionSets";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
 
+interface FormData {
+  fieldName: string;
+  aggregate: string;
+}
+
 export default function AggregateModal({
   handleCloseModal,
 }: AggregateModalParams) {
-  const [fieldName, setFieldName] = useState<string>();
-  const [aggregate, setAggregate] = useState<string>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+  const formId = useRef("aggregate-form");
   const { filters, setFilters } = useContext(FilterContext);
 
+  const onSubmit = (data: FormData) => {
+    console.log(data);
+
+    const aggregateFilter = `${data.aggregate}(${data.fieldName})`;
+    updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.aggregate,
+      aggregateFilter
+    );
+
+    handleCloseModal(false);
+  };
+
   return (
-    <AbstractModal
-      handleCloseModal={handleCloseModal}
-      onSubmit={() => {
-        const aggregateFilter = `${aggregate}(${fieldName})`;
-        updateFilterValueByType(
-          filters,
-          setFilters,
-          FilterType.aggregate,
-          aggregateFilter
-        );
-      }}
-    >
+    <AbstractModal handleCloseModal={handleCloseModal}>
       <h1 className="h1 filter-modal__title">Добавить агрегатную функцию</h1>
       <form
-        action="."
-        method="post"
-        id="where-form"
-        className="form where-form"
+        id={formId.current}
+        className="form"
+        onSubmit={handleSubmit(onSubmit)}
       >
         <div className={s["form__row"]}>
           <Label>Поле</Label>
-          <FieldNameSelector setFieldName={setFieldName} />
+          <FieldNameSelector register={register} />
         </div>
         <div className={s["form__row"]}>
           <Label>Агрегатная функция</Label>
-          <select
-            className="select"
-            multiple={false}
-            required={true}
-            aria-required={true}
-            onChange={(e) => setAggregate(e.target.value)}
+          <Select
+            name="aggregate"
+            register={register}
+            options={{ required: true }}
           >
-            <option value="SUM">SUM</option>
-            <option value="COUNT">COUNT</option>
-            <option value="AVG">AVG</option>
-            <option value="MAX">MAX</option>
-            <option value="MIN">MIN</option>
-          </select>
+            <AggregateOptionSet />
+          </Select>
+        </div>
+        <div className="filter-modal__buttons">
+          <CancelButton handleCloseModal={handleCloseModal} />
+          <button
+            type="submit"
+            form={formId.current}
+            className="button important"
+          >
+            Применить
+          </button>
         </div>
       </form>
     </AbstractModal>

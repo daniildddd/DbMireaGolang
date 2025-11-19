@@ -38,9 +38,7 @@ func main() {
 		// Отключение изменения размера окна
 		MinWidth:          1280,
 		MinHeight:         800,
-		MaxWidth:          1280,
-		MaxHeight:         800,
-		DisableResize:     true,
+		DisableResize:     false,
 		Fullscreen:        false,
 		Frameless:         false,
 		StartHidden:       false,

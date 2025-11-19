@@ -1,28 +1,27 @@
-import { ChangeEvent, PropsWithChildren } from "react";
+import { HTMLProps, PropsWithChildren } from "react";
+import { UseFormRegister } from "react-hook-form";
 
-interface SelectProps extends PropsWithChildren {
+interface SelectProps extends PropsWithChildren, HTMLProps<HTMLSelectElement> {
   name: string;
-  required: boolean;
   multiple?: boolean;
-  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+  register: UseFormRegister<any>;
+  options?: object;
 }
 
 export default function Select({
   children,
   name,
-  required,
-  onChange,
+  register,
+  options,
   multiple = false,
 }: SelectProps) {
   return (
     <select
       name={name}
       id={`${name}-select`}
-      required={required}
-      aria-required={required}
-      onChange={onChange}
       multiple={multiple}
       className="select"
+      {...register(name, options)}
     >
       {children}
     </select>

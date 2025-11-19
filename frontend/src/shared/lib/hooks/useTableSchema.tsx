@@ -10,20 +10,12 @@ export default function useTableSchema() {
   const [tableSchema, setTableSchema] = useState<main.FieldSchema[]>();
 
   useEffect(() => {
-    if (!globalContext.currentTable) {
-      notifier.notify(
-        "Сначала выберете таблицу, с которой хотите работать",
-        "warn"
-      );
-      return;
-    }
-
     ApiMiddleware.getTableSchema(globalContext.currentTable)
       .then((fields) => {
         setTableSchema(fields);
       })
-      .catch((err) => notifier.notify(err, "error"));
+      .catch((err) => notifier.error(err));
   }, [globalContext]);
 
-  return { tableSchema, setTableSchema };
+  return tableSchema;
 }
