@@ -67,8 +67,7 @@ export default function WhereModal({
         <FormRow>
           <Label>Число</Label>
           <NumberInput
-            required={true}
-            options={{ min, max, step }}
+            options={{ min, max, step, required: true }}
             register={register}
             name="number"
             errors={errors}

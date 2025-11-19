@@ -75,9 +75,8 @@ export default function HavingModal({
         <FormRow>
           <Label>Число</Label>
           <NumberInput
-            required={true}
             name="number"
-            options={{ min, max, step }}
+            options={{ min, max, step, required: true }}
             register={register}
             errors={errors}
           />
