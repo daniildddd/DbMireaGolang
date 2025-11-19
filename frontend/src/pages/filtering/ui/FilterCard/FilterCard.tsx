@@ -1,9 +1,9 @@
-import { Filters, FilterType } from "@/pages/filtering/types";
 import FilterContext from "@/shared/context/FilterContext";
 import Icons from "@/shared/ui/components/Icons/Icons";
 import clsx from "clsx";
 import s from "./style.module.sass";
 import { useContext } from "react";
+import { Filters, FilterType } from "@/shared/types/filtering";
 
 function removeFilter(
   filters: Filters,

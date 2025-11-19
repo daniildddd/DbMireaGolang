@@ -5,13 +5,13 @@ import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
-import { FilterType } from "@/pages/filtering/types";
 import { useForm } from "react-hook-form";
 import NumberInput from "@/shared/ui/components/NumberInput/NumberInput";
 import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 import Select from "@/shared/ui/components/Select/Select";
 import { OperatorOptionSet } from "./ui/predefinedOptionSets";
 import { Operator } from "@/types";
+import { FilterType } from "@/shared/types/filtering";
 
 interface WhereModalParams {
   handleCloseModal: (arg0: boolean) => void;

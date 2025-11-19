@@ -5,11 +5,11 @@ import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
-import { FilterType } from "@/pages/filtering/types";
 import { useForm } from "react-hook-form";
 import Select from "@/shared/ui/components/Select/Select";
 import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
 import { AggregateOptionSet } from "./ui/predefinedOptionSets";
+import { FilterType } from "@/shared/types/filtering";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;

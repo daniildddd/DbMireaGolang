@@ -14,24 +14,16 @@ import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import { generateSqlQuery } from "@/features/sqlQueryGenerator/generateSqlQuery";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
-import { Filters, FilterType } from "./types";
 import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
+import { EMPTY_FILTERS } from "@/shared/const";
+import { Filters } from "@/shared/types/filtering";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
   const { globalContext, setGlobalContext } = useGlobalContext();
-  const [filters, setFilters] = useState<Filters>({
-    [FilterType.aggregate]: [],
-    [FilterType.where]: [],
-    [FilterType.having]: [],
-    [FilterType.groupBy]: [],
-    [FilterType.orderBy]: [],
-  });
-  const query = useMemo(
-    () => generateSqlQuery("*", globalContext.currentTable, filters),
-    [globalContext, [...Object.values(filters)]]
-  );
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const query = generateSqlQuery("*", globalContext.currentTable, filters);
 
   const handleOpenModal = (modalId: string) => {
     setActiveModal(modalId);

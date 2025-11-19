@@ -1,4 +1,4 @@
-import { FilterType } from "@/pages/filtering/types";
+import { FilterType } from "@/shared/types/filtering";
 import FilterRow from "../FilterRow/FIlterRow";
 import JoinSectionCard from "../JoinSectionCard/JoinSectionCard";
 import s from "./style.module.sass";

@@ -3,8 +3,8 @@ import clsx from "clsx";
 import { useContext } from "react";
 import FilterList from "../FilterList/FilterList";
 import FilterCard from "../FilterCard/FilterCard";
-import FilterContext from "../../../../shared/context/FilterContext";
-import { FilterType } from "@/pages/filtering/types";
+import FilterContext from "@/shared/context/FilterContext";
+import { FilterType } from "@/shared/types/filtering";
 
 export default function FilterRow({
   title,

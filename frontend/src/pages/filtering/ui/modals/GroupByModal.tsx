@@ -5,9 +5,9 @@ import s from "./style.module.sass";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
-import { FilterType } from "@/pages/filtering/types";
 import { useForm } from "react-hook-form";
 import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
+import { FilterType } from "@/shared/types/filtering";
 
 interface GroupByModalParams {
   handleCloseModal: (arg0: boolean) => void;

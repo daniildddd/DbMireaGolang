@@ -1,4 +1,4 @@
-import { Filters, FilterType } from "@/pages/filtering/types";
+import { Filters, FilterType } from "@/shared/types/filtering";
 
 export default function updateFilterValueByType(
   filters: Filters,

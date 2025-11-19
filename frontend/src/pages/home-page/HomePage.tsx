@@ -17,12 +17,12 @@ export default function HomePage() {
       const result = await ApiMiddleware.recreateTables();
       if (result.success) {
         setTablesCreated(true);
-        notifier.notify("Таблицы успешно созданы", "success");
+        notifier.success("Таблицы успешно созданы");
       } else {
-        notifier.notify(result.message, "error");
+        notifier.error(result.message);
       }
     } else {
-      notifier.notify("Таблицы уже существуют");
+      notifier.error("Таблицы уже существуют");
     }
   };
 
