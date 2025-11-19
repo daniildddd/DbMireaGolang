@@ -1,9 +1,9 @@
 import { UseFormRegister } from "react-hook-form";
 
 interface NumberInputProps {
-  register: UseFormRegister<any>;
   placeholder?: string;
   name: string;
+  register: UseFormRegister<any>;
   options?: any;
   errors: any;
 }

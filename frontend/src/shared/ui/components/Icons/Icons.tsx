@@ -1,25 +1,38 @@
-import { Xmark } from "@gravity-ui/icons";
-import { Check } from "@gravity-ui/icons";
-import { AbbrSql } from "@gravity-ui/icons";
-import { ArrowsRotateRight } from "@gravity-ui/icons";
-import { ChevronsExpandUpRight } from "@gravity-ui/icons";
-import { ChevronsCollapseUpRight } from "@gravity-ui/icons";
+import {
+  Xmark,
+  Check,
+  AbbrSql,
+  ArrowsRotateRight,
+  ChevronsExpandUpRight,
+  ChevronsCollapseUpRight,
+  Database,
+  BranchesRight,
+  Magnifier,
+  Layers,
+} from "@gravity-ui/icons";
+
 import clsx from "clsx";
 import s from "./style.module.sass";
 
 type IconComponent = typeof Xmark;
 
-function addClasses(IconComponent: IconComponent, className: string) {
-  return () => <IconComponent className={clsx(s.icon, s[className])} />;
+function addClasses(IconComponent: IconComponent, iconClassName: string) {
+  return () => (
+    <IconComponent className={clsx(s.icon, s[`${iconClassName}-icon`])} />
+  );
 }
 
 const Icons: { [key: string]: IconComponent } = {
-  Delete: addClasses(Xmark, "delete-icon"),
-  Success: addClasses(Check, "success-icon"),
-  AbbrSql: addClasses(AbbrSql, "abbr-sql-icon"),
-  Refresh: addClasses(ArrowsRotateRight, "refresh-icon"),
-  Expand: addClasses(ChevronsExpandUpRight, "expand-icon"),
-  Shrink: addClasses(ChevronsCollapseUpRight, "shrink-icon"),
+  Delete: addClasses(Xmark, "delete"),
+  Success: addClasses(Check, "success"),
+  AbbrSql: addClasses(AbbrSql, "abbr-sql"),
+  Refresh: addClasses(ArrowsRotateRight, "refresh"),
+  Expand: addClasses(ChevronsExpandUpRight, "expand"),
+  Shrink: addClasses(ChevronsCollapseUpRight, "shrink"),
+  Database: addClasses(Database, "database"),
+  BranchesRight: addClasses(BranchesRight, "branches-right"),
+  Magnifier: addClasses(Magnifier, "magnifier"),
+  Stack: addClasses(Layers, "layers"),
 };
 
 export default Icons;
