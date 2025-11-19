@@ -13,7 +13,7 @@ export default function FilterRow({
   filterType,
   onOpenModal,
 }: {
-  title: string;
+  title?: string;
   buttonText: string;
   modalId: string;
   filterType: FilterType;
@@ -23,7 +23,7 @@ export default function FilterRow({
 
   return (
     <div className={s["grid-item__row"]}>
-      <h3 className={clsx(s["row__title"])}>{title}</h3>
+      {title && <h3 className={clsx(s["row__title"])}>{title}</h3>}
       <button
         className={clsx("button", s["row__button"])}
         onClick={() => onOpenModal(modalId)}

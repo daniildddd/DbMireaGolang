@@ -19,6 +19,9 @@ import {
   GroupByModal,
   AggregateModal,
   HavingModal,
+  RegexModal,
+  NullHandlingRuleModal,
+  CaseQueryModal,
 } from "./ui/modals";
 
 export default function FilteringPage() {
@@ -52,6 +55,15 @@ export default function FilteringPage() {
           {/* Рендерим только активную модалку */}
           {activeModal === "whereModal" && (
             <WhereModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "regexModal" && (
+            <RegexModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "nullHandlingRuleModal" && (
+            <NullHandlingRuleModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "caseQueryModal" && (
+            <CaseQueryModal handleCloseModal={handleCloseModal} />
           )}
           {activeModal === "orderByModal" && (
             <OrderByModal handleCloseModal={handleCloseModal} />

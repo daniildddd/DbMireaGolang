@@ -4,3 +4,6 @@ export { default as HavingModal } from "./HavingModal";
 export { default as OrderByModal } from "./OrderByModal";
 export { default as SubqueryModal } from "./SubqueryModal";
 export { default as WhereModal } from "./WhereModal";
+export { default as CaseQueryModal } from "./CaseQueryModal";
+export { default as NullHandlingRuleModal } from "./NullHandlingRuleModal";
+export { default as RegexModal } from "./RegexModal";

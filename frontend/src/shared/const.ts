@@ -7,4 +7,7 @@ export const EMPTY_FILTERS: Filters = {
   [FilterType.groupBy]: [],
   [FilterType.orderBy]: [],
   [FilterType.subquery]: [],
+  [FilterType.caseQuery]: [],
+  [FilterType.regex]: [],
+  [FilterType.nullHandleRule]: [],
 };

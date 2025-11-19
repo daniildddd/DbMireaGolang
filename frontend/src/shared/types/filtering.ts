@@ -5,6 +5,9 @@ export enum FilterType {
   having,
   aggregate,
   subquery,
+  regex,
+  caseQuery,
+  nullHandleRule,
 }
 
 export interface Filters {
@@ -14,4 +17,7 @@ export interface Filters {
   [FilterType.having]: string[];
   [FilterType.aggregate]: string[];
   [FilterType.subquery]: string[];
+  [FilterType.regex]: string[];
+  [FilterType.caseQuery]: string[];
+  [FilterType.nullHandleRule]: string[];
 }

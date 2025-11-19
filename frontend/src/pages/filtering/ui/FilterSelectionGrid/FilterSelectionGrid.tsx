@@ -25,6 +25,12 @@ export default function FilterSelectionGrid({
           modalId="subqueryModal"
           onOpenModal={handleOpenModal}
         />
+        <FilterRow
+          filterType={FilterType.regex}
+          buttonText="Регулярное выражение"
+          modalId="regexModal"
+          onOpenModal={handleOpenModal}
+        />
       </FilterSectionCard>
       <FilterSectionCard>
         <FilterRow
@@ -55,6 +61,20 @@ export default function FilterSelectionGrid({
           title="Фильтр групп (HAVING)"
           buttonText="Добавить HAVING"
           modalId="havingModal"
+          onOpenModal={handleOpenModal}
+        />
+      </FilterSectionCard>
+      <FilterSectionCard>
+        <FilterRow
+          filterType={FilterType.caseQuery}
+          buttonText="CASE выражение"
+          modalId="caseQueryModal"
+          onOpenModal={handleOpenModal}
+        />
+        <FilterRow
+          filterType={FilterType.nullHandleRule}
+          buttonText="COALESCE/NULLIF"
+          modalId="nullHandlingRuleModal"
           onOpenModal={handleOpenModal}
         />
       </FilterSectionCard>
