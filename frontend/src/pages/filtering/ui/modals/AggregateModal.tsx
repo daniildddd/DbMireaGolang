@@ -5,7 +5,7 @@ import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { useForm } from "react-hook-form";
-import Select from "@/shared/ui/components/Select/Select";
+import Select from "@/shared/ui/components/Inputs/Select/Select";
 import { AggregateOptionSet } from "./ui/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
