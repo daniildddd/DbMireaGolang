@@ -1,6 +1,6 @@
 import { FilterType } from "@/shared/types/filtering";
 import FilterRow from "../FilterRow/FIlterRow";
-import JoinSectionCard from "../JoinSectionCard/JoinSectionCard";
+import FilterSectionCard from "../FilterSectionCard/FilterSectionCard";
 import s from "./style.module.sass";
 
 export default function FilterSelectionGrid({
@@ -10,7 +10,7 @@ export default function FilterSelectionGrid({
 }) {
   return (
     <div className={s["join-section__grid"]}>
-      <JoinSectionCard>
+      <FilterSectionCard>
         <FilterRow
           filterType={FilterType.where}
           title="Фильтры (WHERE)"
@@ -25,8 +25,8 @@ export default function FilterSelectionGrid({
           modalId="subqueryModal"
           onOpenModal={handleOpenModal}
         />
-      </JoinSectionCard>
-      <JoinSectionCard>
+      </FilterSectionCard>
+      <FilterSectionCard>
         <FilterRow
           filterType={FilterType.orderBy}
           title="Сортировка"
@@ -41,8 +41,8 @@ export default function FilterSelectionGrid({
           modalId="groupByModal"
           onOpenModal={handleOpenModal}
         />
-      </JoinSectionCard>
-      <JoinSectionCard>
+      </FilterSectionCard>
+      <FilterSectionCard>
         <FilterRow
           filterType={FilterType.aggregate}
           title="Агрегатные функции"
@@ -57,7 +57,7 @@ export default function FilterSelectionGrid({
           modalId="havingModal"
           onOpenModal={handleOpenModal}
         />
-      </JoinSectionCard>
+      </FilterSectionCard>
     </div>
   );
 }
