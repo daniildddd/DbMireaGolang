@@ -18,7 +18,11 @@ function getSelectFromQuery(
       : `${select.map((pair) => `${pair.column}${pair?.as}`).join(", ")} `;
 
   if (isFilterTypePresent(filters, FilterType.aggregate)) {
-    query += `, ${filters[FilterType.aggregate].join(", ")}`;
+    query += `\tWHERE ${filters[FilterType.aggregate].join(" AND ")}\n`; // TODO: сделать умнее если нужно
+  }
+
+  if (isFilterTypePresent(filters, FilterType.nullHandlingRule)) {
+    query += `\tWHERE ${filters[FilterType.nullHandlingRule].join(" AND ")}\n`;
   }
 
   query += ` FROM ${tableName}\n`;
@@ -63,15 +67,10 @@ export function generateSqlQuery(
   filters: Filters
 ) {
   let query = getSelectFromQuery(select, tableName, filters);
-  console.log(query);
   query += getWhereQuery(filters);
-  console.log(query);
   query += getGroupByQuery(filters);
-  console.log(query);
   query += getHavingQuery(filters);
-  console.log(query);
   query += getOrderByQuery(filters);
-  console.log(query);
   query = query.trim() + ";";
 
   return query;
