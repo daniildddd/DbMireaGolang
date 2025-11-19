@@ -1,11 +1,85 @@
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
+import Form from "@/shared/ui/components/Form/Form";
+import FormRow from "../FormRow/FormRow";
+import FieldNameSelector from "./ui/FieldNameSelector";
+import ModalActionButtons from "./ui/ModalActionButtons";
+import FilterContext from "@/shared/context/FilterContext";
+import { FilterType } from "@/shared/types/filtering";
+import { Select } from "@/shared/ui/components/Inputs";
+import { useRef, useContext } from "react";
+import { useForm } from "react-hook-form";
+import updateFilterValueByType from "./lib/updateFilterValueByType";
+import { NullFunctionOptionSet } from "./lib/predefinedOptionSets";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
 
+type NullFunction = "COALESCE" | "NULLIF";
+
+interface FormData {
+  nullFunction: NullFunction;
+  fieldName: string;
+  defaultValue: string;
+  resultAlias: string;
+}
+
 export default function NullHandlingRuleModal({
   handleCloseModal,
 }: ModalParams) {
-  return <AbstractModal handleCloseModal={handleCloseModal}></AbstractModal>;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+  const formId = useRef("null-handling-rule-form");
+  const { filters, setFilters } = useContext(FilterContext);
+
+  const onSumbit = (d: FormData) => {
+    const filter = `${d.nullFunction}(${d.fieldName}, ${d.defaultValue}) AS ${d.resultAlias}`;
+    updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.nullHandlingRule,
+      filter
+    );
+
+    handleCloseModal(false);
+  };
+
+  return (
+    <AbstractModal handleCloseModal={handleCloseModal}>
+      <Form onSubmit={handleSubmit(onSumbit)} formId={formId.current}>
+        <h2 className="h1 filter-modal__title">
+          Обработка <code>NULL</code>
+        </h2>
+        <FormRow label="Функция">
+          <Select name="nullFunction" register={register}>
+            <NullFunctionOptionSet />
+          </Select>
+        </FormRow>
+        <FormRow label="Поле">
+          <FieldNameSelector register={register} />
+        </FormRow>
+        <FormRow label="Значение по умолчанию">
+          <input
+            type="text"
+            name="pattern"
+            {...register("defaultValue", { required: true })}
+          />
+        </FormRow>
+        <FormRow label="Псевдоним результата">
+          <input
+            type="text"
+            name="pattern"
+            {...register("resultAlias", { required: true })}
+          />
+        </FormRow>
+        <ModalActionButtons
+          handleCloseModal={handleCloseModal}
+          formId={formId.current}
+        />
+      </Form>
+    </AbstractModal>
+  );
 }

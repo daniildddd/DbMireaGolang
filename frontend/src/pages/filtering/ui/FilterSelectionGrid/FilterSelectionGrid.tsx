@@ -72,8 +72,8 @@ export default function FilterSelectionGrid({
           onOpenModal={handleOpenModal}
         />
         <FilterRow
-          filterType={FilterType.nullHandleRule}
-          buttonText="COALESCE/NULLIF"
+          filterType={FilterType.nullHandlingRule}
+          buttonText="Обработка NULL"
           modalId="nullHandlingRuleModal"
           onOpenModal={handleOpenModal}
         />

@@ -9,5 +9,5 @@ export const EMPTY_FILTERS: Filters = {
   [FilterType.subquery]: [],
   [FilterType.caseQuery]: [],
   [FilterType.regex]: [],
-  [FilterType.nullHandleRule]: [],
+  [FilterType.nullHandlingRule]: [],
 };

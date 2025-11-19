@@ -7,7 +7,7 @@ export enum FilterType {
   subquery,
   regex,
   caseQuery,
-  nullHandleRule,
+  nullHandlingRule,
 }
 
 export interface Filters {
@@ -19,5 +19,5 @@ export interface Filters {
   [FilterType.subquery]: string[];
   [FilterType.regex]: string[];
   [FilterType.caseQuery]: string[];
-  [FilterType.nullHandleRule]: string[];
+  [FilterType.nullHandlingRule]: string[];
 }

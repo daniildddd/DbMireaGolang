@@ -54,3 +54,12 @@ export function RegexOperatorOptionSet() {
     </>
   );
 }
+
+export function NullFunctionOptionSet() {
+  return (
+    <>
+      <option value="COALESCE">COALESCE</option>
+      <option value="NULLIF">NULLIF</option>
+    </>
+  );
+}
