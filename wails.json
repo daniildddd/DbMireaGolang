@@ -4,7 +4,7 @@
   "clean": true,
   "version": "2",
   "assetdir": "frontend/dist",
-  "environment": "production",
+  "environment": "development",
   "frontend:dir": "frontend",
   "outputfilename": "DB Master",
   "frontend:install": "pnpm install",

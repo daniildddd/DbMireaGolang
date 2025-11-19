@@ -1,13 +1,11 @@
 import { Label, NumberInput } from "@gravity-ui/uikit";
 import { Operator } from "@/types";
 import { useContext, useState } from "react";
-import CancelButton from "../buttons/CancelButton";
-import SubmitButton from "../buttons/SubmitButton";
 import FieldNameSelector from "../selectors/FieldNameSelector";
 import OperatorSelector from "../selectors/OperatorSelector";
 import s from "./style.module.sass";
-import AbstractModal from "./AbstractModal";
-import FilterContext from "../../../../../shared/context/FilterContext";
+import AbstractModal from "./AbstractModal/AbstractModal";
+import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/app/(pages)/types";
 
@@ -30,7 +28,18 @@ export default function HavingModal({
   const { filters, setFilters } = useContext(FilterContext);
 
   return (
-    <AbstractModal handleCloseModal={handleCloseModal}>
+    <AbstractModal
+      handleCloseModal={handleCloseModal}
+      onSubmit={() => {
+        const havingFilter = `${fieldName} ${operator} ${inputNumber}`;
+        updateFilterValueByType(
+          filters,
+          setFilters,
+          FilterType.having,
+          havingFilter
+        );
+      }}
+    >
       <h1 className="h1 filter-modal__title">
         Добавить фильтр групп (<code className="code">HAVING</code>)
       </h1>
@@ -62,21 +71,6 @@ export default function HavingModal({
           />
         </div>
       </form>
-      <div className="filter-modal__buttons">
-        <CancelButton handleCloseModal={handleCloseModal} />
-        <SubmitButton
-          handleCloseModal={handleCloseModal}
-          onClick={() => {
-            const havingFilter = `${fieldName} ${operator} ${inputNumber}`;
-            updateFilterValueByType(
-              filters,
-              setFilters,
-              FilterType.having,
-              havingFilter
-            );
-          }}
-        />
-      </div>
     </AbstractModal>
   );
 }
