@@ -17,6 +17,7 @@ import useTableNames from "@/shared/lib/hooks/useTableNames";
 import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 import { EMPTY_FILTERS } from "@/shared/const";
 import { Filters } from "@/shared/types/filtering";
+import SubqueryModal from "./ui/modals/SubqueryModal";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
@@ -52,6 +53,9 @@ export default function FilteringPage() {
           )}
           {activeModal === "orderByModal" && (
             <OrderByModal handleCloseModal={handleCloseModal} />
+          )}
+          {activeModal === "subqueryModal" && (
+            <SubqueryModal handleCloseModal={handleCloseModal} />
           )}
           {activeModal === "groupByModal" && (
             <GroupByModal handleCloseModal={handleCloseModal} />

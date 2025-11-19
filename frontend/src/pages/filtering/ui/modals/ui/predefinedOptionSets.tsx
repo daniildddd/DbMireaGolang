@@ -31,3 +31,16 @@ export function AggregateOptionSet() {
     </>
   );
 }
+
+export function SubqueryOptionSet() {
+  return (
+    <>
+      <option value="IN">IN</option>
+      <option value="NOT IN">NOT IN</option>
+      <option value="EXISTS">EXISTS</option>
+      <option value="NOT EXISTS">NOT EXISTS</option>
+      <option value="ANY">ANY</option>
+      <option value="ALL">ALL</option>
+    </>
+  );
+}

@@ -18,6 +18,13 @@ export default function FilterSelectionGrid({
           modalId="whereModal"
           onOpenModal={handleOpenModal}
         />
+        <FilterRow
+          filterType={FilterType.subquery}
+          title="Подзапросы"
+          buttonText="Добавить подзапрос"
+          modalId="subqueryModal"
+          onOpenModal={handleOpenModal}
+        />
       </JoinSectionCard>
       <JoinSectionCard>
         <FilterRow

@@ -6,4 +6,5 @@ export const EMPTY_FILTERS: Filters = {
   [FilterType.having]: [],
   [FilterType.groupBy]: [],
   [FilterType.orderBy]: [],
+  [FilterType.subquery]: [],
 };

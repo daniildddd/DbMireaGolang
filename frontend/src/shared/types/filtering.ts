@@ -4,6 +4,7 @@ export enum FilterType {
   orderBy,
   having,
   aggregate,
+  subquery,
 }
 
 export interface Filters {
@@ -12,4 +13,5 @@ export interface Filters {
   [FilterType.orderBy]: string[];
   [FilterType.having]: string[];
   [FilterType.aggregate]: string[];
+  [FilterType.subquery]: string[];
 }
