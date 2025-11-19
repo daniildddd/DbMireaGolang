@@ -2,6 +2,7 @@ import {
   RecreateTables,
   GetTableNamesFromModels,
   GetTableSchema,
+  DeleteField,
 } from "wailsjs";
 import { main } from "../wailsjs/go/models";
 
@@ -16,5 +17,11 @@ export default class ApiMiddleware {
 
   static getTableNames(): Promise<main.TablesListResponse> {
     return GetTableNamesFromModels();
+  }
+
+  static deleteTableFieldByName(
+    request: main.DeleteFieldRequest
+  ): Promise<main.RecreateTablesResult> {
+    return DeleteField(request);
   }
 }
