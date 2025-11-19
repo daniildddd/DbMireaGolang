@@ -3,26 +3,19 @@
 import PageLinkList from "@/shared/ui/components/PageLinkList/PageLinkList";
 import s from "./page.module.sass";
 import clsx from "clsx";
-import { useState } from "react";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 import Main from "@/shared/ui/components/Main/Main";
 
 export default function HomePage() {
-  const [tablesCreated, setTablesCreated] = useState(false);
   const notifier = useNotifications();
 
   const tryRecreateTables = async () => {
-    if (!tablesCreated) {
-      const result = await ApiMiddleware.recreateTables();
-      if (result.success) {
-        setTablesCreated(true);
-        notifier.success("Таблицы успешно созданы");
-      } else {
-        notifier.error(result.message);
-      }
+    const result = await ApiMiddleware.recreateTables();
+    if (result.success) {
+      notifier.success("Таблицы успешно пересозданы");
     } else {
-      notifier.error("Таблицы уже существуют");
+      notifier.error(result.message);
     }
   };
 
@@ -34,7 +27,7 @@ export default function HomePage() {
           className={clsx("button", s["db-interactions__button"])}
           onClick={tryRecreateTables}
         >
-          Создать таблицы
+          Пересоздать таблицы
         </button>
       </div>
       <PageLinkList />
