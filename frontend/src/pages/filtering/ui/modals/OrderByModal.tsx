@@ -43,9 +43,9 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
-      <h1 className="h1 filter-modal__title">
+      <h2 className="h1 filter-modal__title">
         Добавить сортировку (<code className="code">ORDER BY</code>)
-      </h1>
+      </h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSumbit)}>
         <FormRow label="Агрегат или поле">
           <FieldNameSelector register={register} />

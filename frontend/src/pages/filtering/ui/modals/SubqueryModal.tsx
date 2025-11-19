@@ -61,9 +61,9 @@ export default function SubqueryModal({
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
-      <h1 className="h1 filter-modal__title">
+      <h2 className="h1 filter-modal__title">
         Добавить фильтр (<code className="code">WHERE</code>)
-      </h1>
+      </h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow label="Коррелированный подзапрос (добавить в SELECT)">
           <CheckboxInput

@@ -44,3 +44,13 @@ export function SubqueryOptionSet() {
     </>
   );
 }
+
+
+export function RegexOperatorOptionSet() {
+  return (
+    <>
+      <option value="SIMILAR TO">SIMILAR TO</option>
+      <option value="NOT SIMILAR TO">NOT SIMILAR TO</option>
+    </>
+  );
+}
