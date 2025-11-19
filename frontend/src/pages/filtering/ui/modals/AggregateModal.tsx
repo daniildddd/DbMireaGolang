@@ -5,11 +5,11 @@ import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { useForm } from "react-hook-form";
-import Select from "@/shared/ui/components/Inputs/Select/Select";
-import { AggregateOptionSet } from "./ui/predefinedOptionSets";
+import { AggregateOptionSet } from "./lib/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons";
+import { Select } from "@/shared/ui/components/Inputs";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;

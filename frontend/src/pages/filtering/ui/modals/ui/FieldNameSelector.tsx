@@ -1,8 +1,6 @@
 import useTableSchema from "@/shared/lib/hooks/useTableSchema";
-import Select from "@/shared/ui/components/Inputs/Select/Select";
+import { Select } from "@/shared/ui/components/Inputs";
 import { UseFormRegister } from "react-hook-form";
-
-const DEFAULT_OPTION_VALUE = "_LOADING_";
 
 export default function FieldNameSelector({
   register,

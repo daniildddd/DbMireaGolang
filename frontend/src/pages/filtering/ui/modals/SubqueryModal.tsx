@@ -4,11 +4,11 @@ import FieldNameSelector from "./ui/FieldNameSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import { useForm } from "react-hook-form";
-import Select from "@/shared/ui/components/Inputs/Select/Select";
+import { Select } from "@/shared/ui/components/Inputs";
 import {
   OperatorOptionSet,
   SubqueryOptionSet,
-} from "./ui/predefinedOptionSets";
+} from "./lib/predefinedOptionSets";
 import { Operator } from "@/types";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
 import updateFilterValueByType from "./lib/updateFilterValueByType";

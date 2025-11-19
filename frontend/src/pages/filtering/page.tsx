@@ -1,13 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import s from "./page.module.sass";
 import clsx from "clsx";
-import WhereModal from "./ui/modals/WhereModal";
-import HavingModal from "./ui/modals/HavingModal";
-import AggregateModal from "./ui/modals/AggregateModal";
-import GroupByModal from "./ui/modals/GroupByModal";
-import OrderByModal from "./ui/modals/OrderByModal";
 import FilterSelectionGrid from "./ui/FilterSelectionGrid/FilterSelectionGrid";
 import FilterContext from "../../shared/context/FilterContext";
 import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
@@ -17,7 +12,14 @@ import useTableNames from "@/shared/lib/hooks/useTableNames";
 import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 import { EMPTY_FILTERS } from "@/shared/const";
 import { Filters } from "@/shared/types/filtering";
-import SubqueryModal from "./ui/modals/SubqueryModal";
+import {
+  WhereModal,
+  OrderByModal,
+  SubqueryModal,
+  GroupByModal,
+  AggregateModal,
+  HavingModal,
+} from "./ui/modals";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
