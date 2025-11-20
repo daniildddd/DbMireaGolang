@@ -17,7 +17,6 @@ export default function Select({
 }: SelectProps) {
   return (
     <select
-      name={name}
       id={`${name}-select`}
       multiple={multiple}
       className="select"

@@ -66,7 +66,6 @@ export default function WhereModal({
             options={{ min, max, step, required: true }}
             register={register}
             name="number"
-            errors={errors}
           />
         </FormRow>
         <ModalActionButtons

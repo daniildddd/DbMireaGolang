@@ -74,7 +74,6 @@ export default function HavingModal({
             name="number"
             options={{ min, max, step, required: true }}
             register={register}
-            errors={errors}
           />
         </FormRow>
         <ModalActionButtons
