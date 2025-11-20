@@ -3,12 +3,13 @@ import GenericInput, { GenericInputProps } from "./GenericInput";
 
 interface TextInputProps<T> extends GenericInputProps<T> {
   minLength?: number;
-  maxLength: number;
+  maxLength?: number;
   pattern?: string;
 }
 
 export default function TextInput<T>({
   minLength = 1,
+  maxLength = 30,
   pattern = "",
   ...props
 }: TextInputProps<T>) {
@@ -24,7 +25,7 @@ export default function TextInput<T>({
         <ErrorMessage>{`Строка слишком короткая (от ${minLength} символов)`}</ErrorMessage>
       )}
       {errors[props.name]?.type === "maxLength" && (
-        <ErrorMessage>{`Строка слишком длинная (максимум ${props.maxLength} символов)`}</ErrorMessage>
+        <ErrorMessage>{`Строка слишком длинная (максимум ${maxLength} символов)`}</ErrorMessage>
       )}
       {errors[props.name]?.type === "pattern" && pattern.length && (
         <ErrorMessage>{`Строка не соответствует шаблону: ${pattern}`}</ErrorMessage>

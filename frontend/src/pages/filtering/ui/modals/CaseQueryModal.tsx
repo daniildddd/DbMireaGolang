@@ -81,7 +81,6 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
             className={errors.resultingFieldName ? "input error" : "input"}
             errors={errors}
             name={"resultingFieldName"}
-            maxLength={100}
           />
         </FormRow>
 
@@ -126,10 +125,8 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
             register={register}
             options={{
               required: true,
-              maxLength: 50,
             }}
             errors={errors}
-            maxLength={100}
           />
         </FormRow>
 

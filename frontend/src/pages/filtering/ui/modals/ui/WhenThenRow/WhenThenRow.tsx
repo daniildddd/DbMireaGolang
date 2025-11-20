@@ -48,7 +48,6 @@ export default function WhenThenRow<T>({
         </Select>
 
         <TextInput
-          maxLength={100}
           register={register}
           options={{ required: true }}
           name={getNestedInputName<keyof WhenThenCondition>(
@@ -61,7 +60,6 @@ export default function WhenThenRow<T>({
         />
 
         <TextInput
-          maxLength={100}
           register={register}
           options={{ required: true }}
           name={getNestedInputName<keyof WhenThenCondition>(
