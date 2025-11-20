@@ -16,8 +16,10 @@ import (
 var assets embed.FS
 
 func main() {
-	// Инициализация логгера (в итоге он будет глобальным)
-	logger.InitLogger()
+	// Инициализация логгера (в итоге он будет глобальным) + обработка ошибки создания логгера
+	if err := logger.InitLogger(); err != nil {
+		panic("Failed to initialize logger: " + err.Error())
+	}
 
 	// Загрузка переменных окружения из .env
 	config.MustLoad()

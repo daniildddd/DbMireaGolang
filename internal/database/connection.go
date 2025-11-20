@@ -16,7 +16,7 @@ var DB *gorm.DB
 //
 // если не удалось подключиться к базе данных то падает с паникой
 func MustConnectDB() {
-	logger.Logger.Info("=== начало подключения к базе данных ===")
+	logger.Info("=== начало подключения к базе данных ===")
 
 	//получаем значение из .env файла
 	host := config.GetEnvWithDefault("DB_HOST", "localhost")
@@ -25,7 +25,7 @@ func MustConnectDB() {
 	user := config.GetEnvWithDefault("DB_USER", "postgres")
 	password := config.GetEnvWithDefault("DB_PASSWORD", "password")
 
-	logger.Logger.Info("параметры подключения: host=%s port=%s user=%s dbnamme=%s", host, port, user, dbname)
+	logger.Info("параметры подключения: host=%s port=%s user=%s dbnamme=%s", host, port, user, dbname)
 
 	//формируем dsn(имя источника данных)
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -35,8 +35,8 @@ func MustConnectDB() {
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logger.Logger.Error("ошибка подключения к базе данных %v", err)
+		logger.Error("ошибка подключения к базе данных %v", err)
 		panic(err)
 	}
-	logger.Logger.Info("успешное подключение к базе данных %s", dbname)
+	logger.Info("успешное подключение к базе данных %s", dbname)
 }

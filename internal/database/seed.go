@@ -15,11 +15,11 @@ import (
 // Функция читает SQL-скрипт из файла (по умолчанию test_data.sql) и выполняет его в транзакции
 // Возвращает ошибку, если файл не найден, пуст, или произошла ошибка выполнения
 func SeedData() error {
-	logger.Logger.Info("=== SEED: Начало загрузки тестовых данных ===")
+	logger.Info("=== SEED: Начало загрузки тестовых данных ===")
 
 	// Путь к SQL-файлу (имя файла). Мы попытаемся найти его в нескольких местах
 	sqlFilePath := "seed.data.sql"
-	logger.Logger.Info("SEED: Поиск и чтение тестовых данных из файла: %s", sqlFilePath)
+	logger.Info("SEED: Поиск и чтение тестовых данных из файла: %s", sqlFilePath)
 
 	// Попробуем найти файл в нескольких возможных локациях
 	findSQLFile := func(name string) (string, error) {
@@ -55,32 +55,32 @@ func SeedData() error {
 
 	filePath, err := findSQLFile(sqlFilePath)
 	if err != nil {
-		logger.Logger.Error("SEED: %v", err)
+		logger.Error("SEED: %v", err)
 		return err
 	}
-	logger.Logger.Info("SEED: Файл найден: %s", filePath)
+	logger.Info("SEED: Файл найден: %s", filePath)
 
 	// Читаем файл
 	sqlScript, err := os.ReadFile(filePath)
 	if err != nil {
-		logger.Logger.Error("SEED: Ошибка чтения файла %s: %v", filePath, err)
+		logger.Error("SEED: Ошибка чтения файла %s: %v", filePath, err)
 		return fmt.Errorf("не удалось прочитать файл %s: %v", filePath, err)
 	}
 	if len(sqlScript) == 0 {
-		logger.Logger.Error("SEED: Файл %s пуст", sqlFilePath)
+		logger.Error("SEED: Файл %s пуст", sqlFilePath)
 		return fmt.Errorf("файл %s пуст", sqlFilePath)
 	}
 
 	// Выполняем транзакцию
 	err = DB.Transaction(func(tx *gorm.DB) error {
-		logger.Logger.Info("SEED: Начало транзакции для загрузки данных")
+		logger.Info("SEED: Начало транзакции для загрузки данных")
 		if err := tx.Exec(string(sqlScript)).Error; err != nil {
-			logger.Logger.Error("SEED: Ошибка выполнения SQL-скрипта: %v", err)
+			logger.Error("SEED: Ошибка выполнения SQL-скрипта: %v", err)
 			return fmt.Errorf("ошибка выполнения SQL-скрипта: %v", err)
 		}
 
 		// Обновляем последовательности (sequences) для PostgreSQL
-		logger.Logger.Info("SEED: Обновление последовательностей (sequences)")
+		logger.Info("SEED: Обновление последовательностей (sequences)")
 		type seqInfo struct {
 			table  string
 			column string
@@ -94,28 +94,28 @@ func SeedData() error {
 		for seq, info := range sequences {
 			// пропускаем, если таблицы нет
 			if !tx.Migrator().HasTable(info.table) {
-				logger.Logger.Info("SEED: Пропускаем обновление последовательности %s — таблица %s не существует", seq, info.table)
+				logger.Info("SEED: Пропускаем обновление последовательности %s — таблица %s не существует", seq, info.table)
 				continue
 			}
 			// Получаем имя sequence, привязанной к serial/auto-increment колонке, если оно есть
 			var seqName string
 			if err := tx.Raw("SELECT pg_get_serial_sequence(?, ?)", info.table, info.column).Scan(&seqName).Error; err != nil {
-				logger.Logger.Error("SEED: Ошибка получения имени sequence для %s.%s: %v", info.table, info.column, err)
+				logger.Error("SEED: Ошибка получения имени sequence для %s.%s: %v", info.table, info.column, err)
 				return fmt.Errorf("не удалось определить sequence для %s.%s: %v", info.table, info.column, err)
 			}
 			if seqName == "" {
-				logger.Logger.Info("SEED: Sequence для %s.%s не найден — пропускаем", info.table, info.column)
+				logger.Info("SEED: Sequence для %s.%s не найден — пропускаем", info.table, info.column)
 				continue
 			}
 			q := fmt.Sprintf("SELECT setval('%s', (SELECT COALESCE(MAX(%s), 0) + 1 FROM %s))", seqName, info.column, info.table)
-			logger.Logger.Info("SEED: Выполняем: %s", q)
+			logger.Info("SEED: Выполняем: %s", q)
 			if err := tx.Exec(q).Error; err != nil {
-				logger.Logger.Error("SEED: Ошибка обновления последовательности %s: %v", seqName, err)
+				logger.Error("SEED: Ошибка обновления последовательности %s: %v", seqName, err)
 				return fmt.Errorf("ошибка обновления последовательности %s: %v", seqName, err)
 			}
 		}
 
-		logger.Logger.Info("SEED: Транзакция успешно завершена")
+		logger.Info("SEED: Транзакция успешно завершена")
 		return nil
 	})
 
@@ -123,6 +123,6 @@ func SeedData() error {
 		return err
 	}
 
-	logger.Logger.Info("=== SEED: Загрузка тестовых данных завершена успешно ===")
+	logger.Info("=== SEED: Загрузка тестовых данных завершена успешно ===")
 	return nil
 }
