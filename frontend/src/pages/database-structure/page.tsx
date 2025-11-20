@@ -1,8 +1,7 @@
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useEffect } from "react";
 import clsx from "clsx";
-import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 import s from "./page.module.sass";
 import SchemaTable from "./ui/SchemaTable";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
@@ -26,7 +25,7 @@ export default function DatabaseStructurePage() {
 
   useEffect(() => {
     refetch();
-  }, [globalContext]);
+  }, [globalContext, isLoading]);
 
   return (
     <ContentWrapper>

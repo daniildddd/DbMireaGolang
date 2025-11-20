@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import TableSelector from "./ui/TableSelector";
 import SqlOutput from "./ui/SqlOutput";
 import { generateSQL } from "./lib/sqlGenerator";
