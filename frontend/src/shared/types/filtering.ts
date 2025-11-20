@@ -10,14 +10,6 @@ export enum FilterType {
   nullHandlingRule,
 }
 
-export interface Filters {
-  [FilterType.where]: string[];
-  [FilterType.groupBy]: string[];
-  [FilterType.orderBy]: string[];
-  [FilterType.having]: string[];
-  [FilterType.aggregate]: string[];
-  [FilterType.subquery]: string[];
-  [FilterType.regex]: string[];
-  [FilterType.caseQuery]: string[];
-  [FilterType.nullHandlingRule]: string[];
-}
+export type Filters = {
+  [key in FilterType]?: string[];
+};

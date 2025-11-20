@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.0",
   "packageManager": "pnpm@10.23.0",
   "engines": {
     "node": "v24.11.1"
@@ -11,7 +11,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "jest",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
     "clean": "rm -rf node_modules pnpm-lock.yaml package.json.md5 dist"
   },
   "dependencies": {
@@ -33,13 +34,12 @@
     "@types/node": "24.10.1",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
-    "jest": "30.2.0",
     "jiti": "2.6.1",
-    "sass": "1.94.0",
     "sass-embedded": "1.93.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.0.12"
   },
   "peerDependencies": {
-    "sass": "1.93.2"
+    "sass": "1.94.0"
   }
 }
