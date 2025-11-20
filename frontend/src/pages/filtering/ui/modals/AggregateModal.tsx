@@ -10,6 +10,7 @@ import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
+import TextInput from "@/shared/ui/components/Inputs/TextInput";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -18,6 +19,7 @@ interface AggregateModalParams {
 interface FormData {
   fieldName: string;
   aggregate: string;
+  alias?: string;
 }
 
 export default function AggregateModal({
@@ -31,10 +33,13 @@ export default function AggregateModal({
   const formId = useRef("aggregate-form");
   const { filters, setFilters } = useContext(FilterContext);
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
+  const onSubmit = (d: FormData) => {
+    console.log(d);
 
-    const aggregateFilter = `${data.aggregate}(${data.fieldName})`;
+    let aggregateFilter = `${d.aggregate}(${d.fieldName})`;
+    if (d.alias) {
+      aggregateFilter += ` AS ${d.alias}`;
+    }
     updateFilterValueByType(
       filters,
       setFilters,
@@ -56,6 +61,14 @@ export default function AggregateModal({
           <Select name="aggregate" register={register} errors={errors}>
             <AggregateOptionSet />
           </Select>
+        </FormRow>
+        <FormRow label="Алиас">
+          <TextInput
+            name="alias"
+            register={register}
+            errors={errors}
+            options={{ required: false }}
+          />
         </FormRow>
         <ModalActionButtons
           handleCloseModal={handleCloseModal}

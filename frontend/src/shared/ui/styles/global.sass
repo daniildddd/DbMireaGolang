@@ -9,7 +9,7 @@
     color: black
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
     font-size: 24px
-    overflow: hidden
+    overflow-x: hidden
 
 body
     width: 100vw
@@ -68,5 +68,14 @@ hr,.hr
     background-color: colors.$active-link-clr
     color: white
     border-color: colors.$important-button-border-clr
-    &:hover
+    &:hover,&:active
         background-color: colors.$accent-dark-clr
+
+.button.text-button
+    padding: 0
+    margin: 0
+    background: none
+    border: none
+    color: initial
+    &:hover,&:active
+        cursor: pointer

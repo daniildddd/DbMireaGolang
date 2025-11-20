@@ -1,14 +1,19 @@
+@use "@/shared/ui/styles/colors"
 
 .grid-item__row
     display: flex
     flex-direction: column
     gap: 6px
 
-.row__title
-    font-weight: 600
-    font-size: 0.9rem
-    line-height: 2ch
-
-.row__button
+.grid-item__button
+    background: none
+    border: none
+    padding: 0
+    margin: 0
+    font-size: 0.6rem
+    font-weight: bold
     width: max-content
-    color: #3c81f6
+    color: colors.$accent-clr !important
+
+    &:hover
+        cursor: pointer

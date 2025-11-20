@@ -20,7 +20,10 @@ type IconComponent = typeof Xmark;
 
 function addClasses(IconComponent: IconComponent, iconClassName: string) {
   return () => (
-    <IconComponent className={clsx(s.icon, s[`${iconClassName}-icon`])} />
+    <IconComponent
+      className={clsx(s.icon, s[`${iconClassName}-icon`])}
+      preserveAspectRatio="true"
+    />
   );
 }
 

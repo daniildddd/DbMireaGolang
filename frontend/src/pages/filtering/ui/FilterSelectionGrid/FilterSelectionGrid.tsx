@@ -9,18 +9,16 @@ export default function FilterSelectionGrid({
   handleOpenModal: (modalId?: string) => void;
 }) {
   return (
-    <div className={s["join-section__grid"]}>
-      <FilterSectionCard>
+    <div className={s["filter-selection__grid"]}>
+      <FilterSectionCard title="Фильтры (WHERE)">
         <FilterRow
           filterType={FilterType.where}
-          title="Фильтры (WHERE)"
           buttonText="Добавить фильтр"
           modalId="whereModal"
           onOpenModal={handleOpenModal}
         />
         <FilterRow
           filterType={FilterType.subquery}
-          title="Подзапросы"
           buttonText="Добавить подзапрос"
           modalId="subqueryModal"
           onOpenModal={handleOpenModal}
@@ -32,39 +30,39 @@ export default function FilterSelectionGrid({
           onOpenModal={handleOpenModal}
         />
       </FilterSectionCard>
-      <FilterSectionCard>
+      <FilterSectionCard title="Сортировка">
         <FilterRow
           filterType={FilterType.orderBy}
-          title="Сортировка"
           buttonText="Добавить сортировку"
           modalId="orderByModal"
           onOpenModal={handleOpenModal}
         />
+      </FilterSectionCard>
+      <FilterSectionCard title="Группировка (GROUP BY)">
         <FilterRow
           filterType={FilterType.groupBy}
-          title="Группировка (GROUP BY)"
           buttonText="Добавить группировку"
           modalId="groupByModal"
           onOpenModal={handleOpenModal}
         />
       </FilterSectionCard>
-      <FilterSectionCard>
+      <FilterSectionCard title="Агрегатные функции">
         <FilterRow
           filterType={FilterType.aggregate}
-          title="Агрегатные функции"
           buttonText="Добавить агрегат"
           modalId="aggregateModal"
           onOpenModal={handleOpenModal}
         />
+      </FilterSectionCard>
+      <FilterSectionCard title="Фильтр групп (HAVING)">
         <FilterRow
           filterType={FilterType.having}
-          title="Фильтр групп (HAVING)"
           buttonText="Добавить HAVING"
           modalId="havingModal"
           onOpenModal={handleOpenModal}
         />
       </FilterSectionCard>
-      <FilterSectionCard>
+      <FilterSectionCard title="Вычисляемые поля">
         <FilterRow
           filterType={FilterType.caseQuery}
           buttonText="CASE выражение"
