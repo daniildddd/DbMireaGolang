@@ -17,12 +17,12 @@ import (
 //
 // Возвращает ошибку, если операция не удалась.
 func CreateSale(sale *models.Sale) error {
-	logger.Logger.Info("REPO: Начало добавления продажи: %v", sale)
+	logger.Info("REPO: Начало добавления продажи: %v", sale)
 	if err := database.DB.Create(sale).Error; err != nil {
-		logger.Logger.Error("REPO: Ошибка добавления продажи: %v", err)
+		logger.Error("REPO: Ошибка добавления продажи: %v", err)
 		return fmt.Errorf("не удалось добавить продажу: %v", err)
 	}
-	logger.Logger.Info("REPO: Продажа успешно добавлена, ID: %d", sale.SaleID)
+	logger.Info("REPO: Продажа успешно добавлена, ID: %d", sale.SaleID)
 	return nil
 }
 

@@ -18,12 +18,12 @@ import (
 //
 // Возвращает ошибку, если операция не удалась.
 func CreateProductionBatch(batch *models.ProductionBatch) error {
-	logger.Logger.Info("REPO: Начало добавления производственной партии: %v", batch)
+	logger.Info("REPO: Начало добавления производственной партии: %v", batch)
 	if err := database.DB.Create(batch).Error; err != nil {
-		logger.Logger.Error("REPO: Ошибка добавления производственной партии: %v", err)
+		logger.Error("REPO: Ошибка добавления производственной партии: %v", err)
 		return fmt.Errorf("не удалось добавить производственную партию: %v", err)
 	}
-	logger.Logger.Info("REPO: Производственная партия успешно добавлена, ID: %d", batch.BatchID)
+	logger.Info("REPO: Производственная партия успешно добавлена, ID: %d", batch.BatchID)
 	return nil
 }
 

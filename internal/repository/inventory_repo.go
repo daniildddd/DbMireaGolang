@@ -17,12 +17,12 @@ import (
 //
 // Возвращает ошибку, если операция не удалась.
 func CreateInventory(inventory *models.Inventory) error {
-	logger.Logger.Info("REPO: Начало добавления записи инвентаря: %v", inventory)
+	logger.Info("REPO: Начало добавления записи инвентаря: %v", inventory)
 	if err := database.DB.Create(inventory).Error; err != nil {
-		logger.Logger.Error("REPO: Ошибка добавления записи инвентаря: %v", err)
+		logger.Error("REPO: Ошибка добавления записи инвентаря: %v", err)
 		return fmt.Errorf("не удалось добавить запись инвентаря: %v", err)
 	}
-	logger.Logger.Info("REPO: Запись инвентаря успешно добавлена, ID: %d", inventory.InventoryID)
+	logger.Info("REPO: Запись инвентаря успешно добавлена, ID: %d", inventory.InventoryID)
 	return nil
 }
 
