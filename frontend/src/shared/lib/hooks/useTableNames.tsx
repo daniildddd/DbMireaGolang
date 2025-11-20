@@ -1,14 +1,20 @@
-import { useEffect, useState } from "react";
 import ApiMiddleware from "../api/ApiMiddleware";
+import { useQuery } from "@tanstack/react-query";
+import useNotifications from "./useNotifications";
 
-export default function useTableNames(): string[] {
-  const [tableNames, setTableNames] = useState<string[]>([]);
+export default function useTableNames(dependencies: any[] = []) {
+  const notifier = useNotifications();
 
-  useEffect(() => {
-    ApiMiddleware.getTableNames()
-      .then((response) => setTableNames(response.tableName))
-      .catch((err) => console.error(err));
-  }, []);
+  const { isPending, error, data } = useQuery({
+    queryKey: ["tableNames", ...dependencies],
+    queryFn: () =>
+      ApiMiddleware.getTableNames()
+        .then((response) => response.tableName)
+        .catch((err) => {
+          notifier.error(err);
+          return [] as string[];
+        }),
+  });
 
-  return tableNames;
+  return { isPending, error, data };
 }

@@ -24,9 +24,9 @@ interface FormData {
 export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
   const {
     register,
-    control,
     handleSubmit,
     formState: { errors },
+    control,
     reset,
   } = useForm<FormData>({
     defaultValues: {

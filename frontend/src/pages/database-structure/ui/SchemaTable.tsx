@@ -21,14 +21,9 @@ const ColumnConfig: TableColumnConfig<main.FieldSchema>[] = [
 interface SchemaTableProps {
   tableName: string;
   tableSchema: main.FieldSchema[];
-  onRefreshSchema: () => void;
 }
 
-export default function SchemaTable({
-  tableName,
-  tableSchema,
-  onRefreshSchema,
-}: SchemaTableProps) {
+export default function SchemaTable({ tableName, tableSchema }: SchemaTableProps) {
   const { apiMiddleware } = useApiMiddleware();
   const notifier = useNotifications();
 
@@ -54,7 +49,6 @@ export default function SchemaTable({
             });
             if (!response.error) {
               notifier.success(`Поле ${item.name} успешно удалено`);
-              onRefreshSchema();
             } else {
               notifier.error(response.message);
             }

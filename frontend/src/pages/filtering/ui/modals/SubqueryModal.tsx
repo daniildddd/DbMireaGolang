@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useRef } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
@@ -16,8 +16,13 @@ import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
 import CheckboxInput from "@/shared/ui/components/Inputs/CheckboxInput";
-import useTableSchema from "@/shared/lib/hooks/useTableSchema";
-import { GlobalContext } from "@/shared/context/GlobalContext";
+import useTableSchema, {
+  useCurrentTableSchema,
+} from "@/shared/lib/hooks/useTableSchema";
+import Loading from "@/shared/ui/components/Loading/Loading";
+import { main } from "@/shared/lib/wailsjs/go/models";
+import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface SubqueryModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -63,28 +68,19 @@ export default function SubqueryModal({
     formState: { errors },
   } = useForm<FormData>();
   const formId = useRef("subquery-form");
-  const tableNames = useTableNames();
   const watchSubqueryTableName = watch("subqueryTableName");
   const watchIsCorellated = watch("isCorrelated");
   const watchAddWhere = watch("addWhere");
-  const { globalContext } = useContext(GlobalContext);
-  const currentTableSchema = { ...useTableSchema(globalContext.currentTable) };
-  const subqueryTableSchema = { ...useTableSchema(watchSubqueryTableName) };
-  const { filters, setFilters } = useContext(FilterContext);
-
-  useEffect(() => {
-    currentTableSchema.refetch();
-  }, [currentTableSchema.isLoading, currentTableSchema.tableSchema]);
-
-  useEffect(() => {
-    subqueryTableSchema.refetch();
-  }, [
+  const tableNames = useTableNames();
+  const currentTableSchema = useCurrentTableSchema();
+  const subqueryTableSchema = useTableSchema(watchSubqueryTableName, [
     watchSubqueryTableName,
-    subqueryTableSchema.tableSchema,
-    subqueryTableSchema.isLoading,
   ]);
+  const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSubmit = (d: FormData) => {
+    console.log(d);
     const filter = getSubquerySqlExpression(d);
     updateFilterValueByType(filters, setFilters, FilterType.subquery, filter);
     handleCloseModal(false);
@@ -127,26 +123,40 @@ export default function SubqueryModal({
         )}
         <FormRow label="Таблица подзапроса">
           <Select register={register} name="subqueryTableName" errors={errors}>
-            {tableNames.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
+            {tableNames.isPending ? (
+              <Loading />
+            ) : tableNames.error ? (
+              notifyAndReturn(notifier, tableNames.error)
+            ) : (
+              tableNames.data.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))
+            )}
           </Select>
         </FormRow>
         <FormRow label="Поле для выборки">
-          <Select register={register} name="subqueryFieldName" errors={errors}>
-            {subqueryTableSchema.tableSchema.length
-              ? subqueryTableSchema.tableSchema.map((field) => (
-                  <option
-                    key={`${field.name}-${field.type}`}
-                    value={`${field.name}-${field.type}`}
-                  >
-                    {field.name} ({field.type})
-                  </option>
-                ))
-              : null}
-          </Select>
+          {subqueryTableSchema.isPending ? (
+            <Loading />
+          ) : subqueryTableSchema.error ? (
+            notifyAndReturn(notifier, subqueryTableSchema.error)
+          ) : (
+            <Select
+              register={register}
+              name="subqueryFieldName"
+              errors={errors}
+            >
+              {subqueryTableSchema.data.map((field) => (
+                <option
+                  key={`${field.name}-${field.type}`}
+                  value={`${field.name}-${field.type}`}
+                >
+                  {field.name} ({field.type})
+                </option>
+              ))}
+            </Select>
+          )}
         </FormRow>
         <FormRow label="Добавить условие WHERE">
           <CheckboxInput name="addWhere" register={register} errors={errors} />
@@ -155,16 +165,20 @@ export default function SubqueryModal({
           <>
             <FormRow label="Поле">
               <Select register={register} name="whereFieldName" errors={errors}>
-                {currentTableSchema.tableSchema.length > 0
-                  ? currentTableSchema.tableSchema.map((field) => (
-                      <option
-                        key={`${field.name}-${field.type}`}
-                        value={`${field.name}-${field.type}`}
-                      >
-                        {field.name} ({field.type})
-                      </option>
-                    ))
-                  : null}
+                {currentTableSchema.isPending ? (
+                  <Loading />
+                ) : currentTableSchema.error ? (
+                  notifyAndReturn(notifier, currentTableSchema.error)
+                ) : (
+                  currentTableSchema.data.map((field: main.FieldSchema) => (
+                    <option
+                      key={`${field.name}-${field.type}`}
+                      value={`${field.name}-${field.type}`}
+                    >
+                      {field.name} ({field.type})
+                    </option>
+                  ))
+                )}
               </Select>
             </FormRow>
             <FormRow label="Оператор">

@@ -23,6 +23,9 @@ import {
   NullHandlingRuleModal,
   CaseQueryModal,
 } from "./ui/modals";
+import Loading from "@/shared/ui/components/Loading/Loading";
+import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
@@ -30,6 +33,7 @@ export default function FilteringPage() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const query = generateSqlQuery("*", globalContext.currentTable, filters);
+  const notifier = useNotifications();
 
   const handleOpenModal = (modalId: string) => {
     setActiveModal(modalId);
@@ -39,12 +43,14 @@ export default function FilteringPage() {
     setActiveModal(null);
   };
 
+  if (tableNames.isPending) return <Loading />;
+  if (tableNames.error) return notifyAndReturn(notifier, tableNames.error);
+  if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
+
   // Устанавливаем первую таблицу при загрузке
-  useEffect(() => {
-    if (tableNames.length > 0 && !globalContext.currentTable) {
-      setGlobalContext({ ...globalContext, currentTable: tableNames[0] });
-    }
-  }, [tableNames, globalContext]);
+  if (!globalContext.currentTable) {
+    setGlobalContext({ ...globalContext, currentTable: tableNames.data[0] });
+  }
 
   return (
     <FilterContext.Provider value={{ filters, setFilters }}>

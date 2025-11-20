@@ -1,31 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
 import clsx from "clsx";
 import s from "./page.module.sass";
 import SchemaTable from "./ui/SchemaTable";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
 import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
-import useTableSchema from "@/shared/lib/hooks/useTableSchema";
+import { useCurrentTableSchema } from "@/shared/lib/hooks/useTableSchema";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
+import Loading from "@/shared/ui/components/Loading/Loading";
+import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 
 export default function DatabaseStructurePage() {
   const tableNames = useTableNames();
+  const currentTableSchema = useCurrentTableSchema();
   const { globalContext, setGlobalContext } = useGlobalContext();
-  const { tableSchema, isLoading, refetch } = useTableSchema(
-    globalContext.currentTable
-  );
+  const notifier = useNotifications();
+
+  if (tableNames.isPending || currentTableSchema.isPending) return <Loading />;
+  if (tableNames.error) notifyAndReturn(notifier, tableNames.error);
+  if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
+  if (currentTableSchema.error) notifyAndReturn(notifier, tableNames.error);
 
   // Устанавливаем первую таблицу при загрузке
-  useEffect(() => {
-    if (tableNames.length > 0 && !globalContext.currentTable) {
-      setGlobalContext({ ...globalContext, currentTable: tableNames[0] });
-    }
-  }, [tableNames, globalContext]);
-
-  useEffect(() => {
-    refetch();
-  }, [globalContext, isLoading]);
+  setGlobalContext({ ...globalContext, currentTable: tableNames[0] });
 
   return (
     <ContentWrapper>
@@ -35,8 +33,7 @@ export default function DatabaseStructurePage() {
         </h2>
         <SchemaTable
           tableName={globalContext.currentTable}
-          tableSchema={tableSchema}
-          onRefreshSchema={refetch}
+          tableSchema={currentTableSchema.data}
         />
       </section>
     </ContentWrapper>

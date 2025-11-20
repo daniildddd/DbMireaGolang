@@ -15,11 +15,11 @@ export default class ApiMiddleware {
     return GetTableSchema(tableName);
   }
 
-  static getTableNames(): Promise<main.TablesListResponse> {
+  static async getTableNames(): Promise<main.TablesListResponse> {
     return GetTableNamesFromModels();
   }
 
-  static deleteTableFieldByName(
+  static async deleteTableFieldByName(
     request: main.DeleteFieldRequest
   ): Promise<main.RecreateTablesResult> {
     return DeleteField(request);

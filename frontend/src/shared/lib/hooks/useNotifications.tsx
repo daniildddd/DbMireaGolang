@@ -18,11 +18,11 @@ function customToast(
 }
 
 function notify(
-  message: string,
+  message: string | Error,
   type: NotificationType = "info",
   theme: Theme = "light"
 ) {
-  customToast(type)(message, {
+  customToast(type)(message.toString(), {
     position: "bottom-right",
     autoClose: 5000,
     pauseOnHover: true,
@@ -31,10 +31,14 @@ function notify(
 }
 
 export interface Notifier {
-  notify: (message: string, type: NotificationType, theme?: Theme) => void;
-  error: (message: string, theme?: Theme) => void;
-  warn: (message: string, theme?: Theme) => void;
-  success: (message: string, theme?: Theme) => void;
+  notify: (
+    message: string | Error,
+    type: NotificationType,
+    theme?: Theme
+  ) => void;
+  error: (message: string | Error, theme?: Theme) => void;
+  warn: (message: string | Error, theme?: Theme) => void;
+  success: (message: string | Error, theme?: Theme) => void;
 }
 
 export default function useNotifications(): Notifier {

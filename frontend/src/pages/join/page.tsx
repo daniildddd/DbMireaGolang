@@ -9,24 +9,30 @@ import clsx from "clsx";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
 import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
+import Loading from "@/shared/ui/components/Loading/Loading";
+import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 export default function JoinPage() {
   const tableNames = useTableNames();
   const { globalContext, setGlobalContext } = useGlobalContext();
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
   const [sql, setSql] = useState("");
+  const notifier = useNotifications();
 
   const handleGenerateSQL = () => {
     const query = generateSQL(selectedTables);
     setSql(query);
   };
 
+  if (tableNames.isPending) return <Loading />;
+  if (tableNames.error) return notifyAndReturn(notifier, tableNames.error);
+  if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
+
   // Устанавливаем первую таблицу при загрузке
-  useEffect(() => {
-    if (tableNames.length > 0 && !globalContext.currentTable) {
-      setGlobalContext({ ...globalContext, currentTable: tableNames[0] });
-    }
-  }, [tableNames, globalContext]);
+  if (!globalContext.currentTable) {
+    setGlobalContext({ ...globalContext, currentTable: tableNames.data[0] });
+  }
 
   return (
     <ContentWrapper>
