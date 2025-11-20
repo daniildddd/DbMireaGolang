@@ -40,7 +40,7 @@ export default function GroupByModal({ handleCloseModal }: GroupByModalParams) {
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
-      <h2 className="h1 filter-modal__title">Добавить агрегатную функцию</h2>
+      <h2 className="h1 filter-modal__title">Добавить группировку</h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow label="Поле">
           <FieldNameSelector register={register} errors={errors} />
