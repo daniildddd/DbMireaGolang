@@ -4,11 +4,12 @@ import FilterContext from "@/shared/context/FilterContext";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FormRow from "../FormRow/FormRow";
 import Form from "@/shared/ui/components/Form/Form";
-import ModalActionButtons from "./ui/ModalActionButtons";
+import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { WhenThenCondition } from "@/types";
-import WhenThenRow from "./ui/WhenThenRow";
+import WhenThenRow from "./ui/WhenThenRow/WhenThenRow";
 import { FilterType } from "@/shared/types/filtering";
 import s from "./style.module.sass";
+import TextInput from "@/shared/ui/components/Inputs/TextInput";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -72,18 +73,16 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
         </h2>
 
         <FormRow label="Имя результирующего поля">
-          <input
-            type="text"
-            {...register("resultingFieldName", {
-              required: "Это поле обязательно",
-            })}
+          <TextInput
+            register={register}
+            options={{
+              required: true,
+            }}
             className={errors.resultingFieldName ? "input error" : "input"}
+            errors={errors}
+            name={"resultingFieldName"}
+            maxLength={100}
           />
-          {errors.resultingFieldName && (
-            <span className="error-message">
-              {errors.resultingFieldName.message}
-            </span>
-          )}
         </FormRow>
 
         <div className={s["when-then-condition-set"]}>
@@ -98,7 +97,7 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
                 i={index}
                 register={register}
                 removeCondition={() => remove(index)}
-                errors={errors.conditions?.[index]}
+                errors={errors}
               />
             ))}
           </div>
@@ -120,17 +119,18 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
         </div>
 
         <FormRow label="ELSE (значение поля по умолчанию)">
-          <input
+          <TextInput
+            name="elseValue"
             placeholder="NULL"
-            type="text"
-            {...register("elseValue", {
-              required: "Укажите значение по умолчанию",
-            })}
             className={errors.elseValue ? "input error" : "input"}
+            register={register}
+            options={{
+              required: true,
+              maxLength: 50,
+            }}
+            errors={errors}
+            maxLength={100}
           />
-          {errors.elseValue && (
-            <span className="error-message">{errors.elseValue.message}</span>
-          )}
         </FormRow>
 
         <ModalActionButtons

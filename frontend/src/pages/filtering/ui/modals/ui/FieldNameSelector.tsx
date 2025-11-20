@@ -1,27 +1,22 @@
 import useTableSchema from "@/shared/lib/hooks/useTableSchema";
 import { Select } from "@/shared/ui/components/Inputs";
-import { UseFormRegister } from "react-hook-form";
+import { FieldErrors, UseFormRegister } from "react-hook-form";
 
 export default function FieldNameSelector({
   register,
   multiple = false,
-  options = {},
   name = "fieldName",
+  errors,
 }: {
   register: UseFormRegister<any>;
   multiple?: boolean;
-  options?: object;
   name?: string;
+  errors: FieldErrors<FormData>;
 }) {
   const { tableSchema } = useTableSchema();
 
   return (
-    <Select
-      name={name}
-      multiple={multiple}
-      register={register}
-      options={{ ...options, required: true }}
-    >
+    <Select name={name} multiple={multiple} register={register} errors={errors}>
       {tableSchema
         ? tableSchema.map((field) => (
             <option

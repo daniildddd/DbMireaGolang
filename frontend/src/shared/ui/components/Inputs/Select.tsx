@@ -1,26 +1,27 @@
 import { HTMLProps, PropsWithChildren } from "react";
-import { UseFormRegister } from "react-hook-form";
+import { FieldErrors, UseFormRegister } from "react-hook-form";
 
 interface SelectProps extends PropsWithChildren, HTMLProps<HTMLSelectElement> {
   name: string;
   multiple?: boolean;
   register: UseFormRegister<any>;
-  options?: object;
+  errors: FieldErrors<FormData>;
 }
 
 export default function Select({
   children,
   name,
   register,
-  options,
   multiple = false,
+  errors,
 }: SelectProps) {
   return (
     <select
       id={`${name}-select`}
       multiple={multiple}
       className="select"
-      {...register(name, options)}
+      {...register(name)}
+      aria-invalid={errors[name] ? "true" : "false"}
     >
       {children}
     </select>

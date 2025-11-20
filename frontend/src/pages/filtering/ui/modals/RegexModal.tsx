@@ -8,7 +8,7 @@ import FormRow from "../FormRow/FormRow";
 import FieldNameSelector from "./ui/FieldNameSelector";
 import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
-import ModalActionButtons from "./ui/ModalActionButtons";
+import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { RegexOperatorOptionSet } from "./lib/predefinedOptionSets";
 
 interface ModalParams {
@@ -48,10 +48,10 @@ export default function RegexModal({ handleCloseModal }: ModalParams) {
           Фильтр по регулярному выражению
         </h2>
         <FormRow label="Поле">
-          <FieldNameSelector register={register} />
+          <FieldNameSelector register={register} errors={errors} />
         </FormRow>
         <FormRow label="Оператор">
-          <Select name="regexOperator" register={register}>
+          <Select name="regexOperator" register={register} errors={errors}>
             <RegexOperatorOptionSet />
           </Select>
         </FormRow>

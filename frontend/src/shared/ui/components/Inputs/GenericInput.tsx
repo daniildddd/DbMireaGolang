@@ -1,28 +1,38 @@
-import { UseFormRegister } from "react-hook-form";
+import { FieldErrors, UseFormRegister } from "react-hook-form";
+import ErrorMessage from "./ErrorMessage/ErrorMessage";
 
-export interface GenericInputProps {
-  placeholder?: string;
+export interface GenericInputProps<T> {
   type?: string;
+  placeholder?: string;
+  className?: string;
   name: string;
   register: UseFormRegister<any>;
   options?: any;
+  errors: FieldErrors<T>;
 }
 
-export default function GenericInput({
+export default function GenericInput<T>({
   register,
-  type,
+  type = "text",
   name,
   placeholder,
   options = {},
-}: GenericInputProps) {
+  errors,
+  className,
+}: GenericInputProps<T>) {
   return (
-    <>
+    <div>
       <input
-        type={type ?? "text"}
+        type={type}
         placeholder={placeholder}
         step={options?.step}
         {...register(name, options)}
+        className={className}
+        aria-invalid={errors[name] ? "true" : "false"}
       />
-    </>
+      {errors[name]?.type === "required" && (
+        <ErrorMessage>Это поле обязательно</ErrorMessage>
+      )}
+    </div>
   );
 }

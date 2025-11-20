@@ -1,7 +1,13 @@
 import GenericInput, { GenericInputProps } from "./GenericInput";
 
-interface CheckboxInputProps extends GenericInputProps {}
+interface CheckboxInputProps<T> extends GenericInputProps<T> {}
 
-export default function CheckboxInput(props: CheckboxInputProps) {
-  return <GenericInput type="checkbox" {...props} />;
+export default function CheckboxInput<T>(props: CheckboxInputProps<T>) {
+  return (
+    <GenericInput
+      {...props}
+      aria-invalid={props.errors[props.name] ? "true" : "false"}
+      type="checkbox"
+    />
+  );
 }

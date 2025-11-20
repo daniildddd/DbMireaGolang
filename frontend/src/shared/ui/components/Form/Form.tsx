@@ -1,4 +1,5 @@
 import { PropsWithChildren } from "react";
+import s from "./Form.module.sass";
 
 export default function Form({
   children,
@@ -6,7 +7,7 @@ export default function Form({
   onSubmit,
 }: PropsWithChildren & { formId: string; onSubmit: (...args: any) => void }) {
   return (
-    <form className="form" onSubmit={onSubmit} id={formId}>
+    <form className={s.form} onSubmit={onSubmit} id={formId}>
       {children}
     </form>
   );

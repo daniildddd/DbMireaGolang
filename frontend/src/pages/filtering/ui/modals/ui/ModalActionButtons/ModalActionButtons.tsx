@@ -1,5 +1,5 @@
 import CancelButton from "@/shared/ui/components/AbstractModal/buttons/CancelButton";
-import { RefObject } from "react";
+import s from "./ModalActionButtons.module.sass";
 
 export default function ModalActionButtons({
   handleCloseModal,
@@ -9,7 +9,7 @@ export default function ModalActionButtons({
   formId: string;
 }) {
   return (
-    <div className="filter-modal__buttons">
+    <div className={s["filter-modal__buttons"]}>
       <CancelButton handleCloseModal={handleCloseModal} />
       <button type="submit" form={formId} className="button important">
         Применить

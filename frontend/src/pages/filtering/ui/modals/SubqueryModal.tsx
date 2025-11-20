@@ -13,7 +13,7 @@ import useTableNames from "@/shared/lib/hooks/useTableNames";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
-import ModalActionButtons from "./ui/ModalActionButtons";
+import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
 import CheckboxInput from "@/shared/ui/components/Inputs/CheckboxInput";
 
@@ -82,8 +82,8 @@ export default function SubqueryModal({
         <FormRow label="Коррелированный подзапрос (добавить в SELECT)">
           <CheckboxInput
             register={register}
-            options={{ required: true }}
             name="isCorrelated"
+            errors={errors}
           />
         </FormRow>
         {watchIsCorellated && (
@@ -94,22 +94,22 @@ export default function SubqueryModal({
         {!watchIsCorellated && (
           <>
             <FormRow label="Тип подзапроса">
-              <Select name="subqueryType" register={register}>
+              <Select name="subqueryType" register={register} errors={errors}>
                 <SubqueryOptionSet />
               </Select>
             </FormRow>
             <FormRow label="Поле для сравнения">
-              <FieldNameSelector register={register} />
+              <FieldNameSelector register={register} errors={errors} />
             </FormRow>
             <FormRow label="Оператор">
-              <Select register={register} name="operator">
+              <Select register={register} name="operator" errors={errors}>
                 <OperatorOptionSet />
               </Select>
             </FormRow>
           </>
         )}
         <FormRow label="Таблица подзапроса">
-          <Select register={register} name="subqueryTableName">
+          <Select register={register} name="subqueryTableName" errors={errors}>
             {tableNames.map((name) => (
               <option key={name} value={name}>
                 {name}
@@ -118,7 +118,7 @@ export default function SubqueryModal({
           </Select>
         </FormRow>
         <FormRow label="Поле для выборки">
-          <Select register={register} name="subqueryFieldName">
+          <Select register={register} name="subqueryFieldName" errors={errors}>
             {/*            
             {useTableSchema(watchSubqueryTableName).map((field) => (
               <option
@@ -131,16 +131,12 @@ export default function SubqueryModal({
           </Select>
         </FormRow>
         <FormRow label="Добавить условие WHERE">
-          <CheckboxInput
-            name="addWhere"
-            register={register}
-            options={{ required: true }}
-          />
+          <CheckboxInput name="addWhere" register={register} errors={errors} />
         </FormRow>
         {watchAddWhere && (
           <>
             <FormRow label="Поле">
-              <Select register={register} name="whereFieldName">
+              <Select register={register} name="whereFieldName" errors={errors}>
                 {/*             
             {useTableSchema().map((field) => (
                 <option
@@ -153,7 +149,7 @@ export default function SubqueryModal({
               </Select>
             </FormRow>
             <FormRow label="Оператор">
-              <Select register={register} name="whereOperator">
+              <Select register={register} name="whereOperator" errors={errors}>
                 <OperatorOptionSet />
               </Select>
             </FormRow>

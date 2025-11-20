@@ -9,7 +9,7 @@ import { OperatorOptionSet } from "./lib/predefinedOptionSets";
 import { Operator } from "@/types";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
-import ModalActionButtons from "./ui/ModalActionButtons";
+import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
 
 interface WhereModalParams {
@@ -54,10 +54,15 @@ export default function WhereModal({
       </h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow label="Поле">
-          <FieldNameSelector register={register} />
+          <FieldNameSelector register={register} errors={errors} />
         </FormRow>
         <FormRow label="Оператор">
-          <Select required={true} register={register} name="operator">
+          <Select
+            required={true}
+            register={register}
+            name="operator"
+            errors={errors}
+          >
             <OperatorOptionSet />
           </Select>
         </FormRow>
@@ -66,6 +71,9 @@ export default function WhereModal({
             options={{ min, max, step, required: true }}
             register={register}
             name="number"
+            errors={errors}
+            min={min}
+            max={max}
           />
         </FormRow>
         <ModalActionButtons

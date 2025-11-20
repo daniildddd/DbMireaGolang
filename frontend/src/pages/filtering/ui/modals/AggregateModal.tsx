@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { AggregateOptionSet } from "./lib/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
-import ModalActionButtons from "./ui/ModalActionButtons";
+import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
 
@@ -50,14 +50,10 @@ export default function AggregateModal({
       <h2 className="h1 filter-modal__title">Добавить агрегатную функцию</h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>
         <FormRow label="Поле">
-          <FieldNameSelector register={register} />
+          <FieldNameSelector register={register} errors={errors} />
         </FormRow>
         <FormRow label="Агрегатная функция">
-          <Select
-            name="aggregate"
-            register={register}
-            options={{ required: true }}
-          >
+          <Select name="aggregate" register={register} errors={errors}>
             <AggregateOptionSet />
           </Select>
         </FormRow>

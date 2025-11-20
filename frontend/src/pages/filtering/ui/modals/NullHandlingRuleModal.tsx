@@ -2,7 +2,7 @@ import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import Form from "@/shared/ui/components/Form/Form";
 import FormRow from "../FormRow/FormRow";
 import FieldNameSelector from "./ui/FieldNameSelector";
-import ModalActionButtons from "./ui/ModalActionButtons";
+import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import FilterContext from "@/shared/context/FilterContext";
 import { FilterType } from "@/shared/types/filtering";
 import { Select } from "@/shared/ui/components/Inputs";
@@ -54,12 +54,12 @@ export default function NullHandlingRuleModal({
           Обработка <code>NULL</code>
         </h2>
         <FormRow label="Функция">
-          <Select name="nullFunction" register={register}>
+          <Select name="nullFunction" register={register} errors={errors}>
             <NullFunctionOptionSet />
           </Select>
         </FormRow>
         <FormRow label="Поле">
-          <FieldNameSelector register={register} />
+          <FieldNameSelector register={register} errors={errors} />
         </FormRow>
         <FormRow label="Значение по умолчанию">
           <input

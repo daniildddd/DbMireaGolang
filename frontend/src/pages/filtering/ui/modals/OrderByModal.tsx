@@ -8,7 +8,7 @@ import { Select } from "@/shared/ui/components/Inputs";
 import { OrderingOptionSet } from "./lib/predefinedOptionSets";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
-import ModalActionButtons from "./ui/ModalActionButtons";
+import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
 
 interface OrderByModalParams {
@@ -48,14 +48,14 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
       </h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSumbit)}>
         <FormRow label="Агрегат или поле">
-          <FieldNameSelector register={register} />
+          <FieldNameSelector register={register} errors={errors} />
         </FormRow>
         <FormRow label="Оператор">
           <Select
-            options={{ required: true }}
             name="ordering"
             multiple={false}
             register={register}
+            errors={errors}
           >
             <OrderingOptionSet />
           </Select>
