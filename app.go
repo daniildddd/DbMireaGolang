@@ -109,6 +109,42 @@ type SearchFilter struct {
 	Value     string         `json:"value"`     // Шаблон/регулярное выражение для поиска
 }
 
+// === Типы для управления пользовательскими типами ===
+
+type CreateCustomTypeRequest struct {
+	TypeName string            `json:"typeName"`         // Имя типа
+	TypeKind string            `json:"typeKind"`         // "ENUM" или "COMPOSITE"
+	Values   []string          `json:"values,omitempty"` // Значения для ENUM
+	Fields   []CustomTypeField `json:"fields,omitempty"` // Поля для COMPOSITE
+}
+
+type CustomTypeField struct {
+	FieldName string `json:"fieldName"`
+	FieldType string `json:"fieldType"` // int, text, timestamp и т.д.
+}
+
+type UpdateCustomTypeRequest struct {
+	TypeName  string            `json:"typeName"`
+	NewValues []string          `json:"newValues,omitempty"`
+	NewFields []CustomTypeField `json:"newFields,omitempty"`
+}
+
+type DropCustomTypeRequest struct {
+	TypeName string `json:"typeName"`
+}
+
+type CustomType struct {
+	Name   string            `json:"name"`
+	Kind   string            `json:"kind"` // "enum" или "composite"
+	Values []string          `json:"values,omitempty"`
+	Fields []CustomTypeField `json:"fields,omitempty"`
+}
+
+type CustomTypesListResponse struct {
+	Types []CustomType `json:"types"`
+	Error string       `json:"error,omitempty"`
+}
+
 // SearchOperator — перечисление доступных операторов поиска
 type SearchOperator string
 
@@ -1146,5 +1182,152 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 	return TableDataResponse{
 		Columns: cols,
 		Rows:    rows,
+	}
+}
+
+// === Функции для управления пользовательскими типами ===
+
+// CreateCustomType создаёт новый пользовательский тип (ENUM или COMPOSITE)
+func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{Success: false, Error: "База данных не инициализирована"}
+	}
+
+	if req.TypeName == "" {
+		return RecreateTablesResult{Success: false, Error: "Имя типа не может быть пустым"}
+	}
+
+	var query string
+
+	if strings.ToUpper(req.TypeKind) == "ENUM" {
+		if len(req.Values) == 0 {
+			return RecreateTablesResult{Success: false, Error: "ENUM должен содержать хотя бы одно значение"}
+		}
+
+		// Экранируем значения
+		values := []string{}
+		for _, v := range req.Values {
+			values = append(values, fmt.Sprintf("'%s'", strings.ReplaceAll(v, "'", "''")))
+		}
+		query = fmt.Sprintf("CREATE TYPE %s AS ENUM (%s)", req.TypeName, strings.Join(values, ", "))
+
+	} else if strings.ToUpper(req.TypeKind) == "COMPOSITE" {
+		if len(req.Fields) == 0 {
+			return RecreateTablesResult{Success: false, Error: "COMPOSITE должен содержать хотя бы одно поле"}
+		}
+
+		// Формируем список полей
+		fields := []string{}
+		for _, field := range req.Fields {
+			fields = append(fields, fmt.Sprintf("%s %s", field.FieldName, field.FieldType))
+		}
+		query = fmt.Sprintf("CREATE TYPE %s AS (%s)", req.TypeName, strings.Join(fields, ", "))
+
+	} else {
+		return RecreateTablesResult{Success: false, Error: "Неизвестный тип: " + req.TypeKind}
+	}
+
+	logger.Info("Creating custom type: %s", query)
+	if err := database.DB.Exec(query).Error; err != nil {
+		logger.Error("Failed to create custom type: %v", err)
+		return RecreateTablesResult{Success: false, Error: err.Error()}
+	}
+
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Тип '%s' успешно создан", req.TypeName),
+	}
+}
+
+// GetCustomTypes возвращает список всех пользовательских типов
+func (a *App) GetCustomTypes() CustomTypesListResponse {
+	if database.DB == nil {
+		return CustomTypesListResponse{Error: "База данных не инициализирована"}
+	}
+
+	var types []CustomType
+
+	// Запрос для получения всех пользовательских типов
+	query := `
+		SELECT t.typname as name, 
+		       CASE WHEN t.typtype = 'e' THEN 'enum' ELSE 'composite' END as kind
+		FROM pg_type t
+		WHERE t.typtype IN ('e', 'c')
+		  AND t.typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+		ORDER BY t.typname
+	`
+
+	var rows []map[string]interface{}
+	if err := database.DB.Raw(query).Scan(&rows).Error; err != nil {
+		logger.Error("Failed to get custom types: %v", err)
+		return CustomTypesListResponse{Error: err.Error()}
+	}
+
+	for _, row := range rows {
+		ct := CustomType{}
+		
+		if name, ok := row["name"].(string); ok {
+			ct.Name = name
+		}
+		if kind, ok := row["kind"].(string); ok {
+			ct.Kind = kind
+		}
+		
+		types = append(types, ct)
+	}
+
+	return CustomTypesListResponse{Types: types}
+}
+
+// UpdateCustomType редактирует существующий пользовательский тип
+func (a *App) UpdateCustomType(req UpdateCustomTypeRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{Success: false, Error: "База данных не инициализирована"}
+	}
+
+	if req.TypeName == "" {
+		return RecreateTablesResult{Success: false, Error: "Имя типа не может быть пустым"}
+	}
+
+	// Для ENUM можно добавить новые значения
+	if len(req.NewValues) > 0 {
+		for _, value := range req.NewValues {
+			query := fmt.Sprintf("ALTER TYPE %s ADD VALUE '%s'", req.TypeName, 
+				strings.ReplaceAll(value, "'", "''"))
+			if err := database.DB.Exec(query).Error; err != nil {
+				logger.Error("Failed to update enum type: %v", err)
+				return RecreateTablesResult{Success: false, Error: err.Error()}
+			}
+		}
+	}
+
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Тип '%s' успешно обновлён", req.TypeName),
+	}
+}
+
+// DropCustomType удаляет пользовательский тип
+func (a *App) DropCustomType(req DropCustomTypeRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{Success: false, Error: "База данных не инициализирована"}
+	}
+
+	if req.TypeName == "" {
+		return RecreateTablesResult{Success: false, Error: "Имя типа не может быть пустым"}
+	}
+
+	// Используем CASCADE для удаления зависимостей
+	query := fmt.Sprintf("DROP TYPE IF EXISTS %s CASCADE", req.TypeName)
+	logger.Info("Dropping custom type: %s", query)
+	
+	if err := database.DB.Exec(query).Error; err != nil {
+		logger.Error("Failed to drop custom type: %v", err)
+		return RecreateTablesResult{Success: false, Error: err.Error()}
+	}
+
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Тип '%s' успешно удалён", req.TypeName),
 	}
 }

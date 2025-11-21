@@ -22,6 +22,9 @@ export default function PageLinkList() {
       <NavLink to="/insert" className={getClassNames}>
         INSERT
       </NavLink>
+      <NavLink to="/manage-types" className={getClassNames}>
+        Типы данных
+      </NavLink>
     </nav>
   );
 }
