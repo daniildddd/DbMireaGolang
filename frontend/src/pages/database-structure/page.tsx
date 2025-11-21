@@ -17,10 +17,9 @@ export default function DatabaseStructurePage() {
   const { globalContext, setGlobalContext } = useGlobalContext();
   const currentTableSchema = useCurrentTableSchema([
     globalContext.currentTable,
-  ]); // Зависимость от currentTable
+  ]);
   const notifier = useNotifications();
 
-  // ✅ Устанавливаем первую таблицу ТОЛЬКО один раз при загрузке
   useEffect(() => {
     if (
       tableNames.data &&
@@ -34,13 +33,12 @@ export default function DatabaseStructurePage() {
     }
   }, [tableNames.data, globalContext.currentTable]);
 
-  // ✅ Дополнительная защита от некорректных состояний
   if (tableNames.isPending || currentTableSchema.isPending) return <Loading />;
   if (tableNames.error) notifyAndReturn(notifier, tableNames.error);
   if (tableNames.data?.length === 0) return <div>В базе данных нет таблиц</div>;
   if (currentTableSchema.error)
-    notifyAndReturn(notifier, currentTableSchema.error); // Исправлено: currentTableSchema.error
-  if (!globalContext.currentTable) return <Loading />; // Защита от отсутствия текущей таблицы
+    notifyAndReturn(notifier, currentTableSchema.error);
+  if (!globalContext.currentTable) return <Loading />;
 
   return (
     <ContentWrapper>
@@ -50,7 +48,7 @@ export default function DatabaseStructurePage() {
         </h2>
         <SchemaTable
           tableName={globalContext.currentTable}
-          tableSchema={currentTableSchema.data || []} // Защита от undefined
+          tableSchema={currentTableSchema.data || []}
         />
       </section>
     </ContentWrapper>

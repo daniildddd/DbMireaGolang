@@ -1,4 +1,4 @@
-import { useContext, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import FieldNameSelector from "./ui/FieldNameSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
@@ -73,9 +73,7 @@ export default function SubqueryModal({
   const watchAddWhere = watch("addWhere");
   const tableNames = useTableNames();
   const currentTableSchema = useCurrentTableSchema();
-  const subqueryTableSchema = useTableSchema(watchSubqueryTableName, [
-    watchSubqueryTableName,
-  ]);
+  const subqueryTableSchema = useTableSchema(watchSubqueryTableName);
   const { filters, setFilters } = useContext(FilterContext);
   const notifier = useNotifications();
 
@@ -95,6 +93,10 @@ export default function SubqueryModal({
 
     handleCloseModal(false);
   };
+
+  useEffect(() => {
+    subqueryTableSchema.refetch();
+  }, [watchSubqueryTableName]);
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
