@@ -1,4 +1,4 @@
-import Code from "@/shared/ui/components/Code/Code";
+import CodeBlock from "@/shared/ui/components/CodeBlock/CodeBlock";
 import clsx from "clsx";
 import s from "./style.module.sass";
 
@@ -12,7 +12,7 @@ export default function GeneratedSQL({ query }: GeneratedSQLProps) {
       <h2 className={clsx("h2", s["generated-sql__title"])}>
         Сгенерированный SQL
       </h2>
-      <Code
+      <CodeBlock
         content={query}
         className={clsx(s.code, s["generated-sql__output"])}
       />
