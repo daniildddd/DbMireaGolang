@@ -10,20 +10,37 @@ import { useCurrentTableSchema } from "@/shared/lib/hooks/useTableSchema";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 import Loading from "@/shared/ui/components/Loading/Loading";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
+import { useEffect } from "react";
 
 export default function DatabaseStructurePage() {
   const tableNames = useTableNames();
-  const currentTableSchema = useCurrentTableSchema();
   const { globalContext, setGlobalContext } = useGlobalContext();
+  const currentTableSchema = useCurrentTableSchema([
+    globalContext.currentTable,
+  ]); // Зависимость от currentTable
   const notifier = useNotifications();
 
+  // ✅ Устанавливаем первую таблицу ТОЛЬКО один раз при загрузке
+  useEffect(() => {
+    if (
+      tableNames.data &&
+      tableNames.data.length > 0 &&
+      !globalContext.currentTable
+    ) {
+      setGlobalContext((prev) => ({
+        ...prev,
+        currentTable: tableNames.data[0],
+      }));
+    }
+  }, [tableNames.data, globalContext.currentTable]);
+
+  // ✅ Дополнительная защита от некорректных состояний
   if (tableNames.isPending || currentTableSchema.isPending) return <Loading />;
   if (tableNames.error) notifyAndReturn(notifier, tableNames.error);
-  if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
-  if (currentTableSchema.error) notifyAndReturn(notifier, tableNames.error);
-
-  // Устанавливаем первую таблицу при загрузке
-  setGlobalContext({ ...globalContext, currentTable: tableNames[0] });
+  if (tableNames.data?.length === 0) return <div>В базе данных нет таблиц</div>;
+  if (currentTableSchema.error)
+    notifyAndReturn(notifier, currentTableSchema.error); // Исправлено: currentTableSchema.error
+  if (!globalContext.currentTable) return <Loading />; // Защита от отсутствия текущей таблицы
 
   return (
     <ContentWrapper>
@@ -33,7 +50,7 @@ export default function DatabaseStructurePage() {
         </h2>
         <SchemaTable
           tableName={globalContext.currentTable}
-          tableSchema={currentTableSchema.data}
+          tableSchema={currentTableSchema.data || []} // Защита от undefined
         />
       </section>
     </ContentWrapper>

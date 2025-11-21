@@ -1,36 +1,33 @@
-"use client";
-
 import "@/shared/ui/styles/global.sass";
-
 import "@gravity-ui/uikit/styles/fonts.css";
 import "@gravity-ui/uikit/styles/styles.css";
 import { ThemeProvider } from "@gravity-ui/uikit";
-
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { GlobalContext } from "./shared/context/GlobalContext";
-import { useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const queryClient = new QueryClient();
+import { useState, useEffect } from "react";
+import useTableNames from "./shared/lib/hooks/useTableNames";
 
 export default function App() {
+  const tableNames = useTableNames();
   const [globalContext, setGlobalContext] = useState<GlobalContext>({
     currentTable: "",
   });
 
+  useEffect(() => {
+    if (tableNames.data && tableNames.data.length > 0) {
+      setGlobalContext((prev) => ({
+        ...prev,
+        currentTable: tableNames.data[0],
+      }));
+    }
+  }, [tableNames.data]);
+
   return (
-    <ThemeProvider theme="light">
+    <ThemeProvider theme={"light"}>
       <GlobalContext.Provider value={{ globalContext, setGlobalContext }}>
-        <QueryClientProvider client={queryClient}>
-          <ReactQueryDevtools
-            initialIsOpen={false}
-            buttonPosition="bottom-right"
-          />
-          <ToastContainer />
-          <Outlet />
-        </QueryClientProvider>
+        <ToastContainer />
+        <Outlet />
       </GlobalContext.Provider>
     </ThemeProvider>
   );
