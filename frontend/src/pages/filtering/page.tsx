@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import s from "./page.module.sass";
 import clsx from "clsx";
 import FilterSelectionGrid from "./ui/FilterSelectionGrid/FilterSelectionGrid";
-import FilterContext from "../../shared/context/FilterContext";
-import GeneratedSQL from "@/features/sqlQueryGenerator/ui/GeneratedSQL/GeneratedSQL";
+import FilterContext from "@/shared/context/FilterContext";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import { generateSqlQuery } from "@/features/sqlQueryGenerator/lib/generateSqlQuery";
 import useTableNames from "@/shared/lib/hooks/useTableNames";
@@ -26,6 +25,7 @@ import {
 import Loading from "@/shared/ui/components/Loading/Loading";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
+import GeneratedSQL from "@/features/sqlQueryGenerator/ui/GeneratedSQL";
 
 export default function FilteringPage() {
   const tableNames = useTableNames();
