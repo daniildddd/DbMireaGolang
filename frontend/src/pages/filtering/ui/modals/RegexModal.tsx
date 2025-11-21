@@ -5,7 +5,7 @@ import { useRef, useContext } from "react";
 import { useForm } from "react-hook-form";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import FormRow from "../FormRow/FormRow";
-import FieldNameSelector from "./ui/FieldNameSelector";
+import FieldNameSelector from "../../../../shared/ui/components/Inputs/FieldNameSelector";
 import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";

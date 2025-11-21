@@ -1,5 +1,6 @@
 import { HTMLProps, PropsWithChildren, useState, useEffect } from "react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
+import "./Select.styles.sass";
 
 interface SelectProps extends PropsWithChildren, HTMLProps<HTMLSelectElement> {
   name: string;
@@ -38,7 +39,7 @@ export default function Select({
     <select
       id={`${name}-select`}
       multiple={multiple}
-      className="select"
+      className={"select"}
       {...register(name, {
         value: defaultValue !== undefined ? defaultValue : firstOptionValue,
       })}

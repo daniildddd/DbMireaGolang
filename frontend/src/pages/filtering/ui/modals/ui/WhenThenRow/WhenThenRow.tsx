@@ -2,7 +2,7 @@ import { FieldErrors, UseFormRegister } from "react-hook-form";
 import clsx from "clsx";
 import s from "./WhenThenRow.module.sass";
 import Icons from "@/shared/ui/components/Icons/Icons";
-import FieldNameSelector from "../FieldNameSelector";
+import FieldNameSelector from "../../../../../../shared/ui/components/Inputs/FieldNameSelector";
 import { Select } from "@/shared/ui/components/Inputs";
 import { OperatorOptionSet } from "../../lib/predefinedOptionSets";
 import getNestedInputName from "../../lib/getNestedInputName";

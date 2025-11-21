@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "react";
-import FieldNameSelector from "./ui/FieldNameSelector";
+import FieldNameSelector from "../../../../shared/ui/components/Inputs/FieldNameSelector";
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import FilterContext from "@/shared/context/FilterContext";
 import { useForm } from "react-hook-form";

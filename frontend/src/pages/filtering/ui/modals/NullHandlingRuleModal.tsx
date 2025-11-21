@@ -1,7 +1,7 @@
 import AbstractModal from "@/shared/ui/components/AbstractModal/AbstractModal";
 import Form from "@/shared/ui/components/Form/Form";
 import FormRow from "../FormRow/FormRow";
-import FieldNameSelector from "./ui/FieldNameSelector";
+import FieldNameSelector from "../../../../shared/ui/components/Inputs/FieldNameSelector";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import FilterContext from "@/shared/context/FilterContext";
 import { FilterType } from "@/shared/types/filtering";
