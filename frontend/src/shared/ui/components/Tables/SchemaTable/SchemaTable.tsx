@@ -4,7 +4,6 @@ import {
   withTableActions,
   withTableSorting,
 } from "@gravity-ui/uikit";
-import s from "./style.module.sass";
 import { main } from "@/shared/lib/wailsjs/go/models";
 import useApiMiddleware from "@/shared/hooks/useApiMiddleware";
 import Icons from "@/shared/ui/components/Icons/Icons";
@@ -12,7 +11,7 @@ import useNotifications from "@/shared/hooks/useNotifications";
 
 const HocTable = withTableSorting(withTableActions(UikitTable));
 
-const ColumnConfig: TableColumnConfig<main.FieldSchema>[] = [
+const columnConfig: TableColumnConfig<main.FieldSchema>[] = [
   { id: "name", name: "Поле", primary: true, meta: { sort: true } },
   { id: "type", name: "Тип", meta: { sort: true } },
   { id: "constraints", name: "Ограничения" },
@@ -23,15 +22,18 @@ interface SchemaTableProps {
   tableSchema: main.FieldSchema[];
 }
 
-export default function SchemaTable({ tableName, tableSchema }: SchemaTableProps) {
+export default function SchemaTable({
+  tableName,
+  tableSchema,
+}: SchemaTableProps) {
   const { apiMiddleware } = useApiMiddleware();
   const notifier = useNotifications();
 
   return (
     <HocTable
-      className={s.table}
+      className={"table"}
       data={tableSchema}
-      columns={ColumnConfig}
+      columns={columnConfig}
       emptyMessage="Таблица пуста :("
       edgePadding={true}
       getRowActions={(item) => [

@@ -28,6 +28,7 @@ import useNotifications from "@/shared/hooks/useNotifications";
 import GeneratedSQL from "@/features/sqlQueryGenerator/ui/GeneratedSQL";
 import useApiMiddleware from "@/shared/hooks/useApiMiddleware";
 import { TableData } from "@/types";
+import { DataTable } from "@/shared/ui/components/Tables";
 
 function noDataWasFound(tableData: TableData) {
   return tableData.rows.length === 0 || tableData.columns.length === 0;
@@ -63,6 +64,9 @@ export default function FilteringPage() {
         );
       } else {
         setTableData({ ...response });
+        notifier.success(
+          `Данные успешно найдены, найдено ${response.rows.length} результатов`
+        );
       }
     } catch (error) {
       notifier.error(error);
@@ -131,7 +135,7 @@ export default function FilteringPage() {
           </div>
           {tableData &&
             tableData.columns.length > 0 &&
-            tableData.rows.length > 0 && <div>Что-то случилось!</div>}
+            tableData.rows.length > 0 && <DataTable data={tableData} />}
         </section>
       </ContentWrapper>
     </FilterContext.Provider>

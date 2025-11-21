@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import s from "./page.module.sass";
-import Table from "./ui/SchemaTable";
+import Table from "../../shared/ui/components/Tables/SchemaTable/SchemaTable";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import useTableNames from "@/shared/hooks/useTableNames";
 import useGlobalContext from "@/shared/hooks/useGlobalContext";
