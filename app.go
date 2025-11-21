@@ -865,6 +865,56 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 		}
 	}
 
+	// Обработка timestamp/datetime полей - преобразование из строки в time.Time
+	columns, err := database.DB.Migrator().ColumnTypes(req.TableName)
+	if err == nil {
+		for _, col := range columns {
+			colType, _ := col.ColumnType()
+			fieldName := col.Name()
+			colTypeLower := strings.ToLower(colType)
+
+			if strings.Contains(colTypeLower, "timestamp") || strings.Contains(colTypeLower, "time") {
+				if val, exists := req.Data[fieldName]; exists && val != nil {
+					if strVal, ok := val.(string); ok && strVal != "" {
+						// Пробуем разные форматы timestamp
+						var parsedTime time.Time
+						var parseErr error
+
+						// Нормализуем разделители: заменяем точки и слэши на тире для дат
+						normalizedVal := strVal
+
+						// Форматы для попытки парсинга (в порядке приоритета)
+						formats := []string{
+							"2006-01-02 15:04:05",       // Стандартный формат с пробелом
+							"2006-01-02T15:04:05",       // ISO8601 без часового пояса
+							time.RFC3339,                // RFC3339 (с часовым поясом)
+							"2006-01-02T15:04:05Z07:00", // ISO8601 с часовым поясом
+							"20060102150405",            // Компактный формат
+							"2006-01-02",                // Только дата
+						}
+
+						// Пробуем каждый формат
+						for _, format := range formats {
+							if parsedTime, parseErr = time.Parse(format, normalizedVal); parseErr == nil {
+								break
+							}
+						}
+
+						if parseErr != nil {
+							logger.Error("Не удалось распарсить дату %s для поля %s: %v", strVal, fieldName, parseErr)
+							return RecreateTablesResult{
+								Success: false,
+								Message: fmt.Sprintf("Невалидный формат даты/времени для поля '%s'. Используйте формат: YYYY-MM-DD HH:MM:SS", fieldName),
+								Error:   parseErr.Error(),
+							}
+						}
+						req.Data[fieldName] = parsedTime
+					}
+				}
+			}
+		}
+	}
+
 	result := database.DB.Table(req.TableName).Create(req.Data)
 	if result.Error != nil {
 		logger.Error("Ошибка вставки в таблицу %s: %v", req.TableName, result.Error)
