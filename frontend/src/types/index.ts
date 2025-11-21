@@ -6,3 +6,8 @@ export interface WhenThenCondition {
   value: string;
   resultingValue: string;
 }
+
+/* SQL */
+export type NumericSqlDataTypes = "bigint" | "numeric";
+export type TimestampSqlDataTypes = "timestamp with time zone" | "timestamp";
+export type SqlDataTypes = "text" | NumericSqlDataTypes | TimestampSqlDataTypes;
