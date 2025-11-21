@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import s from "./page.module.sass";
-import SchemaTable from "./ui/SchemaTable";
+import Table from "./ui/SchemaTable";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
 import useTableNames from "@/shared/hooks/useTableNames";
 import useGlobalContext from "@/shared/hooks/useGlobalContext";
@@ -46,7 +46,7 @@ export default function DatabaseStructurePage() {
         <h2 className={clsx("h2", s["table-section__title"])}>
           Структура таблицы: {globalContext.currentTable}
         </h2>
-        <SchemaTable
+        <Table
           tableName={globalContext.currentTable}
           tableSchema={currentTableSchema.data || []}
         />

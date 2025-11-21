@@ -1,5 +1,5 @@
 import {
-  Table,
+  Table as UikitTable,
   TableColumnConfig,
   withTableActions,
   withTableSorting,
@@ -10,7 +10,7 @@ import useApiMiddleware from "@/shared/hooks/useApiMiddleware";
 import Icons from "@/shared/ui/components/Icons/Icons";
 import useNotifications from "@/shared/hooks/useNotifications";
 
-const HocTable = withTableSorting(withTableActions(Table));
+const HocTable = withTableSorting(withTableActions(UikitTable));
 
 const ColumnConfig: TableColumnConfig<main.FieldSchema>[] = [
   { id: "name", name: "Поле", primary: true, meta: { sort: true } },

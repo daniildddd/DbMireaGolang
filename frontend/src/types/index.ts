@@ -6,6 +6,10 @@ export interface WhenThenCondition {
   value: string;
   resultingValue: string;
 }
+export interface TableData {
+  rows: string[];
+  columns: string[];
+} 
 
 /* SQL */
 export type NumericSqlDataTypes = "bigint" | "numeric";

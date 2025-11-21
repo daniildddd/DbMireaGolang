@@ -33,7 +33,7 @@ function notify(
 export interface Notifier {
   notify: (
     message: string | Error,
-    type: NotificationType,
+    type?: NotificationType,
     theme?: Theme
   ) => void;
   error: (message: string | Error, theme?: Theme) => void;

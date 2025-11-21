@@ -106,6 +106,7 @@ export namespace main {
 	    name: string;
 	    type: string;
 	    constraints: string;
+	    enumValues?: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new FieldSchema(source);
@@ -116,6 +117,7 @@ export namespace main {
 	        this.name = source["name"];
 	        this.type = source["type"];
 	        this.constraints = source["constraints"];
+	        this.enumValues = source["enumValues"];
 	    }
 	}
 	
