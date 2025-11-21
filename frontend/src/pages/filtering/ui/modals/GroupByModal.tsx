@@ -8,6 +8,7 @@ import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface GroupByModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -25,15 +26,21 @@ export default function GroupByModal({ handleCloseModal }: GroupByModalParams) {
   } = useForm<FormData>();
   const formId = useRef("group-by-form");
   const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSubmit = (values: FormData) => {
     const groupByFilter = `${values.fieldName}`;
-    updateFilterValueByType(
+    const error = updateFilterValueByType(
       filters,
       setFilters,
       FilterType.groupBy,
       groupByFilter
     );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
 
     handleCloseModal(false);
   };

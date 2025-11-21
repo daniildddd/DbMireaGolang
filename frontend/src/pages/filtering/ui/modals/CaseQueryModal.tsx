@@ -10,6 +10,8 @@ import WhenThenRow from "./ui/WhenThenRow/WhenThenRow";
 import { FilterType } from "@/shared/types/filtering";
 import s from "./style.module.sass";
 import TextInput from "@/shared/ui/components/Inputs/TextInput";
+import updateFilterValueByType from "./lib/updateFilterValueByType";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -42,7 +44,8 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
   });
 
   const formId = useRef("case-query-form");
-  const { setFilters } = useContext(FilterContext);
+  const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSubmit = (data: FormData) => {
     console.log("Form Data:", data);
@@ -56,10 +59,17 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
       .join(" ")} ELSE ${data.elseValue} END AS ${data.resultingFieldName}`;
 
     // Пример обновления фильтров
-    setFilters((prev) => ({
-      ...prev,
-      custom: [...(prev[FilterType.caseQuery] || []), caseExpression],
-    }));
+    const error = updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.caseQuery,
+      caseExpression
+    );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
 
     handleCloseModal(false);
     reset();

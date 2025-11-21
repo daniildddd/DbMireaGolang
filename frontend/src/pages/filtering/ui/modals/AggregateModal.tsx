@@ -11,6 +11,7 @@ import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
 import TextInput from "@/shared/ui/components/Inputs/TextInput";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -32,6 +33,7 @@ export default function AggregateModal({
   } = useForm<FormData>();
   const formId = useRef("aggregate-form");
   const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSubmit = (d: FormData) => {
     console.log(d);
@@ -40,12 +42,16 @@ export default function AggregateModal({
     if (d.alias) {
       aggregateFilter += ` AS ${d.alias}`;
     }
-    updateFilterValueByType(
+    const error = updateFilterValueByType(
       filters,
       setFilters,
       FilterType.aggregate,
       aggregateFilter
     );
+    if (error) {
+      notifier.error(error);
+      return;
+    }
 
     handleCloseModal(false);
   };

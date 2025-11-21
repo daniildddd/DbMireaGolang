@@ -11,6 +11,7 @@ import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface WhereModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -38,11 +39,23 @@ export default function WhereModal({
   } = useForm<FormData>();
   const formId = useRef("where-form");
   const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSubmit = (values: FormData) => {
     const whereFilter = `${values.fieldName} ${values.operator} ${values.number}`;
 
-    updateFilterValueByType(filters, setFilters, FilterType.where, whereFilter);
+    const error = updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.where,
+      whereFilter
+    );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
+
 
     handleCloseModal(false);
   };

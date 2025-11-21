@@ -10,6 +10,7 @@ import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface OrderByModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -28,15 +29,21 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
   } = useForm<FormData>();
   const formId = useRef("order-by-form");
   const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSumbit = (values: FormData) => {
     const orderByFilter = `${values.fieldName} ${values.ordering}`;
-    updateFilterValueByType(
+    const error = updateFilterValueByType(
       filters,
       setFilters,
       FilterType.orderBy,
       orderByFilter
     );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
 
     handleCloseModal(false);
   };

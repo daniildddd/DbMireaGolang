@@ -11,6 +11,7 @@ import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface HavingModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -38,15 +39,21 @@ export default function HavingModal({
   } = useForm<FormData>();
   const formId = useRef("having-form");
   const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSubmit = (values: FormData) => {
     const havingFilter = `${values.fieldName} ${values.operator} ${values.number}`;
-    updateFilterValueByType(
+    const error = updateFilterValueByType(
       filters,
       setFilters,
       FilterType.having,
       havingFilter
     );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
 
     handleCloseModal(false);
   };

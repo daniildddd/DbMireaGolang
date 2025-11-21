@@ -6,8 +6,11 @@ export default function updateFilterValueByType(
   setFilters: Dispatch<SetStateAction<Filters>>,
   filterType: FilterType,
   filter: string
-): void {
+): void | Error {
   const filtersCopy = { ...filters };
+  if (filtersCopy[filterType].includes(filter)) {
+    return Error("Фильтр уже существует");
+  }
   filtersCopy[filterType].push(filter);
   setFilters(filtersCopy);
 }

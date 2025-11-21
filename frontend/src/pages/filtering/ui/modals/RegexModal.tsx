@@ -10,6 +10,7 @@ import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { RegexOperatorOptionSet } from "./lib/predefinedOptionSets";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -31,12 +32,23 @@ export default function RegexModal({ handleCloseModal }: ModalParams) {
   } = useForm<FormData>();
   const formId = useRef("regex-form");
   const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSubmit = (data: FormData) => {
     console.log(data);
 
     const filter = `${data.fieldName} ${data.regexOperator} ${data.pattern}`;
-    updateFilterValueByType(filters, setFilters, FilterType.regex, filter);
+    const error = updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.regex,
+      filter
+    );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
 
     handleCloseModal(false);
   };

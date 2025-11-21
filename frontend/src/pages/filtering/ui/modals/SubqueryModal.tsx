@@ -80,9 +80,19 @@ export default function SubqueryModal({
   const notifier = useNotifications();
 
   const onSubmit = (d: FormData) => {
-    console.log(d);
     const filter = getSubquerySqlExpression(d);
-    updateFilterValueByType(filters, setFilters, FilterType.subquery, filter);
+    const error = updateFilterValueByType(
+      filters,
+      setFilters,
+      FilterType.subquery,
+      filter
+    );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
+
     handleCloseModal(false);
   };
 

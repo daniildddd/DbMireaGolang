@@ -10,6 +10,7 @@ import { useRef, useContext } from "react";
 import { useForm } from "react-hook-form";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { NullFunctionOptionSet } from "./lib/predefinedOptionSets";
+import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
@@ -34,15 +35,21 @@ export default function NullHandlingRuleModal({
   } = useForm<FormData>();
   const formId = useRef("null-handling-rule-form");
   const { filters, setFilters } = useContext(FilterContext);
+  const notifier = useNotifications();
 
   const onSumbit = (d: FormData) => {
     const filter = `${d.nullFunction}(${d.fieldName}, ${d.defaultValue}) AS ${d.resultAlias}`;
-    updateFilterValueByType(
+    const error = updateFilterValueByType(
       filters,
       setFilters,
       FilterType.nullHandlingRule,
       filter
     );
+
+    if (error) {
+      notifier.error(error);
+      return;
+    }
 
     handleCloseModal(false);
   };
