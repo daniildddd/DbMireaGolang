@@ -50,7 +50,7 @@ export default function OrderByModal({ handleCloseModal }: OrderByModalParams) {
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
-      <h2 className="h1 filter-modal__title">
+      <h2 className="h2 filter-modal__title">
         Добавить сортировку (<code className="code">ORDER BY</code>)
       </h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSumbit)}>

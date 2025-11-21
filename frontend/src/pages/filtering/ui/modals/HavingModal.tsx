@@ -60,7 +60,7 @@ export default function HavingModal({
 
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
-      <h2 className="h1 filter-modal__title">
+      <h2 className="h2 filter-modal__title">
         Добавить фильтр групп (<code className="code">HAVING</code>)
       </h2>
       <Form formId={formId.current} onSubmit={handleSubmit(onSubmit)}>

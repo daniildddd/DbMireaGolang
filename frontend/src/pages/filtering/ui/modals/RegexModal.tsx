@@ -56,7 +56,7 @@ export default function RegexModal({ handleCloseModal }: ModalParams) {
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
       <Form onSubmit={handleSubmit(onSubmit)} formId={formId.current}>
-        <h2 className="h1 filter-modal__title">
+        <h2 className="h2 filter-modal__title">
           Фильтр по регулярному выражению
         </h2>
         <FormRow label="Поле">

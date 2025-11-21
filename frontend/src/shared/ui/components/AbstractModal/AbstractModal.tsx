@@ -5,10 +5,12 @@ import s from "./style.module.sass";
 
 interface AbstractModalParams {
   handleCloseModal: (open: boolean) => void;
+  title?: string;
 }
 
 export default function AbstractModal({
   children,
+  title = "",
   handleCloseModal,
 }: PropsWithChildren & AbstractModalParams) {
   return (
@@ -22,6 +24,7 @@ export default function AbstractModal({
         }
       }}
     >
+      {title && <h3 className={clsx("h3", s["modal-title"])}>{title}</h3>}
       {children}
     </Modal>
   );

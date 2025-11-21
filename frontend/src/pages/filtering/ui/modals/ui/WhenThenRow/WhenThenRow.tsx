@@ -70,16 +70,15 @@ export default function WhenThenRow<T>({
           errors={errors}
           placeholder="Результат"
         />
+        <button
+          type="button"
+          onClick={removeCondition}
+          className={clsx("button", s["delete-condition-button"])}
+          title="Удалить условие"
+        >
+          <Icons.Delete />
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={removeCondition}
-        className={clsx("button", s["delete-condition-button"])}
-        title="Удалить условие"
-      >
-        <Icons.Delete />
-      </button>
     </div>
   );
 }

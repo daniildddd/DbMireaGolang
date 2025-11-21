@@ -57,7 +57,7 @@ export default function NullHandlingRuleModal({
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
       <Form onSubmit={handleSubmit(onSumbit)} formId={formId.current}>
-        <h2 className="h1 filter-modal__title">
+        <h2 className="h2 filter-modal__title">
           Обработка <code>NULL</code>
         </h2>
         <FormRow label="Функция">

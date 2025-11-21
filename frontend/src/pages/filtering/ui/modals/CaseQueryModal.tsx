@@ -78,7 +78,7 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
   return (
     <AbstractModal handleCloseModal={handleCloseModal}>
       <Form onSubmit={handleSubmit(onSubmit)} formId={formId.current}>
-        <h2 className="h1 filter-modal__title">
+        <h2 className="h2 filter-modal__title">
           Добавить <code>CASE</code> выражение
         </h2>
 
@@ -95,9 +95,7 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
         </FormRow>
 
         <div className={s["when-then-condition-set"]}>
-          <h3>
-            Условия <code>WHEN-THEN</code>
-          </h3>
+          <h3 className="h3">Условия</h3>
 
           <div className={s.conditions}>
             {fields.map((field, index) => (
