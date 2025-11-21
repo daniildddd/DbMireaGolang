@@ -296,11 +296,12 @@ export default function InsertPage() {
                           field.type.includes("double") ||
                           field.type.includes("real") ||
                           field.type.includes("decimal") ? (
-                          // NUMERIC тип - ЦИФРЫ, ТОЧКА И МИНУС
+                          // NUMERIC тип - ЦИФРЫ, ТОЧКА И МИНУС (макс 20 символов)
                           <input
                             type="text"
                             inputMode="decimal"
-                            placeholder="Введите число"
+                            placeholder="Введите число (макс 20 символов)"
+                            maxLength={20}
                             value={String(formValues[field.name] || "")}
                             onKeyDown={(e) => {
                               const key = e.key;
