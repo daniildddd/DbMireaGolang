@@ -91,6 +91,11 @@ export default function JoinPage() {
   };
 
   const handleUpdateJoin = (id: string, updates: Partial<JoinClause>) => {
+    // Проверяем если пользователь выбрал основную таблицу в JOIN
+    if (updates.table && updates.table === mainTable) {
+      notifier.error("JOIN таблица не может совпадать с основной таблицей");
+      return;
+    }
     setJoins(joins.map((j) => (j.id === id ? { ...j, ...updates } : j)));
   };
 
@@ -100,20 +105,24 @@ export default function JoinPage() {
     let sql = `SELECT * FROM ${mainTable}`;
 
     joins.forEach((join) => {
+      // Пропускаем если таблица совпадает с основной или не выбрана
       if (
-        join.table &&
-        join.mainFields.length > 0 &&
-        join.joinFields.length > 0
+        !join.table ||
+        join.table === mainTable ||
+        join.mainFields.length === 0 ||
+        join.joinFields.length === 0
       ) {
-        // Объединяем условия для всех выбранных полей
-        const conditions = join.mainFields
-          .map((mainField, idx) => {
-            const joinField = join.joinFields[idx] || join.joinFields[0];
-            return `${mainTable}.${mainField} = ${join.table}.${joinField}`;
-          })
-          .join(" AND ");
-        sql += ` ${join.type} JOIN ${join.table} ON ${conditions}`;
+        return;
       }
+
+      // Объединяем условия для всех выбранных полей
+      const conditions = join.mainFields
+        .map((mainField, idx) => {
+          const joinField = join.joinFields[idx] || join.joinFields[0];
+          return `${mainTable}.${mainField} = ${join.table}.${joinField}`;
+        })
+        .join(" AND ");
+      sql += ` ${join.type} JOIN ${join.table} ON ${conditions}`;
     });
 
     return sql;
