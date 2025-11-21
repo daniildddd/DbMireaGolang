@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import * as sql from "../lib/generateSqlQuery";
+import * as sql from "../../../shared/lib/generateSqlQuery";
 import { Filters, FilterType } from "@/shared/types/filtering";
 
 describe.concurrent("getFilterIfPresent", () => {

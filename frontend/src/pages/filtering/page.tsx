@@ -6,7 +6,7 @@ import clsx from "clsx";
 import FilterSelectionGrid from "./ui/FilterSelectionGrid/FilterSelectionGrid";
 import FilterContext from "@/shared/context/FilterContext";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
-import { generateSqlQuery } from "@/features/sqlQueryGenerator/lib/generateSqlQuery";
+import { generateSqlQuery } from "@/shared/lib/generateSqlQuery";
 import useTableNames from "@/shared/hooks/useTableNames";
 import useGlobalContext from "@/shared/hooks/useGlobalContext";
 import { EMPTY_FILTERS } from "@/shared/const";
@@ -25,7 +25,7 @@ import {
 import Loading from "@/shared/ui/components/Loading/Loading";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 import useNotifications from "@/shared/hooks/useNotifications";
-import GeneratedSQL from "@/features/sqlQueryGenerator/ui/GeneratedSQL";
+import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
 import useApiMiddleware from "@/shared/hooks/useApiMiddleware";
 import { TableData } from "@/types";
 import { DataTable } from "@/shared/ui/components/Tables";
