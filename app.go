@@ -53,9 +53,10 @@ type TablesListResponse struct {
 }
 
 type FieldSchema struct {
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Constraints string `json:"constraints"`
+	Name        string   `json:"name"`
+	Type        string   `json:"type"`
+	Constraints string   `json:"constraints"`
+	EnumValues  []string `json:"enumValues,omitempty"`
 }
 
 type TableDataResponse struct {
@@ -674,10 +675,22 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 		}
 		cons = append(cons, consMap[name]...)
 
+		// Получаем enum значения если тип enum
+		var enumValues []string
+		if strings.Contains(colType, "enum") || strings.Contains(colType, "character varying") {
+			// Для enum типов
+			if strings.HasPrefix(strings.ToLower(colType), "enum") {
+				database.DB.Raw(`
+					SELECT enum_range(NULL::` + tableName + `.` + name + `)
+				`).Scan(&enumValues)
+			}
+		}
+
 		fields = append(fields, FieldSchema{
 			Name:        name,
 			Type:        strings.ToLower(colType),
 			Constraints: strings.Join(cons, ", "),
+			EnumValues:  enumValues,
 		})
 	}
 

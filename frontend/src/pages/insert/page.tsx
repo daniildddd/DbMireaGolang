@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, TextInput, Select } from "@gravity-ui/uikit";
+import { Button, Select } from "@gravity-ui/uikit";
 import s from "./page.module.sass";
 import clsx from "clsx";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
@@ -10,8 +10,11 @@ import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 import Loading from "@/shared/ui/components/Loading/Loading";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
-import { useCurrentTableSchema } from "@/shared/lib/hooks/useTableSchema";
-import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
+import {
+  GetTableSchema,
+  ExecuteCustomQuery,
+} from "@/shared/lib/wailsjs/go/main/App";
+import { main } from "@/shared/lib/wailsjs/go/models";
 
 interface FormValues {
   [key: string]: string | number | boolean | null;
@@ -19,33 +22,37 @@ interface FormValues {
 
 export default function InsertPage() {
   const tableNames = useTableNames();
-  const { globalContext } = useGlobalContext();
+  const { globalContext, setGlobalContext } = useGlobalContext();
   const notifier = useNotifications();
   const [selectedTable, setSelectedTable] = useState("");
   const [formValues, setFormValues] = useState<FormValues>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastInsertedId, setLastInsertedId] = useState<number | null>(null);
+  const [schema, setSchema] = useState<main.FieldSchema[]>([]);
+  const [schemaLoading, setSchemaLoading] = useState(false);
 
-  // Загружаем схему для выбранной таблицы через отдельный хук
-  const useTableSchemaForInsert = (tableName: string) => {
-    const { isPending, error, data } = useCurrentTableSchema();
-    return { isPending, error, data };
-  };
-
-  const tableSchema = useTableSchemaForInsert(selectedTable);
-
-  // При выборе новой таблицы, обновляем контекст
+  // При выборе новой таблицы, обновляем контекст и очищаем форму
   useEffect(() => {
     if (selectedTable) {
-      const newContext = { ...globalContext, currentTable: selectedTable };
-      // Пересоздаем контекст если нужно
+      setGlobalContext({ ...globalContext, currentTable: selectedTable });
+      setFormValues({});
+      setLastInsertedId(null);
+
+      // Загружаем схему из backend
+      setSchemaLoading(true);
+      GetTableSchema(selectedTable)
+        .then((fields) => {
+          setSchema(fields || []);
+        })
+        .catch(() => {
+          setSchema([]);
+        })
+        .finally(() => setSchemaLoading(false));
     }
   }, [selectedTable]);
 
   const handleTableSelect = (table: string) => {
     setSelectedTable(table);
-    setFormValues({});
-    setLastInsertedId(null);
   };
 
   const handleInputChange = (fieldName: string, value: any) => {
@@ -56,11 +63,10 @@ export default function InsertPage() {
   };
 
   const generateInsertQuery = (): string => {
-    if (!selectedTable || !tableSchema.data) return "";
+    if (!selectedTable || !schema) return "";
 
-    const fields = tableSchema.data.filter(
-      (field) =>
-        !field.constraints?.includes("PRIMARY KEY") || field.name !== "id"
+    const fields = schema.filter(
+      (field) => !field.constraints?.includes("PRIMARY KEY")
     );
 
     const columns = fields.map((f) => f.name);
@@ -72,10 +78,10 @@ export default function InsertPage() {
 
       // Типы, которые нужно заключить в кавычки
       if (
-        field.type === "VARCHAR" ||
-        field.type === "TEXT" ||
-        field.type === "DATE" ||
-        field.type === "TIMESTAMP"
+        field.type.includes("character varying") ||
+        field.type === "text" ||
+        field.type.includes("date") ||
+        field.type.includes("timestamp")
       ) {
         const escapedValue = String(value).replace(/'/g, "''");
         return `'${escapedValue}'`;
@@ -95,9 +101,24 @@ export default function InsertPage() {
       return;
     }
 
-    if (!tableSchema.data || tableSchema.data.length === 0) {
+    if (!schema || schema.length === 0) {
       notifier.error("Не удалось загрузить схему таблицы");
       return;
+    }
+
+    // Проверяем обязательные поля
+    const editableFields = schema.filter(
+      (field) => !field.constraints?.includes("PRIMARY KEY")
+    );
+
+    for (const field of editableFields) {
+      if (field.constraints?.includes("NOT NULL")) {
+        const value = formValues[field.name];
+        if (value === null || value === undefined || value === "") {
+          notifier.error(`Поле "${field.name}" обязательно для заполнения`);
+          return;
+        }
+      }
     }
 
     const query = generateInsertQuery();
@@ -110,12 +131,12 @@ export default function InsertPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await ApiMiddleware.executeCustomQuery(query);
+      const result = await ExecuteCustomQuery({ query });
 
       if (result.error) {
-        notifier.error(`Ошибка: ${result.error}`);
+        notifier.error("Не удалось добавить запись");
       } else {
-        notifier.success("Данные успешно добавлены в таблицу!");
+        notifier.success("Запись успешно добавлена!");
 
         // Пытаемся получить ID последней вставленной записи
         // В PostgreSQL это работает через RETURNING id
@@ -146,13 +167,8 @@ export default function InsertPage() {
   if (tableNames.error) return notifyAndReturn(notifier, tableNames.error);
   if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
 
-  const tableOptions = tableNames.data.map((table) => ({
-    value: table,
-    label: table,
-  }));
-
   // Фильтруем поля (исключаем PRIMARY KEY поля)
-  const editableFields = (tableSchema.data || []).filter(
+  const editableFields = (schema || []).filter(
     (field) => !field.constraints?.includes("PRIMARY KEY")
   );
 
@@ -165,16 +181,21 @@ export default function InsertPage() {
           {/* Выбор таблицы */}
           <div className={s["table-selector"]}>
             <label className={s["section-title"]}>Выберите таблицу</label>
-            <Select
-              value={[selectedTable]}
-              options={tableOptions}
-              onUpdate={(value) => handleTableSelect(value[0] || "")}
-              placeholder="Выберите таблицу для вставки данных"
-            />
-          </div>
-
+            <select
+              value={selectedTable}
+              onChange={(e) => handleTableSelect(e.target.value)}
+              className={s["table-select"]}
+            >
+              <option value="">Выберите таблицу для вставки данных</option>
+              {tableNames.data.map((table) => (
+                <option key={table} value={table}>
+                  {table}
+                </option>
+              ))}
+            </select>
+          </div>{" "}
           {/* Форма вставки данных */}
-          {selectedTable && tableSchema.data && (
+          {selectedTable && schema.length > 0 && (
             <>
               {editableFields.length === 0 ? (
                 <div className={s["no-fields"]}>
@@ -196,7 +217,7 @@ export default function InsertPage() {
                         )}
                       </label>
 
-                      {field.type === "BOOLEAN" ? (
+                      {field.type === "boolean" ? (
                         <Select
                           value={
                             formValues[field.name] !== undefined
@@ -215,22 +236,72 @@ export default function InsertPage() {
                             )
                           }
                         />
-                      ) : (
-                        <TextInput
-                          type={
-                            field.type === "INT" || field.type === "BIGINT"
-                              ? "number"
-                              : "text"
+                      ) : field.enumValues && field.enumValues.length > 0 ? (
+                        // Enum тип - используем Select
+                        <Select
+                          value={
+                            formValues[field.name] !== undefined
+                              ? [String(formValues[field.name])]
+                              : [""]
                           }
-                          placeholder={`Введите ${field.name}${
-                            field.type === "DATE" || field.type === "TIMESTAMP"
-                              ? " (YYYY-MM-DD или YYYY-MM-DD HH:MM:SS)"
-                              : ""
-                          }`}
-                          value={String(formValues[field.name] || "")}
+                          options={[
+                            { value: "", label: "Не выбрано" },
+                            ...field.enumValues.map((val) => ({
+                              value: val,
+                              label: val,
+                            })),
+                          ]}
                           onUpdate={(value) =>
-                            handleInputChange(field.name, value)
+                            handleInputChange(
+                              field.name,
+                              value[0] === "" ? null : value[0]
+                            )
                           }
+                        />
+                      ) : field.type === "integer" ||
+                        field.type === "bigint" ||
+                        field.type.includes("int") ? (
+                        // INT тип - ТОЛЬКО ЦИФРЫ И МИНУС
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="Введите число"
+                          value={String(formValues[field.name] || "")}
+                          onKeyDown={(e) => {
+                            const key = e.key;
+                            const isNumber = /[0-9]/.test(key);
+                            const isMinus =
+                              key === "-" && formValues[field.name] === "";
+                            const isControl = [
+                              "Backspace",
+                              "Delete",
+                              "ArrowLeft",
+                              "ArrowRight",
+                              "Tab",
+                            ].includes(key);
+
+                            if (!isNumber && !isMinus && !isControl) {
+                              e.preventDefault();
+                            }
+                          }}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === "" || /^-?\d*$/.test(value)) {
+                              handleInputChange(field.name, value);
+                            }
+                          }}
+                          className={s["form-input"]}
+                        />
+                      ) : (
+                        // Текстовый тип - РАЗРЕШЕНЫ ВСЕ СИМВОЛЫ
+                        <input
+                          type="text"
+                          placeholder="Введите текст"
+                          value={String(formValues[field.name] || "")}
+                          onChange={(e) => {
+                            handleInputChange(field.name, e.target.value);
+                          }}
+                          className={s["form-input"]}
                         />
                       )}
                     </div>
@@ -253,21 +324,6 @@ export default function InsertPage() {
                       Очистить форму
                     </Button>
                   </div>
-                </div>
-              )}
-
-              {/* Предпросмотр SQL запроса */}
-              {selectedTable && (
-                <div className={s["sql-preview"]}>
-                  <div className={s["sql-title"]}>Предпросмотр запроса</div>
-                  <pre className={s["sql-code"]}>{generateInsertQuery()}</pre>
-                </div>
-              )}
-
-              {/* Успешное добавление */}
-              {lastInsertedId && (
-                <div className={s["success-message"]}>
-                  <p>✓ Запись успешно добавлена (ID: {lastInsertedId})</p>
                 </div>
               )}
             </>
