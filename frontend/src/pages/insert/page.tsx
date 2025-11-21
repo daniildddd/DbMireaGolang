@@ -249,46 +249,41 @@ export default function InsertPage() {
                         </label>
 
                         {field.type === "boolean" ? (
-                          <Select
-                            value={
-                              formValues[field.name] !== undefined
-                                ? [String(formValues[field.name])]
-                                : [""]
-                            }
-                            options={[
-                              { value: "", label: "Не выбрано" },
-                              { value: "true", label: "Да" },
-                              { value: "false", label: "Нет" },
-                            ]}
-                            onUpdate={(value) =>
+                          <select
+                            value={String(formValues[field.name] ?? "")}
+                            onChange={(e) =>
                               handleInputChange(
                                 field.name,
-                                value[0] === "" ? null : value[0] === "true"
+                                e.target.value === ""
+                                  ? null
+                                  : e.target.value === "true"
                               )
                             }
-                          />
+                            className={s["form-input"]}
+                          >
+                            <option value="">Не выбрано</option>
+                            <option value="true">Да</option>
+                            <option value="false">Нет</option>
+                          </select>
                         ) : field.enumValues && field.enumValues.length > 0 ? (
-                          // Enum тип - используем Select
-                          <Select
-                            value={
-                              formValues[field.name] !== undefined
-                                ? [String(formValues[field.name])]
-                                : [""]
-                            }
-                            options={[
-                              { value: "", label: "Не выбрано" },
-                              ...field.enumValues.map((val) => ({
-                                value: val,
-                                label: val,
-                              })),
-                            ]}
-                            onUpdate={(value) =>
+                          // Enum тип - используем select
+                          <select
+                            value={String(formValues[field.name] ?? "")}
+                            onChange={(e) =>
                               handleInputChange(
                                 field.name,
-                                value[0] === "" ? null : value[0]
+                                e.target.value === "" ? null : e.target.value
                               )
                             }
-                          />
+                            className={s["form-input"]}
+                          >
+                            <option value="">Не выбрано</option>
+                            {field.enumValues.map((val) => (
+                              <option key={val} value={val}>
+                                {val}
+                              </option>
+                            ))}
+                          </select>
                         ) : field.type === "integer" ||
                           field.type === "bigint" ||
                           field.type.includes("int") ||

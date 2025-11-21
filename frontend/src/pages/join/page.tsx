@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Select, Button } from "@gravity-ui/uikit";
+import { Button } from "@gravity-ui/uikit";
 import s from "./page.module.sass";
 import clsx from "clsx";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
@@ -11,6 +11,7 @@ import Loading from "@/shared/ui/components/Loading/Loading";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 import { useCurrentTableSchema } from "@/shared/lib/hooks/useTableSchema";
+import useTableSchema from "@/shared/lib/hooks/useTableSchema";
 import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
 import QueryResults from "@/shared/ui/components/QueryResults/QueryResults";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
@@ -21,8 +22,8 @@ interface JoinClause {
   id: string;
   type: JoinType;
   table: string;
-  mainField: string;
-  joinField: string;
+  mainFields: string[]; // Массив для множественного выбора
+  joinFields: string[]; // Массив для множественного выбора
 }
 
 export default function JoinPage() {
@@ -31,33 +32,56 @@ export default function JoinPage() {
   const currentTableSchema = useCurrentTableSchema();
   const notifier = useNotifications();
   const [queryResults, setQueryResults] = useState<any>(null);
+  const [tableSchemas, setTableSchemas] = useState<Record<string, any[]>>({});
 
   const [mainTable, setMainTable] = useState("");
   const [joins, setJoins] = useState<JoinClause[]>([]);
 
   // Устанавливаем первую таблицу при загрузке
-  if (
-    tableNames.data &&
-    tableNames.data.length > 0 &&
-    !globalContext.currentTable
-  ) {
-    setGlobalContext({ ...globalContext, currentTable: tableNames.data[0] });
-  }
+  useEffect(() => {
+    if (
+      tableNames.data &&
+      tableNames.data.length > 0 &&
+      !globalContext.currentTable
+    ) {
+      setGlobalContext({ ...globalContext, currentTable: tableNames.data[0] });
+    }
+  }, [tableNames.data]);
 
   // Инициализируем основную таблицу
   useEffect(() => {
     if (globalContext.currentTable && !mainTable) {
       setMainTable(globalContext.currentTable);
+      // Сразу загружаем её поля в кэш
+      if (
+        !tableSchemas[globalContext.currentTable] &&
+        currentTableSchema.data
+      ) {
+        setTableSchemas((prev) => ({
+          ...prev,
+          [globalContext.currentTable]: currentTableSchema.data || [],
+        }));
+      }
     }
-  }, [globalContext.currentTable]);
+  }, [globalContext.currentTable, currentTableSchema.data]);
+
+  // Когда основная таблица изменяется, загружаем её поля
+  useEffect(() => {
+    if (mainTable && !tableSchemas[mainTable] && currentTableSchema.data) {
+      setTableSchemas((prev) => ({
+        ...prev,
+        [mainTable]: currentTableSchema.data || [],
+      }));
+    }
+  }, [mainTable]);
 
   const handleAddJoin = () => {
     const newJoin: JoinClause = {
       id: Date.now().toString(),
       type: "INNER",
       table: "",
-      mainField: "",
-      joinField: "",
+      mainFields: [],
+      joinFields: [],
     };
     setJoins([...joins, newJoin]);
   };
@@ -76,8 +100,19 @@ export default function JoinPage() {
     let sql = `SELECT * FROM ${mainTable}`;
 
     joins.forEach((join) => {
-      if (join.table && join.mainField && join.joinField) {
-        sql += ` ${join.type} JOIN ${join.table} ON ${mainTable}.${join.mainField} = ${join.table}.${join.joinField}`;
+      if (
+        join.table &&
+        join.mainFields.length > 0 &&
+        join.joinFields.length > 0
+      ) {
+        // Объединяем условия для всех выбранных полей
+        const conditions = join.mainFields
+          .map((mainField, idx) => {
+            const joinField = join.joinFields[idx] || join.joinFields[0];
+            return `${mainTable}.${mainField} = ${join.table}.${joinField}`;
+          })
+          .join(" AND ");
+        sql += ` ${join.type} JOIN ${join.table} ON ${conditions}`;
       }
     });
 
@@ -94,31 +129,58 @@ export default function JoinPage() {
     }
   };
 
+  const handleExecuteGeneratedQuery = () => {
+    const query = generateSQL();
+    if (!query) {
+      notifier.error("Выберите таблицу и настройте JOINs");
+      return;
+    }
+    handleExecuteQuery(query);
+  };
+
   const query = generateSQL();
 
   if (tableNames.isPending) return <Loading />;
   if (tableNames.error) return notifyAndReturn(notifier, tableNames.error);
   if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
 
-  const tableOptions = tableNames.data.map((table) => ({
-    value: table,
-    label: table,
-  }));
-
-  // Получаем поля для текущей основной таблицы
-  const mainTableSchema = mainTable ? currentTableSchema.data || [] : [];
-  const mainTableFields = mainTableSchema.map((f) => ({
+  // Получаем поля для текущей основной таблицы из кэша или текущей схемы
+  const mainTableFields = (
+    tableSchemas[mainTable] ||
+    currentTableSchema.data ||
+    []
+  ).map((f: any) => ({
     value: f.name,
     label: f.name,
   }));
 
   // Функция для загрузки полей для join таблицы
   const getJoinTableFields = (tableName: string) => {
-    // TODO: Здесь нужно загрузить поля для конкретной таблицы
-    // Сейчас возвращаем пустой массив
+    if (!tableName) return [];
+
+    // Если уже загружены в кэш, вернем из кэша
+    if (tableSchemas[tableName]) {
+      return tableSchemas[tableName].map((f: any) => ({
+        value: f.name,
+        label: f.name,
+      }));
+    }
+
+    // Загружаем поля для таблицы асинхронно
+    (async () => {
+      try {
+        const fields = await ApiMiddleware.getTableSchema(tableName);
+        setTableSchemas((prev) => ({
+          ...prev,
+          [tableName]: fields || [],
+        }));
+      } catch (error) {
+        console.error(`Ошибка загрузки полей для ${tableName}:`, error);
+      }
+    })();
+
     return [];
   };
-
   return (
     <ContentWrapper>
       <section className={clsx("section")}>
@@ -128,11 +190,18 @@ export default function JoinPage() {
           {/* Основная таблица */}
           <div className={s["main-table-selector"]}>
             <label className={s["section-title"]}>Основная таблица</label>
-            <Select
-              value={[mainTable]}
-              options={tableOptions}
-              onUpdate={(value) => setMainTable(value[0] || "")}
-            />
+            <select
+              value={mainTable}
+              onChange={(e) => setMainTable(e.target.value)}
+              className={s["table-select"]}
+            >
+              <option value="">Выберите таблицу</option>
+              {tableNames.data.map((table) => (
+                <option key={table} value={table}>
+                  {table}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Список JOIN условий */}
@@ -142,57 +211,94 @@ export default function JoinPage() {
                 <div key={join.id} className={s["join-clause"]}>
                   <div className={s["join-clause__row"]}>
                     <label className={s["section-title"]}>Тип</label>
-                    <Select
-                      value={[join.type]}
-                      options={[
-                        { value: "INNER", label: "INNER JOIN" },
-                        { value: "LEFT", label: "LEFT JOIN" },
-                        { value: "RIGHT", label: "RIGHT JOIN" },
-                        { value: "FULL", label: "FULL JOIN" },
-                      ]}
-                      onUpdate={(value) =>
+                    <select
+                      value={join.type}
+                      onChange={(e) =>
                         handleUpdateJoin(join.id, {
-                          type: value[0] as JoinType,
+                          type: e.target.value as JoinType,
                         })
                       }
-                    />
+                      className={s["table-select"]}
+                    >
+                      <option value="INNER">INNER JOIN</option>
+                      <option value="LEFT">LEFT JOIN</option>
+                      <option value="RIGHT">RIGHT JOIN</option>
+                      <option value="FULL">FULL JOIN</option>
+                    </select>
                   </div>
 
                   <div className={s["join-clause__row"]}>
                     <label className={s["section-title"]}>Таблица</label>
-                    <Select
-                      value={[join.table]}
-                      options={tableOptions}
-                      onUpdate={(value) =>
-                        handleUpdateJoin(join.id, { table: value[0] || "" })
+                    <select
+                      value={join.table}
+                      onChange={(e) =>
+                        handleUpdateJoin(join.id, {
+                          table: e.target.value || "",
+                        })
                       }
-                    />
+                      className={s["table-select"]}
+                    >
+                      <option value="">Выберите таблицу</option>
+                      {tableNames.data.map((table) => (
+                        <option key={table} value={table}>
+                          {table}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className={s["join-clause__row"]}>
                     <label className={s["section-title"]}>
-                      Поле из {mainTable}
+                      Поля из {mainTable} (несколько)
                     </label>
-                    <Select
-                      value={[join.mainField]}
-                      options={mainTableFields}
-                      onUpdate={(value) =>
-                        handleUpdateJoin(join.id, { mainField: value[0] || "" })
-                      }
-                    />
+                    <select
+                      multiple
+                      value={join.mainFields}
+                      onChange={(e) => {
+                        const selected = Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value
+                        );
+                        handleUpdateJoin(join.id, {
+                          mainFields: selected,
+                        });
+                      }}
+                      className={s["table-select"]}
+                      style={{ minHeight: "100px" }}
+                    >
+                      {mainTableFields.map((field) => (
+                        <option key={field.value} value={field.value}>
+                          {field.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className={s["join-clause__row"]}>
                     <label className={s["section-title"]}>
-                      Поле из {join.table}
+                      Поля из {join.table} (несколько)
                     </label>
-                    <Select
-                      value={[join.joinField]}
-                      options={getJoinTableFields(join.table)}
-                      onUpdate={(value) =>
-                        handleUpdateJoin(join.id, { joinField: value[0] || "" })
-                      }
-                    />
+                    <select
+                      multiple
+                      value={join.joinFields}
+                      onChange={(e) => {
+                        const selected = Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value
+                        );
+                        handleUpdateJoin(join.id, {
+                          joinFields: selected,
+                        });
+                      }}
+                      className={s["table-select"]}
+                      style={{ minHeight: "100px" }}
+                    >
+                      {getJoinTableFields(join.table).map((field) => (
+                        <option key={field.value} value={field.value}>
+                          {field.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className={s["join-clause__delete"]}>
@@ -219,9 +325,21 @@ export default function JoinPage() {
           </Button>
         </div>
 
-        {/* SQL запрос */}
-        <div className={s["sql-section"]}>
+        {/* SQL запрос - СКРЫТО */}
+        {/* <div className={s["sql-section"]}>
           <GeneratedSQL query={query} onExecute={handleExecuteQuery} />
+        </div> */}
+
+        {/* Кнопка выполнения запроса */}
+        <div className={s["execute-button-section"]}>
+          <Button
+            onClick={handleExecuteGeneratedQuery}
+            view="action"
+            size="l"
+            className={s["execute-button"]}
+          >
+            Выполнить запрос
+          </Button>
         </div>
 
         {/* Результаты запроса */}

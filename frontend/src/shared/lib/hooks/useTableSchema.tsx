@@ -28,17 +28,8 @@ export default function useTableSchema(
 
 export function useCurrentTableSchema(dependencies: any[] = []) {
   const { globalContext } = useGlobalContext();
-
-  // Если currentTable не установлена, не отправляем запрос
-  if (!globalContext.currentTable) {
-    return {
-      isPending: false,
-      error: null,
-      data: [] as main.FieldSchema[],
-    };
-  }
-
-  return useTableSchema(globalContext.currentTable, [
+  // Всегда вызываем useTableSchema (который сам проверит tableName)
+  return useTableSchema(globalContext.currentTable || "", [
     ...dependencies,
     globalContext.currentTable,
   ]);
