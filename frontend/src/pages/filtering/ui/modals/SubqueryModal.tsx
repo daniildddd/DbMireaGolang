@@ -158,10 +158,7 @@ export default function SubqueryModal({
               errors={errors}
             >
               {subqueryTableSchema.data.map((field) => (
-                <option
-                  key={`${field.name}-${field.type}`}
-                  value={`${field.name}-${field.type}`}
-                >
+                <option key={`${field.name}-${field.type}`} value={field.name}>
                   {field.name} ({field.type})
                 </option>
               ))}
@@ -183,7 +180,7 @@ export default function SubqueryModal({
                   currentTableSchema.data.map((field: main.FieldSchema) => (
                     <option
                       key={`${field.name}-${field.type}`}
-                      value={`${field.name}-${field.type}`}
+                      value={field.name}
                     >
                       {field.name} ({field.type})
                     </option>
