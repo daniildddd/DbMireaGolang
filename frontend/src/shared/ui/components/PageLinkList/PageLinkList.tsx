@@ -19,6 +19,9 @@ export default function PageLinkList() {
       <NavLink to="/join" className={getClassNames}>
         JOIN
       </NavLink>
+      <NavLink to="/insert" className={getClassNames}>
+        INSERT
+      </NavLink>
     </nav>
   );
 }

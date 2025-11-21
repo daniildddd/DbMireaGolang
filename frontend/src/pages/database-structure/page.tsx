@@ -13,17 +13,26 @@ import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 
 export default function DatabaseStructurePage() {
   const tableNames = useTableNames();
-  const currentTableSchema = useCurrentTableSchema();
   const { globalContext, setGlobalContext } = useGlobalContext();
   const notifier = useNotifications();
 
-  if (tableNames.isPending || currentTableSchema.isPending) return <Loading />;
+  // Устанавливаем первую таблицу при загрузке (только если tableNames загружены)
+  if (
+    tableNames.data &&
+    tableNames.data.length > 0 &&
+    !globalContext.currentTable
+  ) {
+    setGlobalContext({ ...globalContext, currentTable: tableNames.data[0] });
+  }
+
+  const currentTableSchema = useCurrentTableSchema();
+
+  if (tableNames.isPending) return <Loading />;
   if (tableNames.error) notifyAndReturn(notifier, tableNames.error);
   if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
-  if (currentTableSchema.error) notifyAndReturn(notifier, tableNames.error);
-
-  // Устанавливаем первую таблицу при загрузке
-  setGlobalContext({ ...globalContext, currentTable: tableNames[0] });
+  if (currentTableSchema.isPending) return <Loading />;
+  if (currentTableSchema.error)
+    notifyAndReturn(notifier, currentTableSchema.error);
 
   return (
     <ContentWrapper>
@@ -33,7 +42,7 @@ export default function DatabaseStructurePage() {
         </h2>
         <SchemaTable
           tableName={globalContext.currentTable}
-          tableSchema={currentTableSchema.data}
+          tableSchema={currentTableSchema.data || []}
         />
       </section>
     </ContentWrapper>

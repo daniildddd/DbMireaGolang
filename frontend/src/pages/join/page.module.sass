@@ -1,31 +1,60 @@
 @use "@/shared/ui/styles/colors"
 
-.join-section
+.join-container
     display: flex
     flex-direction: column
-    gap: 1rem
+    gap: 1.5rem
 
-.join-section__title
+.section-title
     font-weight: 600
-    display: block
-    margin-bottom: 10px
-    font-size: 1.2rem
+    font-size: 1rem
+    margin-bottom: 0.5rem
 
-.join-section__description
-    font-size: 0.6rem
-    color: grey
+.main-table-selector
+    display: flex
+    flex-direction: column
+    gap: 0.5rem
+    margin-bottom: 1rem
 
-.join-section__available-tables-list
-    padding: 1rem
-    border-top: 1px solid colors.$pale-gray-border-clr // FIXME: Импорт не работает
-    border-bottom: 1px solid colors.$pale-gray-border-clr
-
+.joins-list
     display: flex
     flex-direction: column
     gap: 1rem
+    padding: 1rem
+    background-color: #f5f5f5
+    border-radius: 4px
 
-.sql-output
+.join-clause
     display: flex
     flex-direction: column
-    justify-content: left
+    gap: 0.75rem
+    padding: 1rem
+    background-color: white
+    border-left: 3px solid #0066cc
+    border-radius: 2px
+
+.join-clause__row
+    display: grid
+    grid-template-columns: 100px 1fr
+    gap: 0.75rem
+    align-items: center
+
+.join-clause__delete
+    margin-top: 0.5rem
+
+.add-join-button
+    align-self: flex-start
+    margin-top: 0.5rem
+
+.sql-section
+    display: flex
+    flex-direction: column
+    gap: 0.5rem
+    margin-top: 1rem
+
+.results-section
+    display: flex
+    flex-direction: column
+    gap: 0.5rem
+    margin-top: 1rem
     gap: 1rem

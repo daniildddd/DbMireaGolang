@@ -336,6 +336,9 @@ func (a *App) DeleteField(req DeleteFieldRequest) RecreateTablesResult {
 		}
 	}
 
+	// Очищаем кэш PostgreSQL после модификации
+	database.DB.Exec("DISCARD PLANS")
+
 	logger.Info("Поле успешно удалено: %s.%s", req.TableName, req.FieldName)
 	return RecreateTablesResult{
 		Success: true,
@@ -510,6 +513,9 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}
 
+	// Очищаем кэш PostgreSQL после модификации
+	database.DB.Exec("DISCARD PLANS")
+
 	logger.Info("Поле успешно изменено: %s.%s", req.TableName, req.NewName)
 	return RecreateTablesResult{
 		Success: true,
@@ -527,9 +533,20 @@ func (a *App) RecreateTables() RecreateTablesResult {
 			Error:   err.Error(),
 		}
 	}
+
+	// Загружаем тестовые данные после создания таблиц
+	err = database.SeedData()
+	if err != nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Таблицы пересозданы, но не удалось загрузить тестовые данные",
+			Error:   err.Error(),
+		}
+	}
+
 	return RecreateTablesResult{
 		Success: true,
-		Message: "Таблицы успешно пересозданы",
+		Message: "Таблицы успешно пересозданы и заполнены данными",
 	}
 }
 
@@ -932,10 +949,28 @@ func (a *App) ExecuteCustomQuery(req CustomQueryRequest) TableDataResponse {
 	}
 
 	var rows []map[string]interface{}
+
+	// Используем Raw с параметризацией для безопасности и очистки кэша
 	result := database.DB.Raw(req.Query).Scan(&rows)
+
 	if result.Error != nil {
 		logger.Error("ExecuteCustomQuery error: %v\nQuery: %s", result.Error, req.Query)
-		return TableDataResponse{Error: result.Error.Error()}
+
+		// Если ошибка связана с кэшем план, пытаемся очистить его
+		if strings.Contains(result.Error.Error(), "cached plan") {
+			logger.Info("Обнаружена ошибка кэша плана, очищаем подготовленные выражения")
+			// В PostgreSQL используем DISCARD PLANS для очистки кэша
+			database.DB.Exec("DISCARD PLANS")
+
+			// Повторно выполняем запрос
+			result = database.DB.Raw(req.Query).Scan(&rows)
+			if result.Error != nil {
+				logger.Error("ExecuteCustomQuery retry failed: %v\nQuery: %s", result.Error, req.Query)
+				return TableDataResponse{Error: result.Error.Error()}
+			}
+		} else {
+			return TableDataResponse{Error: result.Error.Error()}
+		}
 	}
 
 	if len(rows) == 0 {
@@ -1009,7 +1044,21 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 	result := database.DB.Raw(query).Scan(&rows)
 	if result.Error != nil {
 		logger.Error("ExecuteJoinQuery error: %v\nQuery: %s", result.Error, query)
-		return TableDataResponse{Error: result.Error.Error()}
+
+		// Если ошибка связана с кэшем план, пытаемся очистить его
+		if strings.Contains(result.Error.Error(), "cached plan") {
+			logger.Info("Обнаружена ошибка кэша плана, очищаем подготовленные выражения")
+			database.DB.Exec("DISCARD PLANS")
+
+			// Повторно выполняем запрос
+			result = database.DB.Raw(query).Scan(&rows)
+			if result.Error != nil {
+				logger.Error("ExecuteJoinQuery retry failed: %v\nQuery: %s", result.Error, query)
+				return TableDataResponse{Error: result.Error.Error()}
+			}
+		} else {
+			return TableDataResponse{Error: result.Error.Error()}
+		}
 	}
 
 	if len(rows) == 0 {

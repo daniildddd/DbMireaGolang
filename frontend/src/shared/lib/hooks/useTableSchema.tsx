@@ -10,8 +10,9 @@ export default function useTableSchema(
 ) {
   const notifier = useNotifications();
 
+  // Если tableName пуст, не отправляем запрос
   const { isPending, error, data } = useQuery({
-    queryKey: ["tableSchema", ...dependencies],
+    queryKey: ["tableSchema", tableName, ...dependencies],
     queryFn: () =>
       ApiMiddleware.getTableSchema(tableName)
         .then((fields) => fields)
@@ -19,6 +20,7 @@ export default function useTableSchema(
           notifier.error(err);
           return [] as main.FieldSchema[];
         }),
+    enabled: !!tableName, // Отключаем запрос если tableName пуст
   });
 
   return { isPending, error, data };
@@ -26,6 +28,16 @@ export default function useTableSchema(
 
 export function useCurrentTableSchema(dependencies: any[] = []) {
   const { globalContext } = useGlobalContext();
+
+  // Если currentTable не установлена, не отправляем запрос
+  if (!globalContext.currentTable) {
+    return {
+      isPending: false,
+      error: null,
+      data: [] as main.FieldSchema[],
+    };
+  }
+
   return useTableSchema(globalContext.currentTable, [
     ...dependencies,
     globalContext.currentTable,
