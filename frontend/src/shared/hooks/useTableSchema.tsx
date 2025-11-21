@@ -1,6 +1,6 @@
-import ApiMiddleware from "../api/ApiMiddleware";
-import { secondsToMs } from "../utils/timeConvertion";
-import { main } from "../wailsjs/go/models";
+import ApiMiddleware from "../middleware/ApiMiddleware";
+import { secondsToMs } from "../lib/utils/timeConvertion";
+import { main } from "../lib/wailsjs/go/models";
 import useGlobalContext from "./useGlobalContext";
 import useNotifications from "./useNotifications";
 import { useQuery } from "@tanstack/react-query";

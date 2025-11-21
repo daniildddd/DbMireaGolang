@@ -4,7 +4,7 @@ import {
   GetTableSchema,
   DeleteField,
 } from "wailsjs";
-import { main } from "../wailsjs/go/models";
+import { main } from "../lib/wailsjs/go/models";
 
 export default class ApiMiddleware {
   static async recreateTables(): Promise<main.RecreateTablesResult> {

@@ -10,7 +10,7 @@ import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { RegexOperatorOptionSet } from "./lib/predefinedOptionSets";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;

@@ -10,7 +10,7 @@ import { useRef, useContext } from "react";
 import { useForm } from "react-hook-form";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { NullFunctionOptionSet } from "./lib/predefinedOptionSets";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;

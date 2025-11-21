@@ -10,7 +10,7 @@ import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import Form from "@/shared/ui/components/Form/Form";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 interface OrderByModalParams {
   handleCloseModal: (arg0: boolean) => void;

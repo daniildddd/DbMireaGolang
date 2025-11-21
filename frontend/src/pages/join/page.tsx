@@ -7,11 +7,11 @@ import { generateSQL } from "./lib/sqlGenerator";
 import s from "./page.module.sass";
 import clsx from "clsx";
 import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper";
-import useTableNames from "@/shared/lib/hooks/useTableNames";
-import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
+import useTableNames from "@/shared/hooks/useTableNames";
+import useGlobalContext from "@/shared/hooks/useGlobalContext";
 import Loading from "@/shared/ui/components/Loading/Loading";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 export default function JoinPage() {
   const tableNames = useTableNames();

@@ -1,4 +1,4 @@
-import ApiMiddleware from "../api/ApiMiddleware";
+import ApiMiddleware from "../middleware/ApiMiddleware";
 import { useQuery } from "@tanstack/react-query";
 import useNotifications from "./useNotifications";
 

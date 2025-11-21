@@ -1,10 +1,10 @@
 import s from "./style.module.sass";
 import clsx from "clsx";
-import useTableNames from "@/shared/lib/hooks/useTableNames";
-import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
+import useTableNames from "@/shared/hooks/useTableNames";
+import useGlobalContext from "@/shared/hooks/useGlobalContext";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 import Loading from "../Loading/Loading";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 export default function AsideTableSelector() {
   const tableNames = useTableNames();

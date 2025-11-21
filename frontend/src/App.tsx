@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { GlobalContext } from "./shared/context/GlobalContext";
 import { useState, useEffect } from "react";
-import useTableNames from "./shared/lib/hooks/useTableNames";
+import useTableNames from "./shared/hooks/useTableNames";
 
 export default function App() {
   const tableNames = useTableNames();

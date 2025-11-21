@@ -6,9 +6,9 @@ import {
 } from "@gravity-ui/uikit";
 import s from "./style.module.sass";
 import { main } from "@/shared/lib/wailsjs/go/models";
-import useApiMiddleware from "@/shared/lib/hooks/useApiMiddleware";
+import useApiMiddleware from "@/shared/hooks/useApiMiddleware";
 import Icons from "@/shared/ui/components/Icons/Icons";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 const HocTable = withTableSorting(withTableActions(Table));
 

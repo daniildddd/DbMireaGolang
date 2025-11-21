@@ -1,4 +1,4 @@
-import { Notifier } from "@/shared/lib/hooks/useNotifications";
+import { Notifier } from "@/shared/hooks/useNotifications";
 
 export default function notifyAndReturn(
   notifier: Notifier,

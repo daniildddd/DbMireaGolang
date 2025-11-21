@@ -1,5 +1,5 @@
-import useNotifications from "@/shared/lib/hooks/useNotifications";
-import { useCurrentTableSchema } from "@/shared/lib/hooks/useTableSchema";
+import useNotifications from "@/shared/hooks/useNotifications";
+import { useCurrentTableSchema } from "@/shared/hooks/useTableSchema";
 import { Select } from "@/shared/ui/components/Inputs";
 import Loading from "@/shared/ui/components/Loading/Loading";
 import { FieldErrors, UseFormRegister } from "react-hook-form";

@@ -3,9 +3,9 @@
 import PageLinkList from "@/shared/ui/components/PageLinkList/PageLinkList";
 import s from "./page.module.sass";
 import clsx from "clsx";
-import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 import Main from "@/shared/ui/components/Main/Main";
+import ApiMiddleware from "@/shared/middleware/ApiMiddleware";
 
 export default function HomePage() {
   const notifier = useNotifications();

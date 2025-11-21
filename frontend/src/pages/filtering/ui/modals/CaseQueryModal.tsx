@@ -11,7 +11,7 @@ import { FilterType } from "@/shared/types/filtering";
 import s from "./style.module.sass";
 import TextInput from "@/shared/ui/components/Inputs/TextInput";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;

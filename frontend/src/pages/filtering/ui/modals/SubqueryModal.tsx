@@ -9,7 +9,7 @@ import {
   SubqueryOptionSet,
 } from "./lib/predefinedOptionSets";
 import { Operator } from "@/types";
-import useTableNames from "@/shared/lib/hooks/useTableNames";
+import useTableNames from "@/shared/hooks/useTableNames";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { FilterType } from "@/shared/types/filtering";
 import FormRow from "../FormRow/FormRow";
@@ -18,11 +18,11 @@ import Form from "@/shared/ui/components/Form/Form";
 import CheckboxInput from "@/shared/ui/components/Inputs/CheckboxInput";
 import useTableSchema, {
   useCurrentTableSchema,
-} from "@/shared/lib/hooks/useTableSchema";
+} from "@/shared/hooks/useTableSchema";
 import Loading from "@/shared/ui/components/Loading/Loading";
 import { main } from "@/shared/lib/wailsjs/go/models";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
-import useNotifications from "@/shared/lib/hooks/useNotifications";
+import useNotifications from "@/shared/hooks/useNotifications";
 
 interface SubqueryModalParams {
   handleCloseModal: (arg0: boolean) => void;
