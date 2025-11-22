@@ -24,6 +24,20 @@ import { main } from "@/shared/lib/wailsjs/go/models";
 import notifyAndReturn from "@/shared/lib/utils/notifyAndReturn";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 
+/**
+ * Sanitizes text input to prevent SQL injection
+ */
+function sanitizeSqlInput(text: string): string {
+  if (typeof text !== "string") return "";
+  return text
+    .replace(/'/g, "''")
+    .replace(/"/g, "\\\"")
+    .replace(/;/g, "")
+    .replace(/--/g, "")
+    .replace(/\/\*/g, "")
+    .replace(/\*\//g, "");
+}
+
 interface SubqueryModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
@@ -41,21 +55,6 @@ interface FormData {
   whereFieldName: string;
   whereOperator: Operator;
   whereValue: string;
-}
-
-function getSubquerySqlExpression(d: FormData): string {
-  let query = `${d.subqueryOperator} `;
-
-  if (!d.addWhere) {
-    query = `(SELECT ${d.subqueryFieldName} FROM ${d.subqueryTableName})`;
-  } else {
-    query = `(SELECT ${d.subqueryFieldName} FROM ${d.subqueryTableName} WHERE ${d.whereFieldName} ${d.whereOperator} ${d.whereValue})`;
-  }
-
-  if (d.isCorrelated) {
-    query += ` AS ${d.alias}`;
-  }
-  return query;
 }
 
 export default function SubqueryModal({
@@ -80,8 +79,20 @@ export default function SubqueryModal({
   const notifier = useNotifications();
 
   const onSubmit = (d: FormData) => {
-    console.log(d);
-    const filter = getSubquerySqlExpression(d);
+    const sanitizedAlias = sanitizeSqlInput(d.alias);
+    const sanitizedWhereValue = sanitizeSqlInput(d.whereValue);
+    let filter = `${d.subqueryOperator} `;
+
+    if (!d.addWhere) {
+      filter = `(SELECT ${d.subqueryFieldName} FROM ${d.subqueryTableName})`;
+    } else {
+      filter = `(SELECT ${d.subqueryFieldName} FROM ${d.subqueryTableName} WHERE ${d.whereFieldName} ${d.whereOperator} ${sanitizedWhereValue})`;
+    }
+
+    if (d.isCorrelated) {
+      filter += ` AS ${sanitizedAlias}`;
+    }
+    
     updateFilterValueByType(filters, setFilters, FilterType.subquery, filter);
     handleCloseModal(false);
   };
@@ -101,7 +112,7 @@ export default function SubqueryModal({
         </FormRow>
         {watchIsCorellated && (
           <FormRow label="Имя поля (alias)">
-            <input type="text" {...register("alias")} />
+            <input type="text" {...register("alias", { maxLength: 20 })} maxLength={20} />
           </FormRow>
         )}
         {!watchIsCorellated && (
@@ -187,7 +198,7 @@ export default function SubqueryModal({
               </Select>
             </FormRow>
             <FormRow label="Значение">
-              <input type="text" {...register("whereValue")} />
+              <input type="text" {...register("whereValue", { maxLength: 20 })} maxLength={20} />
             </FormRow>
           </>
         )}

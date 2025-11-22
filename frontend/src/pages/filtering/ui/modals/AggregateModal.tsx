@@ -12,6 +12,20 @@ import { Select } from "@/shared/ui/components/Inputs";
 import Form from "@/shared/ui/components/Form/Form";
 import TextInput from "@/shared/ui/components/Inputs/TextInput";
 
+/**
+ * Sanitizes text input to prevent SQL injection
+ */
+function sanitizeSqlInput(text: string): string {
+  if (typeof text !== "string") return "";
+  return text
+    .replace(/'/g, "''")
+    .replace(/"/g, "\\\"")
+    .replace(/;/g, "")
+    .replace(/--/g, "")
+    .replace(/\/\*/g, "")
+    .replace(/\*\//g, "");
+}
+
 interface AggregateModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
@@ -34,11 +48,11 @@ export default function AggregateModal({
   const { filters, setFilters } = useContext(FilterContext);
 
   const onSubmit = (d: FormData) => {
-    console.log(d);
+    const sanitizedAlias = sanitizeSqlInput(d.alias || "");
 
     let aggregateFilter = `${d.aggregate}(${d.fieldName})`;
     if (d.alias) {
-      aggregateFilter += ` AS ${d.alias}`;
+      aggregateFilter += ` AS ${sanitizedAlias}`;
     }
     updateFilterValueByType(
       filters,
@@ -67,7 +81,8 @@ export default function AggregateModal({
             name="alias"
             register={register}
             errors={errors}
-            options={{ required: false }}
+            options={{ required: false, maxLength: 20 }}
+            maxLength={20}
           />
         </FormRow>
         <ModalActionButtons

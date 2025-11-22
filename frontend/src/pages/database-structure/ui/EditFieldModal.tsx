@@ -1,4 +1,4 @@
-import { Dialog, Button, TextInput, Select, Checkbox } from "@gravity-ui/uikit";
+import { Dialog, Button, TextInput, Checkbox } from "@gravity-ui/uikit";
 import { useState } from "react";
 import s from "./EditFieldModal.module.sass";
 import useApiMiddleware from "@/shared/lib/hooks/useApiMiddleware";
@@ -79,7 +79,7 @@ export default function EditFieldModal({
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} size="m">
+    <Dialog open={isOpen} onClose={onClose} size="m" onEnterKeyDown={() => {}}>
       <Dialog.Header caption={`Редактирование поля: ${field?.name}`} />
       <Dialog.Body className={s["modal-body"]}>
         <div className={s["form-group"]}>
@@ -93,11 +93,17 @@ export default function EditFieldModal({
 
         <div className={s["form-group"]}>
           <label className={s["label"]}>Тип данных</label>
-          <Select
-            options={TypeOptions}
-            value={[fieldType]}
-            onUpdate={(value) => setFieldType(value[0] || "VARCHAR")}
-          />
+          <select
+            value={fieldType}
+            onChange={(e) => setFieldType(e.target.value)}
+            className={s["select-input"]}
+          >
+            {TypeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className={s["form-group"]}>

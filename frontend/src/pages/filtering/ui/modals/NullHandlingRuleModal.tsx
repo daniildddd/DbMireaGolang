@@ -11,6 +11,20 @@ import { useForm } from "react-hook-form";
 import updateFilterValueByType from "./lib/updateFilterValueByType";
 import { NullFunctionOptionSet } from "./lib/predefinedOptionSets";
 
+/**
+ * Sanitizes text input to prevent SQL injection
+ */
+function sanitizeSqlInput(text: string): string {
+  if (typeof text !== "string") return "";
+  return text
+    .replace(/'/g, "''")
+    .replace(/"/g, "\\\"")
+    .replace(/;/g, "")
+    .replace(/--/g, "")
+    .replace(/\/\*/g, "")
+    .replace(/\*\//g, "");
+}
+
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
@@ -36,7 +50,9 @@ export default function NullHandlingRuleModal({
   const { filters, setFilters } = useContext(FilterContext);
 
   const onSumbit = (d: FormData) => {
-    const filter = `${d.nullFunction}(${d.fieldName}, ${d.defaultValue}) AS ${d.resultAlias}`;
+    const sanitizedDefaultValue = sanitizeSqlInput(d.defaultValue);
+    const sanitizedResultAlias = sanitizeSqlInput(d.resultAlias);
+    const filter = `${d.nullFunction}(${d.fieldName}, ${sanitizedDefaultValue}) AS ${sanitizedResultAlias}`;
     updateFilterValueByType(
       filters,
       setFilters,
@@ -65,14 +81,16 @@ export default function NullHandlingRuleModal({
           <input
             type="text"
             name="pattern"
-            {...register("defaultValue", { required: true })}
+            maxLength={20}
+            {...register("defaultValue", { required: true, maxLength: 20 })}
           />
         </FormRow>
         <FormRow label="Псевдоним результата">
           <input
             type="text"
             name="pattern"
-            {...register("resultAlias", { required: true })}
+            maxLength={20}
+            {...register("resultAlias", { required: true, maxLength: 20 })}
           />
         </FormRow>
         <ModalActionButtons

@@ -24,10 +24,10 @@ export default function App() {
     <ThemeProvider theme="light">
       <GlobalContext.Provider value={{ globalContext, setGlobalContext }}>
         <QueryClientProvider client={queryClient}>
-          <ReactQueryDevtools
+          {/* <ReactQueryDevtools
             initialIsOpen={false}
             buttonPosition="bottom-right"
-          />
+          /> */}
           <ToastContainer />
           <Outlet />
         </QueryClientProvider>

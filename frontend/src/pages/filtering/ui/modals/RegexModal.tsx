@@ -11,6 +11,20 @@ import Form from "@/shared/ui/components/Form/Form";
 import ModalActionButtons from "./ui/ModalActionButtons/ModalActionButtons";
 import { RegexOperatorOptionSet } from "./lib/predefinedOptionSets";
 
+/**
+ * Sanitizes text input to prevent SQL injection
+ */
+function sanitizeSqlInput(text: string): string {
+  if (typeof text !== "string") return "";
+  return text
+    .replace(/'/g, "''")
+    .replace(/"/g, "\\\"")
+    .replace(/;/g, "")
+    .replace(/--/g, "")
+    .replace(/\/\*/g, "")
+    .replace(/\*\//g, "");
+}
+
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
@@ -33,9 +47,8 @@ export default function RegexModal({ handleCloseModal }: ModalParams) {
   const { filters, setFilters } = useContext(FilterContext);
 
   const onSubmit = (data: FormData) => {
-    console.log(data);
-
-    const filter = `${data.fieldName} ${data.regexOperator} ${data.pattern}`;
+    const sanitizedPattern = sanitizeSqlInput(data.pattern);
+    const filter = `${data.fieldName} ${data.regexOperator} ${sanitizedPattern}`;
     updateFilterValueByType(filters, setFilters, FilterType.regex, filter);
 
     handleCloseModal(false);
@@ -59,7 +72,8 @@ export default function RegexModal({ handleCloseModal }: ModalParams) {
           <input
             type="text"
             name="pattern"
-            {...register("pattern", { required: true })}
+            maxLength={20}
+            {...register("pattern", { required: true, maxLength: 20 })}
           />
         </FormRow>
         <p className="small">Примеры шаблонов: %abc%, abc|def, [0-9]+</p>

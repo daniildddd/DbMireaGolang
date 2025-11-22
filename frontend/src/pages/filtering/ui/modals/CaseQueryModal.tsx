@@ -11,6 +11,20 @@ import { FilterType } from "@/shared/types/filtering";
 import s from "./style.module.sass";
 import TextInput from "@/shared/ui/components/Inputs/TextInput";
 
+/**
+ * Sanitizes text input to prevent SQL injection
+ */
+function sanitizeSqlInput(text: string): string {
+  if (typeof text !== "string") return "";
+  return text
+    .replace(/'/g, "''")
+    .replace(/"/g, "\\\"")
+    .replace(/;/g, "")
+    .replace(/--/g, "")
+    .replace(/\/\*/g, "")
+    .replace(/\*\//g, "");
+}
+
 interface ModalParams {
   handleCloseModal: (arg0: boolean) => void;
 }
@@ -45,17 +59,14 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
   const { setFilters } = useContext(FilterContext);
 
   const onSubmit = (data: FormData) => {
-    console.log("Form Data:", data);
-
-    // Здесь можно обработать данные и добавить фильтр
+    const sanitizedFieldName = sanitizeSqlInput(data.resultingFieldName);
     const caseExpression = `CASE ${data.conditions
       .map(
         (cond) =>
           `WHEN ${cond.fieldName} ${cond.operator} ${cond.value} THEN ${cond.resultingValue}`
       )
-      .join(" ")} ELSE ${data.elseValue} END AS ${data.resultingFieldName}`;
+      .join(" ")} ELSE ${data.elseValue} END AS ${sanitizedFieldName}`;
 
-    // Пример обновления фильтров
     setFilters((prev) => ({
       ...prev,
       custom: [...(prev[FilterType.caseQuery] || []), caseExpression],
@@ -77,10 +88,12 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
             register={register}
             options={{
               required: true,
+              maxLength: 20,
             }}
             className={errors.resultingFieldName ? "input error" : "input"}
             errors={errors}
             name={"resultingFieldName"}
+            maxLength={20}
           />
         </FormRow>
 
@@ -125,8 +138,10 @@ export default function CaseQueryModal({ handleCloseModal }: ModalParams) {
             register={register}
             options={{
               required: true,
+              maxLength: 20,
             }}
             errors={errors}
+            maxLength={20}
           />
         </FormRow>
 

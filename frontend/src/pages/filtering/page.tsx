@@ -29,6 +29,8 @@ import useNotifications from "@/shared/lib/hooks/useNotifications";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 import QueryResults from "@/shared/ui/components/QueryResults/QueryResults";
 
+const FILTERS_STORAGE_KEY = "filteringPageFilters";
+
 export default function FilteringPage() {
   const tableNames = useTableNames();
   const { globalContext, setGlobalContext } = useGlobalContext();
@@ -38,14 +40,20 @@ export default function FilteringPage() {
   const query = generateSqlQuery("*", globalContext.currentTable, filters);
   const notifier = useNotifications();
 
-  // Очищаем фильтры при размонтировании компонента (когда пользователь уходит со страницы)
   useEffect(() => {
-    return () => {
-      setFilters(EMPTY_FILTERS);
-      setQueryResults(null);
-      setActiveModal(null);
-    };
+    const savedFilters = localStorage.getItem(FILTERS_STORAGE_KEY);
+    if (savedFilters) {
+      try {
+        setFilters(JSON.parse(savedFilters));
+      } catch (e) {
+        console.error("Failed to parse saved filters", e);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
+  }, [filters]);
 
   const handleOpenModal = (modalId: string) => {
     setActiveModal(modalId);
@@ -61,7 +69,7 @@ export default function FilteringPage() {
       setQueryResults(result);
       notifier.success("Запрос выполнен успешно!");
     } catch (error) {
-      notifier.error(`Ошибка: ${error}`);
+      notifier.error(`Ошибка запроса: ${error}`);
       console.error("Ошибка выполнения запроса:", error);
     }
   };
@@ -70,7 +78,6 @@ export default function FilteringPage() {
   if (tableNames.error) return notifyAndReturn(notifier, tableNames.error);
   if (tableNames.data.length === 0) return <div>В базе данных нет таблиц</div>;
 
-  // Устанавливаем первую таблицу при загрузке
   if (!globalContext.currentTable) {
     setGlobalContext({ ...globalContext, currentTable: tableNames.data[0] });
   }
