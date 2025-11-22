@@ -7,6 +7,34 @@ import ContentWrapper from "@/shared/ui/components/ContentWrapper/ContentWrapper
 import Loading from "@/shared/ui/components/Loading/Loading";
 import useNotifications from "@/shared/lib/hooks/useNotifications";
 
+// Функция для защиты от SQL-инъекций и опасных символов
+const sanitizeInput = (input: string): string => {
+  // Максимум 30 символов
+  let sanitized = input.substring(0, 30);
+
+  // Убираем опасные символы для SQL
+  // Разрешаем только буквы, цифры, подчеркивание и некоторые спецсимволы
+  sanitized = sanitized.replace(/[^\w\-а-яА-ЯёЁ\s]/g, "");
+
+  // Убираем опасные SQL ключевые слова в начале
+  const sqlKeywords = [
+    "DROP",
+    "DELETE",
+    "INSERT",
+    "UPDATE",
+    "SELECT",
+    "ALTER",
+    "CREATE",
+    "TRUNCATE",
+  ];
+  const upperSanitized = sanitized.toUpperCase().trim();
+  if (sqlKeywords.some((kw) => upperSanitized.startsWith(kw))) {
+    return "";
+  }
+
+  return sanitized;
+};
+
 interface CustomType {
   name: string;
   kind: string;
@@ -93,9 +121,25 @@ export default function ManageTypesPage() {
       notifier.error("Введите значение ENUM");
       return;
     }
+
+    // Санитизируем значение
+    const sanitizedValue = sanitizeInput(enumForm.newValue);
+    if (!sanitizedValue) {
+      notifier.error(
+        "Значение содержит недопустимые символы или SQL-ключевые слова"
+      );
+      return;
+    }
+
+    // Проверяем, что такого значения еще нет
+    if (enumForm.values.includes(sanitizedValue)) {
+      notifier.error("Это значение уже добавлено");
+      return;
+    }
+
     setEnumForm((prev) => ({
       ...prev,
-      values: [...prev.values, prev.newValue],
+      values: [...prev.values, sanitizedValue],
       newValue: "",
     }));
   };
@@ -112,16 +156,36 @@ export default function ManageTypesPage() {
       notifier.error("Укажите имя типа");
       return;
     }
+
+    // Санитизируем имя типа
+    const sanitizedName = sanitizeInput(enumForm.typeName);
+    if (!sanitizedName) {
+      notifier.error(
+        "Имя типа содержит недопустимые символы или SQL-ключевые слова"
+      );
+      return;
+    }
+
     if (enumForm.values.length === 0) {
       notifier.error("Добавьте хотя бы одно значение");
       return;
     }
 
+    // Санитизируем все значения
+    const sanitizedValues = enumForm.values
+      .map((v) => sanitizeInput(v))
+      .filter((v) => v); // Удаляем пустые значения
+
+    if (sanitizedValues.length === 0) {
+      notifier.error("Все значения содержат недопустимые символы");
+      return;
+    }
+
     try {
       const result = await (window as any).go.main.App.CreateCustomType({
-        typeName: enumForm.typeName,
+        typeName: sanitizedName,
         typeKind: "ENUM",
-        values: enumForm.values,
+        values: sanitizedValues,
       });
 
       if (result.success) {
@@ -143,8 +207,24 @@ export default function ManageTypesPage() {
       notifier.error("Введите имя поля");
       return;
     }
+
+    // Санитизируем имя поля
+    const sanitizedFieldName = sanitizeInput(compositeForm.newFieldName);
+    if (!sanitizedFieldName) {
+      notifier.error(
+        "Имя поля содержит недопустимые символы или SQL-ключевые слова"
+      );
+      return;
+    }
+
     if (!compositeForm.newFieldType.trim()) {
       notifier.error("Выберите тип поля");
+      return;
+    }
+
+    // Проверяем, что такого поля еще нет
+    if (compositeForm.fields.some((f) => f.fieldName === sanitizedFieldName)) {
+      notifier.error("Поле с таким именем уже добавлено");
       return;
     }
 
@@ -152,7 +232,7 @@ export default function ManageTypesPage() {
       ...prev,
       fields: [
         ...prev.fields,
-        { fieldName: prev.newFieldName, fieldType: prev.newFieldType },
+        { fieldName: sanitizedFieldName, fieldType: prev.newFieldType },
       ],
       newFieldName: "",
       newFieldType: "text",
@@ -171,16 +251,39 @@ export default function ManageTypesPage() {
       notifier.error("Укажите имя типа");
       return;
     }
+
+    // Санитизируем имя типа
+    const sanitizedName = sanitizeInput(compositeForm.typeName);
+    if (!sanitizedName) {
+      notifier.error(
+        "Имя типа содержит недопустимые символы или SQL-ключевые слова"
+      );
+      return;
+    }
+
     if (compositeForm.fields.length === 0) {
       notifier.error("Добавьте хотя бы одно поле");
       return;
     }
 
+    // Санитизируем все поля
+    const sanitizedFields = compositeForm.fields
+      .map((field) => ({
+        fieldName: sanitizeInput(field.fieldName),
+        fieldType: field.fieldType, // fieldType выбирается из dropdown, поэтому он безопасен
+      }))
+      .filter((f) => f.fieldName); // Удаляем пустые поля
+
+    if (sanitizedFields.length === 0) {
+      notifier.error("Все имена полей содержат недопустимые символы");
+      return;
+    }
+
     try {
       const result = await (window as any).go.main.App.CreateCustomType({
-        typeName: compositeForm.typeName,
+        typeName: sanitizedName,
         typeKind: "COMPOSITE",
-        fields: compositeForm.fields,
+        fields: sanitizedFields,
       });
 
       if (result.success) {
@@ -271,6 +374,7 @@ export default function ManageTypesPage() {
                 onChange={(e) =>
                   setEnumForm({ ...enumForm, typeName: e.target.value })
                 }
+                maxLength={30}
                 className={s["input"]}
               />
             </div>
@@ -285,6 +389,7 @@ export default function ManageTypesPage() {
                   onChange={(e) =>
                     setEnumForm({ ...enumForm, newValue: e.target.value })
                   }
+                  maxLength={30}
                   className={s["input"]}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleAddEnumValue();
@@ -331,6 +436,7 @@ export default function ManageTypesPage() {
                     typeName: e.target.value,
                   })
                 }
+                maxLength={30}
                 className={s["input"]}
               />
             </div>
@@ -348,6 +454,7 @@ export default function ManageTypesPage() {
                       newFieldName: e.target.value,
                     })
                   }
+                  maxLength={30}
                   className={s["input-field-name"]}
                 />
                 <select
