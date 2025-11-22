@@ -45,9 +45,9 @@ export default function SchemaTable({
 
   return (
     <>
-      <div style={{ marginBottom: "16px" }}>
+      {/* <div style={{ marginBottom: "16px" }}>
         <Button onClick={() => setIsAddModalOpen(true)}>Добавить поле</Button>
-      </div>
+      </div> */}
       <HocTable
         className={s.table}
         data={tableSchema}
