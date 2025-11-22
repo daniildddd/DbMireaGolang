@@ -4,6 +4,7 @@ import {
   GetTableSchema,
   DeleteField,
   UpdateField,
+  AddField,
   ExecuteCustomQuery,
   GetTableData,
   SearchInTable,
@@ -40,6 +41,12 @@ export default class ApiMiddleware {
     request: main.UpdateFieldRequest
   ): Promise<main.RecreateTablesResult> {
     return UpdateField(request);
+  }
+
+  static async addTableField(
+    request: main.AddFieldRequest
+  ): Promise<main.RecreateTablesResult> {
+    return AddField(request);
   }
 
   // Данные из таблиц

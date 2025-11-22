@@ -3,6 +3,7 @@ import {
   TableColumnConfig,
   withTableActions,
   withTableSorting,
+  Button,
 } from "@gravity-ui/uikit";
 import s from "./style.module.sass";
 import { main } from "@/shared/lib/wailsjs/go/models";
@@ -13,6 +14,7 @@ import useGlobalContext from "@/shared/lib/hooks/useGlobalContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import EditFieldModal from "./EditFieldModal";
+import AddFieldModal from "./AddFieldModal";
 
 const HocTable = withTableSorting(withTableActions(Table));
 
@@ -39,9 +41,13 @@ export default function SchemaTable({
     null
   );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
     <>
+      <div style={{ marginBottom: "16px" }}>
+        <Button onClick={() => setIsAddModalOpen(true)}>Добавить поле</Button>
+      </div>
       <HocTable
         className={s.table}
         data={tableSchema}
@@ -89,6 +95,12 @@ export default function SchemaTable({
         }}
         tableName={tableName}
         field={editingField}
+      />
+
+      <AddFieldModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        tableName={tableName}
       />
     </>
   );

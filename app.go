@@ -168,6 +168,14 @@ type DeleteFieldRequest struct {
 	FieldName string `json:"fieldName"`
 }
 
+// AddFieldRequest - запрос на добавление поля
+type AddFieldRequest struct {
+	TableName   string           `json:"tableName"`
+	FieldName   string           `json:"fieldName"`
+	Type        string           `json:"type"`
+	Constraints FieldConstraints `json:"constraints"`
+}
+
 // UpdateFieldRequest - запрос на изменение поля
 type UpdateFieldRequest struct {
 	TableName   string           `json:"tableName"`
@@ -325,6 +333,67 @@ func (a *App) RenameTable(req RenameTableRequest) RecreateTablesResult {
 	return RecreateTablesResult{
 		Success: true,
 		Message: fmt.Sprintf("Таблица '%s' переименована в '%s'", req.OldName, req.NewName),
+	}
+}
+
+// AddField - добавление поля в таблицу
+func (a *App) AddField(req AddFieldRequest) RecreateTablesResult {
+	if database.DB == nil {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "База данных не инициализирована",
+			Error:   "database not initialized",
+		}
+	}
+
+	if req.TableName == "" || req.FieldName == "" || req.Type == "" {
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Необходимо указать имя таблицы, имя поля и тип",
+			Error:   "empty required fields",
+		}
+	}
+
+	if !database.DB.Migrator().HasTable(req.TableName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Таблица '%s' не найдена", req.TableName),
+			Error:   "table not found",
+		}
+	}
+
+	if database.DB.Migrator().HasColumn(req.TableName, req.FieldName) {
+		return RecreateTablesResult{
+			Success: false,
+			Message: fmt.Sprintf("Поле '%s' уже существует в таблице '%s'", req.FieldName, req.TableName),
+			Error:   "column already exists",
+		}
+	}
+
+	columnType := req.Type
+	if req.Constraints.NotNull {
+		columnType += " NOT NULL"
+	}
+	if req.Constraints.Unique {
+		columnType += " UNIQUE"
+	}
+
+	err := database.DB.Migrator().AddColumn(req.TableName, req.FieldName+" "+columnType)
+	if err != nil {
+		logger.Error("Ошибка добавления поля %s.%s: %v", req.TableName, req.FieldName, err)
+		return RecreateTablesResult{
+			Success: false,
+			Message: "Не удалось добавить поле",
+			Error:   err.Error(),
+		}
+	}
+
+	database.DB.Exec("DISCARD PLANS")
+
+	logger.Info("Поле успешно добавлено: %s.%s", req.TableName, req.FieldName)
+	return RecreateTablesResult{
+		Success: true,
+		Message: fmt.Sprintf("Поле '%s' успешно добавлено в таблицу '%s'", req.FieldName, req.TableName),
 	}
 }
 
