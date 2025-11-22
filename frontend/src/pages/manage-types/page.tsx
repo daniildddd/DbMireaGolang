@@ -9,14 +9,8 @@ import useNotifications from "@/shared/lib/hooks/useNotifications";
 
 // Функция для защиты от SQL-инъекций и опасных символов
 const sanitizeInput = (input: string): string => {
-  // Максимум 30 символов
   let sanitized = input.substring(0, 30);
-
-  // Убираем опасные символы для SQL
-  // Разрешаем только буквы, цифры, подчеркивание и некоторые спецсимволы
   sanitized = sanitized.replace(/[^\w\-а-яА-ЯёЁ\s]/g, "");
-
-  // Убираем опасные SQL ключевые слова в начале
   const sqlKeywords = [
     "DROP",
     "DELETE",
@@ -69,8 +63,6 @@ export default function ManageTypesPage() {
     values: [],
     newValue: "",
   });
-
-  // COMPOSITE управление
   const [compositeForm, setCompositeForm] = useState<CompositeFormData>({
     typeName: "",
     fields: [],
@@ -81,8 +73,6 @@ export default function ManageTypesPage() {
   // Список типов
   const [customTypes, setCustomTypes] = useState<CustomType[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Загружаем список типов при загрузке компонента
   useEffect(() => {
     loadCustomTypes();
   }, []);
@@ -114,15 +104,12 @@ export default function ManageTypesPage() {
     }
   };
 
-  // === ENUM Функции ===
-
+  // Добавляет новое значение в ENUM
   const handleAddEnumValue = () => {
     if (!enumForm.newValue.trim()) {
       notifier.error("Введите значение ENUM");
       return;
     }
-
-    // Санитизируем значение
     const sanitizedValue = sanitizeInput(enumForm.newValue);
     if (!sanitizedValue) {
       notifier.error(
@@ -130,8 +117,6 @@ export default function ManageTypesPage() {
       );
       return;
     }
-
-    // Проверяем, что такого значения еще нет
     if (enumForm.values.includes(sanitizedValue)) {
       notifier.error("Это значение уже добавлено");
       return;
@@ -144,6 +129,7 @@ export default function ManageTypesPage() {
     }));
   };
 
+  // Удаляет значение из ENUM
   const handleRemoveEnumValue = (index: number) => {
     setEnumForm((prev) => ({
       ...prev,
@@ -151,6 +137,7 @@ export default function ManageTypesPage() {
     }));
   };
 
+  // Создает новый ENUM тип
   const handleCreateEnum = async () => {
     if (!enumForm.typeName.trim()) {
       notifier.error("Укажите имя типа");

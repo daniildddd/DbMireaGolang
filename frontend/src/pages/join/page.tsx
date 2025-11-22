@@ -16,7 +16,7 @@ import GeneratedSQL from "@/shared/ui/components/GeneratedSQL/GeneratedSQL";
 import QueryResults from "@/shared/ui/components/QueryResults/QueryResults";
 import ApiMiddleware from "@/shared/lib/api/ApiMiddleware";
 
-type JoinType = "INNER" | "LEFT" | "RIGHT" | "FULL";
+type JoinType = "INNER" | "LEFT" | "RIGHT" | "FULL" | "CROSS";
 
 interface JoinClause {
   id: string;
@@ -105,24 +105,24 @@ export default function JoinPage() {
     let sql = `SELECT * FROM ${mainTable}`;
 
     joins.forEach((join) => {
-      // Пропускаем если таблица совпадает с основной или не выбрана
-      if (
-        !join.table ||
-        join.table === mainTable ||
-        join.mainFields.length === 0 ||
-        join.joinFields.length === 0
-      ) {
+      if (!join.table || join.table === mainTable) {
         return;
       }
 
-      // Объединяем условия для всех выбранных полей
-      const conditions = join.mainFields
-        .map((mainField, idx) => {
-          const joinField = join.joinFields[idx] || join.joinFields[0];
-          return `${mainTable}.${mainField} = ${join.table}.${joinField}`;
-        })
-        .join(" AND ");
-      sql += ` ${join.type} JOIN ${join.table} ON ${conditions}`;
+      if (join.type === "CROSS") {
+        sql += ` CROSS JOIN ${join.table}`;
+      } else {
+        if (join.mainFields.length === 0 || join.joinFields.length === 0) {
+          return;
+        }
+        const conditions = join.mainFields
+          .map((mainField, idx) => {
+            const joinField = join.joinFields[idx] || join.joinFields[0];
+            return `${mainTable}.${mainField} = ${join.table}.${joinField}`;
+          })
+          .join(" AND ");
+        sql += ` ${join.type} JOIN ${join.table} ON ${conditions}`;
+      }
     });
 
     return sql;
@@ -233,6 +233,7 @@ export default function JoinPage() {
                       <option value="LEFT">LEFT JOIN</option>
                       <option value="RIGHT">RIGHT JOIN</option>
                       <option value="FULL">FULL JOIN</option>
+                      <option value="CROSS">CROSS JOIN</option>
                     </select>
                   </div>
 
@@ -256,59 +257,63 @@ export default function JoinPage() {
                     </select>
                   </div>
 
-                  <div className={s["join-clause__row"]}>
-                    <label className={s["section-title"]}>
-                      Поля из {mainTable} (несколько)
-                    </label>
-                    <select
-                      multiple
-                      value={join.mainFields}
-                      onChange={(e) => {
-                        const selected = Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value
-                        );
-                        handleUpdateJoin(join.id, {
-                          mainFields: selected,
-                        });
-                      }}
-                      className={s["table-select"]}
-                      style={{ minHeight: "100px" }}
-                    >
-                      {mainTableFields.map((field) => (
-                        <option key={field.value} value={field.value}>
-                          {field.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {join.type !== "CROSS" && (
+                    <>
+                      <div className={s["join-clause__row"]}>
+                        <label className={s["section-title"]}>
+                          Поля из {mainTable} (несколько)
+                        </label>
+                        <select
+                          multiple
+                          value={join.mainFields}
+                          onChange={(e) => {
+                            const selected = Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value
+                            );
+                            handleUpdateJoin(join.id, {
+                              mainFields: selected,
+                            });
+                          }}
+                          className={s["table-select"]}
+                          style={{ minHeight: "100px" }}
+                        >
+                          {mainTableFields.map((field) => (
+                            <option key={field.value} value={field.value}>
+                              {field.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                  <div className={s["join-clause__row"]}>
-                    <label className={s["section-title"]}>
-                      Поля из {join.table} (несколько)
-                    </label>
-                    <select
-                      multiple
-                      value={join.joinFields}
-                      onChange={(e) => {
-                        const selected = Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value
-                        );
-                        handleUpdateJoin(join.id, {
-                          joinFields: selected,
-                        });
-                      }}
-                      className={s["table-select"]}
-                      style={{ minHeight: "100px" }}
-                    >
-                      {getJoinTableFields(join.table).map((field) => (
-                        <option key={field.value} value={field.value}>
-                          {field.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      <div className={s["join-clause__row"]}>
+                        <label className={s["section-title"]}>
+                          Поля из {join.table} (несколько)
+                        </label>
+                        <select
+                          multiple
+                          value={join.joinFields}
+                          onChange={(e) => {
+                            const selected = Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value
+                            );
+                            handleUpdateJoin(join.id, {
+                              joinFields: selected,
+                            });
+                          }}
+                          className={s["table-select"]}
+                          style={{ minHeight: "100px" }}
+                        >
+                          {getJoinTableFields(join.table).map((field) => (
+                            <option key={field.value} value={field.value}>
+                              {field.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
 
                   <div className={s["join-clause__delete"]}>
                     <Button
