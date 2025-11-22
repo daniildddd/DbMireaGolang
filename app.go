@@ -81,6 +81,7 @@ const (
 	LeftJoin  JoinType = "LEFT"
 	RightJoin JoinType = "RIGHT"
 	FullJoin  JoinType = "FULL"
+	CrossJoin JoinType = "CROSS"
 )
 
 type JoinConfig struct {
@@ -1154,7 +1155,7 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 		if !database.DB.Migrator().HasTable(join.Table) {
 			return TableDataResponse{Error: fmt.Sprintf("Таблица %s не найдена", join.Table)}
 		}
-		if join.Field == "" {
+		if join.Type != CrossJoin && join.Field == "" {
 			return TableDataResponse{Error: fmt.Sprintf("Не указано поле для соединения с таблицей %s", join.Table)}
 		}
 	}
@@ -1162,8 +1163,12 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 	query := fmt.Sprintf("SELECT * FROM %s", req.MainTable)
 
 	for _, join := range req.Joins {
-		condition := fmt.Sprintf("%s.%s = %s.%s", req.MainTable, req.MainField, join.Table, join.Field)
-		query += fmt.Sprintf(" %s JOIN %s ON %s", join.Type, join.Table, condition)
+		if join.Type == CrossJoin {
+			query += fmt.Sprintf(" CROSS JOIN %s", join.Table)
+		} else {
+			condition := fmt.Sprintf("%s.%s = %s.%s", req.MainTable, req.MainField, join.Table, join.Field)
+			query += fmt.Sprintf(" %s JOIN %s ON %s", join.Type, join.Table, condition)
+		}
 	}
 
 	logger.Info("Executing JOIN query: %s", query)
