@@ -1329,17 +1329,24 @@ func (a *App) GetCustomTypes() CustomTypesListResponse {
 	// Запрос для получения ТОЛЬКО типов, созданных пользователем (не встроенные PostgreSQL)
 	// OID >= 16384 - это пользовательские типы
 	query := `
-		SELECT t.typname as name, 
-		       CASE WHEN t.typtype = 'e' THEN 'enum' ELSE 'composite' END as kind,
-		       CASE WHEN t.typtype = 'e' THEN array_agg(e.enumlabel ORDER BY e.enumsortorder) ELSE NULL END as enum_values
-		FROM pg_type t
-		LEFT JOIN pg_enum e ON t.oid = e.enumtypid
-		WHERE t.typtype IN ('e', 'c')
-		  AND t.typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
-		  AND t.oid >= 16384
-		GROUP BY t.oid, t.typname, t.typtype
-		ORDER BY t.typname
-	`
+	SELECT t.typname as name, 
+	       CASE WHEN t.typtype = 'e' THEN 'enum' ELSE 'composite' END as kind,
+	       CASE WHEN t.typtype = 'e' THEN array_agg(e.enumlabel ORDER BY e.enumsortorder) ELSE NULL END as enum_values
+	FROM pg_type t
+	LEFT JOIN pg_enum e ON t.oid = e.enumtypid
+	WHERE t.typtype IN ('e', 'c')
+	  AND t.typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+	  AND t.oid >= 16384
+	  -- Исключаем типы, которые автоматически созданы для таблиц
+	  AND NOT EXISTS (
+	      SELECT 1 FROM pg_class c 
+	      WHERE c.relname = t.typname 
+	      AND c.relnamespace = t.typnamespace
+	      AND c.relkind IN ('r', 'p', 'v', 'm', 'f')
+	  )
+	GROUP BY t.oid, t.typname, t.typtype
+	ORDER BY t.typname
+`
 
 	var rows []map[string]interface{}
 	if err := database.DB.Raw(query).Scan(&rows).Error; err != nil {

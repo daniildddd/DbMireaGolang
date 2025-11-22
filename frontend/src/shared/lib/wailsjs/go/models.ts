@@ -1,5 +1,95 @@
 export namespace main {
 	
+	export class ForeignKeyConstraint {
+	    refTable: string;
+	    refColumns: string[];
+	    onDelete?: string;
+	    onUpdate?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ForeignKeyConstraint(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.refTable = source["refTable"];
+	        this.refColumns = source["refColumns"];
+	        this.onDelete = source["onDelete"];
+	        this.onUpdate = source["onUpdate"];
+	    }
+	}
+	export class FieldConstraints {
+	    notNull: boolean;
+	    unique: boolean;
+	    check?: string;
+	    foreignKey?: ForeignKeyConstraint;
+	
+	    static createFrom(source: any = {}) {
+	        return new FieldConstraints(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.notNull = source["notNull"];
+	        this.unique = source["unique"];
+	        this.check = source["check"];
+	        this.foreignKey = this.convertValues(source["foreignKey"], ForeignKeyConstraint);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class AddFieldRequest {
+	    tableName: string;
+	    fieldName: string;
+	    type: string;
+	    constraints: FieldConstraints;
+	
+	    static createFrom(source: any = {}) {
+	        return new AddFieldRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.tableName = source["tableName"];
+	        this.fieldName = source["fieldName"];
+	        this.type = source["type"];
+	        this.constraints = this.convertValues(source["constraints"], FieldConstraints);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class CustomTypeField {
 	    fieldName: string;
 	    fieldType: string;
@@ -100,76 +190,37 @@ export namespace main {
 	}
 	
 	export class CustomTypesListResponse {
-    types: CustomType[];
-    error?: string;
-
-    static createFrom(source: any = {}) {
-      return new CustomTypesListResponse(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.types = this.convertValues(source["types"], CustomType);
-      this.error = source["error"];
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice && a.map) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
-        }
-        return new classs(a);
-      }
-      return a;
-    }
-  }
-  export class AddFieldRequest {
-    tableName: string;
-    fieldName: string;
-    type: string;
-    constraints: FieldConstraints;
-
-    static createFrom(source: any = {}) {
-      return new AddFieldRequest(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.tableName = source["tableName"];
-      this.fieldName = source["fieldName"];
-      this.type = source["type"];
-      this.constraints = this.convertValues(
-        source["constraints"],
-        FieldConstraints
-      );
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice && a.map) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
-        }
-        return new classs(a);
-      }
-      return a;
-    }
-  }
+	    types: CustomType[];
+	    error?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CustomTypesListResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.types = this.convertValues(source["types"], CustomType);
+	        this.error = source["error"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class DeleteFieldRequest {
 	    tableName: string;
 	    fieldName: string;
@@ -196,60 +247,7 @@ export namespace main {
 	        this.typeName = source["typeName"];
 	    }
 	}
-	export class ForeignKeyConstraint {
-	    refTable: string;
-	    refColumns: string[];
-	    onDelete?: string;
-	    onUpdate?: string;
 	
-	    static createFrom(source: any = {}) {
-	        return new ForeignKeyConstraint(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.refTable = source["refTable"];
-	        this.refColumns = source["refColumns"];
-	        this.onDelete = source["onDelete"];
-	        this.onUpdate = source["onUpdate"];
-	    }
-	}
-	export class FieldConstraints {
-	    notNull: boolean;
-	    unique: boolean;
-	    check?: string;
-	    foreignKey?: ForeignKeyConstraint;
-	
-	    static createFrom(source: any = {}) {
-	        return new FieldConstraints(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.notNull = source["notNull"];
-	        this.unique = source["unique"];
-	        this.check = source["check"];
-	        this.foreignKey = this.convertValues(source["foreignKey"], ForeignKeyConstraint);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
 	export class FieldInfo {
 	    name: string;
 	    type: string;
