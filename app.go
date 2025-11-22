@@ -1209,7 +1209,8 @@ func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult
 		for _, v := range req.Values {
 			values = append(values, fmt.Sprintf("'%s'", strings.ReplaceAll(v, "'", "''")))
 		}
-		query = fmt.Sprintf("CREATE TYPE %s AS ENUM (%s)", req.TypeName, strings.Join(values, ", "))
+		// Экранируем имя типа в кавычки
+		query = fmt.Sprintf("CREATE TYPE \"%s\" AS ENUM (%s)", req.TypeName, strings.Join(values, ", "))
 
 	} else if strings.ToUpper(req.TypeKind) == "COMPOSITE" {
 		if len(req.Fields) == 0 {
@@ -1221,7 +1222,8 @@ func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult
 		for _, field := range req.Fields {
 			fields = append(fields, fmt.Sprintf("%s %s", field.FieldName, field.FieldType))
 		}
-		query = fmt.Sprintf("CREATE TYPE %s AS (%s)", req.TypeName, strings.Join(fields, ", "))
+		// Экранируем имя типа в кавычки
+		query = fmt.Sprintf("CREATE TYPE \"%s\" AS (%s)", req.TypeName, strings.Join(fields, ", "))
 
 	} else {
 		return RecreateTablesResult{Success: false, Error: "Неизвестный тип: " + req.TypeKind}
@@ -1233,6 +1235,14 @@ func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult
 		return RecreateTablesResult{Success: false, Error: err.Error()}
 	}
 
+	// Добавляем комментарий к типу, чтобы отметить что он создан приложением
+	commentQuery := fmt.Sprintf("COMMENT ON TYPE \"%s\" IS 'created_by_app'", req.TypeName)
+	if err := database.DB.Exec(commentQuery).Error; err != nil {
+		logger.Warn("Failed to add comment to type: %v", err)
+		// Не прерываем процесс если ошибка с комментарием
+	}
+
+	logger.Info("Successfully created type: %s", req.TypeName)
 	return RecreateTablesResult{
 		Success: true,
 		Message: fmt.Sprintf("Тип '%s' успешно создан", req.TypeName),
@@ -1247,13 +1257,18 @@ func (a *App) GetCustomTypes() CustomTypesListResponse {
 
 	var types []CustomType
 
-	// Запрос для получения всех пользовательских типов
+	// Запрос для получения ТОЛЬКО типов, созданных пользователем (не встроенные PostgreSQL)
+	// OID >= 16384 - это пользовательские типы
 	query := `
 		SELECT t.typname as name, 
-		       CASE WHEN t.typtype = 'e' THEN 'enum' ELSE 'composite' END as kind
+		       CASE WHEN t.typtype = 'e' THEN 'enum' ELSE 'composite' END as kind,
+		       CASE WHEN t.typtype = 'e' THEN array_agg(e.enumlabel ORDER BY e.enumsortorder) ELSE NULL END as enum_values
 		FROM pg_type t
+		LEFT JOIN pg_enum e ON t.oid = e.enumtypid
 		WHERE t.typtype IN ('e', 'c')
 		  AND t.typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+		  AND t.oid >= 16384
+		GROUP BY t.oid, t.typname, t.typtype
 		ORDER BY t.typname
 	`
 
@@ -1265,14 +1280,28 @@ func (a *App) GetCustomTypes() CustomTypesListResponse {
 
 	for _, row := range rows {
 		ct := CustomType{}
-		
+
 		if name, ok := row["name"].(string); ok {
 			ct.Name = name
 		}
 		if kind, ok := row["kind"].(string); ok {
 			ct.Kind = kind
 		}
-		
+
+		// Получаем значения для ENUM
+		if enumVals, ok := row["enum_values"]; ok && enumVals != nil {
+			switch v := enumVals.(type) {
+			case []interface{}:
+				for _, val := range v {
+					if strVal, ok := val.(string); ok {
+						ct.Values = append(ct.Values, strVal)
+					}
+				}
+			case []string:
+				ct.Values = v
+			}
+		}
+
 		types = append(types, ct)
 	}
 
@@ -1292,7 +1321,7 @@ func (a *App) UpdateCustomType(req UpdateCustomTypeRequest) RecreateTablesResult
 	// Для ENUM можно добавить новые значения
 	if len(req.NewValues) > 0 {
 		for _, value := range req.NewValues {
-			query := fmt.Sprintf("ALTER TYPE %s ADD VALUE '%s'", req.TypeName, 
+			query := fmt.Sprintf("ALTER TYPE %s ADD VALUE '%s'", req.TypeName,
 				strings.ReplaceAll(value, "'", "''"))
 			if err := database.DB.Exec(query).Error; err != nil {
 				logger.Error("Failed to update enum type: %v", err)
@@ -1317,15 +1346,36 @@ func (a *App) DropCustomType(req DropCustomTypeRequest) RecreateTablesResult {
 		return RecreateTablesResult{Success: false, Error: "Имя типа не может быть пустым"}
 	}
 
-	// Используем CASCADE для удаления зависимостей
-	query := fmt.Sprintf("DROP TYPE IF EXISTS %s CASCADE", req.TypeName)
-	logger.Info("Dropping custom type: %s", query)
-	
-	if err := database.DB.Exec(query).Error; err != nil {
-		logger.Error("Failed to drop custom type: %v", err)
-		return RecreateTablesResult{Success: false, Error: err.Error()}
+	logger.Info("Starting drop type process for: %s", req.TypeName)
+
+	// Проверяем что такой тип существует
+	var exists bool
+	checkQuery := `
+		SELECT EXISTS(
+			SELECT 1 FROM pg_type 
+			WHERE typname = $1 
+			AND typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+		)
+	`
+	checkResult := database.DB.Raw(checkQuery, req.TypeName).Scan(&exists)
+	logger.Info("Type existence check result: exists=%v, error=%v", exists, checkResult.Error)
+
+	if !exists {
+		logger.Warn("Type '%s' not found", req.TypeName)
+		return RecreateTablesResult{Success: false, Error: fmt.Sprintf("Тип '%s' не найден", req.TypeName)}
 	}
 
+	// Используем CASCADE для удаления зависимостей, экранируем имя типа
+	query := fmt.Sprintf("DROP TYPE IF EXISTS \"%s\" CASCADE", req.TypeName)
+	logger.Info("Executing drop query: %s", query)
+
+	result := database.DB.Exec(query)
+	if result.Error != nil {
+		logger.Error("Failed to drop custom type: %v, Query: %s", result.Error, query)
+		return RecreateTablesResult{Success: false, Error: result.Error.Error()}
+	}
+
+	logger.Info("Successfully dropped type: %s, RowsAffected: %d", req.TypeName, result.RowsAffected)
 	return RecreateTablesResult{
 		Success: true,
 		Message: fmt.Sprintf("Тип '%s' успешно удалён", req.TypeName),

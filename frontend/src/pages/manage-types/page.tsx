@@ -60,15 +60,26 @@ export default function ManageTypesPage() {
   }, []);
 
   const loadCustomTypes = async () => {
+    console.log("loadCustomTypes called");
     setLoading(true);
     try {
+      console.log("Calling GetCustomTypes...");
       const response = await (window as any).go.main.App.GetCustomTypes();
+      console.log("GetCustomTypes response:", response);
+
       if (response.error) {
+        console.error("GetCustomTypes error:", response.error);
         notifier.error(`Ошибка загрузки: ${response.error}`);
       } else {
+        console.log(
+          "Setting custom types:",
+          response.types?.length || 0,
+          "types"
+        );
         setCustomTypes(response.types || []);
       }
     } catch (error) {
+      console.error("Exception in loadCustomTypes:", error);
       notifier.error(`Ошибка при загрузке типов: ${error}`);
     } finally {
       setLoading(false);
@@ -192,22 +203,50 @@ export default function ManageTypesPage() {
   // === Удаление типа ===
 
   const handleDropType = async (typeName: string) => {
-    if (!confirm(`Вы уверены что хотите удалить тип "${typeName}"?`)) {
-      return;
-    }
+    console.log("=== handleDropType START ===");
+    console.log("handleDropType called with:", typeName);
+
+    // БЕЗ диалога - удаляем сразу
+    console.log("Starting deletion without confirmation dialog");
+    setLoading(true);
 
     try {
-      const result = await (window as any).go.main.App.DropCustomType({
+      console.log("Calling DropCustomType with:", { typeName });
+
+      const dropResult = (window as any).go.main.App.DropCustomType({
         typeName,
       });
-      if (result.success) {
+
+      console.log("DropCustomType returned, waiting for promise...");
+      const result = await dropResult;
+      console.log("DropCustomType result:", result);
+
+      if (result?.success) {
+        console.log("Success! Message:", result.message);
         notifier.success(result.message);
-        loadCustomTypes();
+        console.log("Reloading custom types...");
+        await loadCustomTypes();
+        console.log("Custom types reloaded");
       } else {
-        notifier.error(result.error || "Ошибка удаления типа");
+        console.error("Drop failed - not success:", result);
+        notifier.error(result?.error || "Ошибка удаления типа");
       }
     } catch (error) {
+      console.error("=== EXCEPTION in handleDropType ===");
+      console.error("Error object:", error);
+      console.error(
+        "Error message:",
+        error instanceof Error ? error.message : String(error)
+      );
+      console.error(
+        "Error stack:",
+        error instanceof Error ? error.stack : "no stack"
+      );
       notifier.error(`Ошибка: ${error}`);
+    } finally {
+      console.log("Finally block - setLoading(false)");
+      setLoading(false);
+      console.log("=== handleDropType END ===");
     }
   };
 

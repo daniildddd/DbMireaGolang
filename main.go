@@ -34,22 +34,22 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:  			"DbMireaGolang",
-		Width:  			1280,
-		Height: 		   	800,
-		WindowStartState:  	1, 		// Maximized
-		MinWidth:          	1280,
-		MinHeight:         	800,
-		Fullscreen:        	false,
-		Frameless:         	false,
-		StartHidden:       	false,
-		HideWindowOnClose: 	false,
-		BackgroundColour:  	&options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		Title:             "DbMireaGolang",
+		Width:             1280,
+		Height:            800,
+		WindowStartState:  1, // Maximized
+		MinWidth:          1280,
+		MinHeight:         800,
+		Fullscreen:        false,
+		Frameless:         false,
+		StartHidden:       false,
+		HideWindowOnClose: false,
+		BackgroundColour:  &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		OnStartup: 			app.startup,
-		Bind: 	[]any{
+		OnStartup: app.startup,
+		Bind: []any{
 			app,
 		},
 	})
