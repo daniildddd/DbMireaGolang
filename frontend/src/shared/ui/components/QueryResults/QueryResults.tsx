@@ -25,7 +25,6 @@ export default function QueryResults({
   if (!rows || rows.length === 0) {
     return (
       <div className={clsx(s["results-container"], s["empty"])}>
-        <div className={s["empty-icon"]}>📭</div>
         <div className={s["empty-message"]}>Результатов не найдено</div>
       </div>
     );

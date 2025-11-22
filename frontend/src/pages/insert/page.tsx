@@ -16,6 +16,34 @@ import {
 } from "@/shared/lib/wailsjs/go/main/App";
 import { main } from "@/shared/lib/wailsjs/go/models";
 
+// Функция для защиты от SQL-инъекций и опасных символов
+const sanitizeInput = (input: string): string => {
+  // Максимум 30 символов
+  let sanitized = input.substring(0, 30);
+
+  // Убираем опасные символы для SQL
+  // Разрешаем только буквы, цифры, подчеркивание и некоторые спецсимволы
+  sanitized = sanitized.replace(/[^\w\-а-яА-ЯёЁ\s]/g, "");
+
+  // Убираем опасные SQL ключевые слова в начале
+  const sqlKeywords = [
+    "DROP",
+    "DELETE",
+    "INSERT",
+    "UPDATE",
+    "SELECT",
+    "ALTER",
+    "CREATE",
+    "TRUNCATE",
+  ];
+  const upperSanitized = sanitized.toUpperCase().trim();
+  if (sqlKeywords.some((kw) => upperSanitized.startsWith(kw))) {
+    return "";
+  }
+
+  return sanitized;
+};
+
 interface FormValues {
   [key: string]: string | number | boolean | null;
 }
@@ -376,14 +404,15 @@ export default function InsertPage() {
                             </button>
                           </div>
                         ) : (
-                          // Текстовый тип - РАЗРЕШЕНЫ ВСЕ СИМВОЛЫ (макс 20)
+                          // Текстовый тип - РАЗРЕШЕНЫ ВСЕ СИМВОЛЫ (макс 30)
                           <input
                             type="text"
-                            placeholder="Введите текст (макс 20 символов)"
-                            maxLength={20}
+                            placeholder="Введите текст (макс 30 символов)"
+                            maxLength={30}
                             value={String(formValues[field.name] || "")}
                             onChange={(e) => {
-                              handleInputChange(field.name, e.target.value);
+                              const sanitized = sanitizeInput(e.target.value);
+                              handleInputChange(field.name, sanitized);
                             }}
                             className={s["form-input"]}
                           />
