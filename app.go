@@ -845,6 +845,7 @@ func (a *App) GetTableData(tableName string) TableDataResponse {
 }
 
 // ручка для получения всех полей(используется в окне вставке данных)
+// ручка для получения всех полей(используется в окне вставке данных)
 func (a *App) GetInsertFormFields(req InsertRequest) []FieldInfo {
 	var fields []FieldInfo
 
@@ -973,6 +974,11 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 	// Обработка timestamp/datetime полей - преобразование из строки в time.Time
 	columns, err := database.DB.Migrator().ColumnTypes(req.TableName)
 	if err == nil {
+		// Определяем границы для валидации: текущая дата ± 5 лет
+		now := time.Now()
+		minDate := now.AddDate(-5, 0, 0) // 5 лет назад
+		maxDate := now.AddDate(5, 0, 0)  // 5 лет вперёд
+
 		for _, col := range columns {
 			colType, _ := col.ColumnType()
 			fieldName := col.Name()
@@ -984,9 +990,6 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 						// Пробуем разные форматы timestamp
 						var parsedTime time.Time
 						var parseErr error
-
-						// Нормализуем разделители: заменяем точки и слэши на тире для дат
-						normalizedVal := strVal
 
 						// Форматы для попытки парсинга (в порядке приоритета)
 						formats := []string{
@@ -1000,7 +1003,7 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 
 						// Пробуем каждый формат
 						for _, format := range formats {
-							if parsedTime, parseErr = time.Parse(format, normalizedVal); parseErr == nil {
+							if parsedTime, parseErr = time.Parse(format, strVal); parseErr == nil {
 								break
 							}
 						}
@@ -1013,6 +1016,24 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 								Error:   parseErr.Error(),
 							}
 						}
+
+						// Валидация: дата должна быть в пределах ±5 лет от текущей даты
+						if parsedTime.Before(minDate) {
+							return RecreateTablesResult{
+								Success: false,
+								Message: fmt.Sprintf("Дата в поле '%s' слишком старая (более 5 лет назад). Дата: %s", fieldName, parsedTime.Format("2006-01-02")),
+								Error:   "timestamp out of range: too old",
+							}
+						}
+
+						if parsedTime.After(maxDate) {
+							return RecreateTablesResult{
+								Success: false,
+								Message: fmt.Sprintf("Дата в поле '%s' слишком далёкая (более 5 лет вперёд). Дата: %s", fieldName, parsedTime.Format("2006-01-02")),
+								Error:   "timestamp out of range: too far in future",
+							}
+						}
+
 						req.Data[fieldName] = parsedTime
 					}
 				}
