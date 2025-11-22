@@ -74,7 +74,6 @@ type CustomQueryRequest struct {
 	Query string `json:"query"`
 }
 
-// Новые типы для JOIN функциональности
 type JoinType string
 
 const (
@@ -96,31 +95,27 @@ type JoinRequest struct {
 	Joins     []JoinConfig `json:"joins"`
 }
 
-// SearchRequest — запрос, отправляемый с фронта для выполнения поиска
 type SearchRequest struct {
 	TableName string       `json:"tableName"`
 	Filters   SearchFilter `json:"filters"`
 }
 
-// SearchFilter — единичное условие поиска для одной колонки
 type SearchFilter struct {
-	FieldName string         `json:"fieldName"` // Имя колонки для поиска
-	Operator  SearchOperator `json:"operator"`  // Выбранный оператор
-	Value     string         `json:"value"`     // Шаблон/регулярное выражение для поиска
+	FieldName string         `json:"fieldName"`
+	Operator  SearchOperator `json:"operator"`
+	Value     string         `json:"value"`
 }
 
-// === Типы для управления пользовательскими типами ===
-
 type CreateCustomTypeRequest struct {
-	TypeName string            `json:"typeName"`         // Имя типа
-	TypeKind string            `json:"typeKind"`         // "ENUM" или "COMPOSITE"
-	Values   []string          `json:"values,omitempty"` // Значения для ENUM
-	Fields   []CustomTypeField `json:"fields,omitempty"` // Поля для COMPOSITE
+	TypeName string            `json:"typeName"`
+	TypeKind string            `json:"typeKind"`
+	Values   []string          `json:"values,omitempty"`
+	Fields   []CustomTypeField `json:"fields,omitempty"`
 }
 
 type CustomTypeField struct {
 	FieldName string `json:"fieldName"`
-	FieldType string `json:"fieldType"` // int, text, timestamp и т.д.
+	FieldType string `json:"fieldType"`
 }
 
 type UpdateCustomTypeRequest struct {
@@ -135,7 +130,7 @@ type DropCustomTypeRequest struct {
 
 type CustomType struct {
 	Name   string            `json:"name"`
-	Kind   string            `json:"kind"` // "enum" или "composite"
+	Kind   string            `json:"kind"`
 	Values []string          `json:"values,omitempty"`
 	Fields []CustomTypeField `json:"fields,omitempty"`
 }
@@ -145,30 +140,26 @@ type CustomTypesListResponse struct {
 	Error string       `json:"error,omitempty"`
 }
 
-// SearchOperator — перечисление доступных операторов поиска
 type SearchOperator string
 
 const (
-	LikeOperator       SearchOperator = "LIKE" // Регистрозависимый LIKE
-	RegexpOperator     SearchOperator = "~"    // Соответствует регулярному выражению (регистрозависимый)
-	IRegexpOperator    SearchOperator = "~*"   // Соответствует регулярному выражению (регистроНЕзависимый)
-	NotRegexpOperator  SearchOperator = "!~"   // НЕ соответствует регулярному выражению (регистрозависимый)
-	NotIRegexpOperator SearchOperator = "!~*"  // НЕ соответствует регулярному выражению (регистроНЕзависимый)
+	LikeOperator       SearchOperator = "LIKE"
+	RegexpOperator     SearchOperator = "~"
+	IRegexpOperator    SearchOperator = "~*"
+	NotRegexpOperator  SearchOperator = "!~"
+	NotIRegexpOperator SearchOperator = "!~*"
 )
 
-// RenameTableRequest - запрос на переименование таблицы
 type RenameTableRequest struct {
 	OldName string `json:"oldName"`
 	NewName string `json:"newName"`
 }
 
-// DeleteFieldRequest - запрос на удаление поля
 type DeleteFieldRequest struct {
 	TableName string `json:"tableName"`
 	FieldName string `json:"fieldName"`
 }
 
-// AddFieldRequest - запрос на добавление поля
 type AddFieldRequest struct {
 	TableName   string           `json:"tableName"`
 	FieldName   string           `json:"fieldName"`
@@ -176,7 +167,6 @@ type AddFieldRequest struct {
 	Constraints FieldConstraints `json:"constraints"`
 }
 
-// UpdateFieldRequest - запрос на изменение поля
 type UpdateFieldRequest struct {
 	TableName   string           `json:"tableName"`
 	OldName     string           `json:"oldName"`
@@ -185,7 +175,6 @@ type UpdateFieldRequest struct {
 	Constraints FieldConstraints `json:"constraints"`
 }
 
-// FieldConstraints - ограничения для поля
 type FieldConstraints struct {
 	NotNull    bool                  `json:"notNull"`
 	Unique     bool                  `json:"unique"`
@@ -193,7 +182,6 @@ type FieldConstraints struct {
 	ForeignKey *ForeignKeyConstraint `json:"foreignKey,omitempty"`
 }
 
-// ForeignKeyConstraint - детали внешнего ключа
 type ForeignKeyConstraint struct {
 	RefTable   string   `json:"refTable"`
 	RefColumns []string `json:"refColumns"`
@@ -201,7 +189,6 @@ type ForeignKeyConstraint struct {
 	OnUpdate   string   `json:"onUpdate,omitempty"`
 }
 
-// SearchInTable - выполняет поиск по таблице с использованием LIKE или регулярных выражений
 func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
 	if database.DB == nil {
 		return TableDataResponse{Error: "База данных не инициализирована"}
@@ -223,12 +210,10 @@ func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
 		return TableDataResponse{Error: "Не указано значение для поиска"}
 	}
 
-	// Проверяем существование поля
 	if !database.DB.Migrator().HasColumn(req.TableName, req.Filters.FieldName) {
 		return TableDataResponse{Error: fmt.Sprintf("Поле '%s' не найдено в таблице '%s'", req.Filters.FieldName, req.TableName)}
 	}
 
-	// Валидация оператора
 	validOperators := map[SearchOperator]bool{
 		LikeOperator:       true,
 		RegexpOperator:     true,
@@ -240,7 +225,6 @@ func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
 		return TableDataResponse{Error: fmt.Sprintf("Недопустимый оператор поиска: %s", req.Filters.Operator)}
 	}
 
-	// Формируем SQL-запрос
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s %s ?",
 		req.TableName,
 		req.Filters.FieldName,
@@ -262,13 +246,11 @@ func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
 		}
 	}
 
-	// Получаем названия колонок из первой строки
 	var cols []string
 	for col := range rows[0] {
 		cols = append(cols, col)
 	}
 
-	// Приводим time.Time к строке
 	for i := range rows {
 		for k, v := range rows[i] {
 			if t, ok := v.(time.Time); ok {
@@ -285,7 +267,6 @@ func (a *App) SearchInTable(req SearchRequest) TableDataResponse {
 	}
 }
 
-// RenameTable - переименование таблицы
 func (a *App) RenameTable(req RenameTableRequest) RecreateTablesResult {
 	if database.DB == nil {
 		return RecreateTablesResult{
@@ -336,7 +317,6 @@ func (a *App) RenameTable(req RenameTableRequest) RecreateTablesResult {
 	}
 }
 
-// AddField - добавление поля в таблицу
 func (a *App) AddField(req AddFieldRequest) RecreateTablesResult {
 	if database.DB == nil {
 		return RecreateTablesResult{
@@ -397,7 +377,6 @@ func (a *App) AddField(req AddFieldRequest) RecreateTablesResult {
 	}
 }
 
-// DeleteField - удаление поля из таблицы
 func (a *App) DeleteField(req DeleteFieldRequest) RecreateTablesResult {
 	if database.DB == nil {
 		return RecreateTablesResult{
@@ -423,7 +402,6 @@ func (a *App) DeleteField(req DeleteFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// Проверяем существование поля
 	if !database.DB.Migrator().HasColumn(req.TableName, req.FieldName) {
 		return RecreateTablesResult{
 			Success: false,
@@ -442,7 +420,6 @@ func (a *App) DeleteField(req DeleteFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// Очищаем кэш PostgreSQL после модификации
 	database.DB.Exec("DISCARD PLANS")
 
 	logger.Info("Поле успешно удалено: %s.%s", req.TableName, req.FieldName)
@@ -452,7 +429,6 @@ func (a *App) DeleteField(req DeleteFieldRequest) RecreateTablesResult {
 	}
 }
 
-// UpdateField - изменение поля (имя, тип, ограничения)
 func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 	if database.DB == nil {
 		return RecreateTablesResult{
@@ -486,7 +462,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// Начинаем транзакцию
 	tx := database.DB.Begin()
 	if tx.Error != nil {
 		return RecreateTablesResult{
@@ -501,7 +476,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}()
 
-	// 1. Переименование поля (если имя изменилось)
 	if req.OldName != req.NewName {
 		err := tx.Exec(fmt.Sprintf("ALTER TABLE %s RENAME COLUMN %s TO %s",
 			req.TableName, req.OldName, req.NewName)).Error
@@ -517,7 +491,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		logger.Info("Поле переименовано: %s.%s -> %s", req.TableName, req.OldName, req.NewName)
 	}
 
-	// 2. Изменение типа данных
 	err := tx.Exec(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s TYPE %s",
 		req.TableName, req.NewName, req.Type)).Error
 	if err != nil {
@@ -530,7 +503,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// 3. Обработка NOT NULL
 	if req.Constraints.NotNull {
 		err = tx.Exec(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL",
 			req.TableName, req.NewName)).Error
@@ -544,12 +516,10 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 			}
 		}
 	} else {
-		// Убираем NOT NULL если он был
 		tx.Exec(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s DROP NOT NULL",
 			req.TableName, req.NewName))
 	}
 
-	// 4. Обработка UNIQUE
 	if req.Constraints.Unique {
 		constraintName := fmt.Sprintf("unique_%s_%s", req.TableName, req.NewName)
 		err = tx.Exec(fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s)",
@@ -565,7 +535,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// 5. Обработка CHECK
 	if req.Constraints.Check != "" {
 		constraintName := fmt.Sprintf("check_%s_%s", req.TableName, req.NewName)
 		err = tx.Exec(fmt.Sprintf("ALTER TABLE %s ADD CONSTRAINT %s CHECK (%s)",
@@ -581,7 +550,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// 6. Обработка FOREIGN KEY
 	if req.Constraints.ForeignKey != nil {
 		fk := req.Constraints.ForeignKey
 		constraintName := fmt.Sprintf("fk_%s_%s", req.TableName, req.NewName)
@@ -609,7 +577,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// Фиксируем транзакцию
 	if err := tx.Commit().Error; err != nil {
 		logger.Error("Ошибка фиксации изменений для %s.%s: %v", req.TableName, req.NewName, err)
 		return RecreateTablesResult{
@@ -619,7 +586,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 		}
 	}
 
-	// Очищаем кэш PostgreSQL после модификации
 	database.DB.Exec("DISCARD PLANS")
 
 	logger.Info("Поле успешно изменено: %s.%s", req.TableName, req.NewName)
@@ -629,7 +595,6 @@ func (a *App) UpdateField(req UpdateFieldRequest) RecreateTablesResult {
 	}
 }
 
-// ручка для создания/пересоздания табличек
 func (a *App) RecreateTables() RecreateTablesResult {
 	err := database.CreateTables()
 	if err != nil {
@@ -640,7 +605,6 @@ func (a *App) RecreateTables() RecreateTablesResult {
 		}
 	}
 
-	// Загружаем тестовые данные после создания таблиц
 	err = database.SeedData()
 	if err != nil {
 		return RecreateTablesResult{
@@ -656,7 +620,6 @@ func (a *App) RecreateTables() RecreateTablesResult {
 	}
 }
 
-// ручка для получения всех табличек(их названий)
 func (a *App) GetTableNamesFromModels() TablesListResponse {
 	if database.DB == nil {
 		return TablesListResponse{TableName: []string{}}
@@ -756,7 +719,6 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 		parts := strings.Fields(check)
 		if len(parts) > 0 {
 			colName := parts[0]
-			// Проверяем, что колонка существует
 			if !existingColumns[colName] {
 				continue
 			}
@@ -780,10 +742,8 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 		}
 		cons = append(cons, consMap[name]...)
 
-		// Получаем enum значения если тип enum
 		var enumValues []string
 		if strings.Contains(colType, "enum") || strings.Contains(colType, "character varying") {
-			// Для enum типов
 			if strings.HasPrefix(strings.ToLower(colType), "enum") {
 				database.DB.Raw(`
 					SELECT enum_range(NULL::` + tableName + `.` + name + `)
@@ -802,7 +762,6 @@ func (a *App) GetTableSchema(tableName string) []FieldSchema {
 	return fields
 }
 
-// ручка для получения записей в табличке
 func (a *App) GetTableData(tableName string) TableDataResponse {
 	if database.DB == nil {
 		return TableDataResponse{Error: "База данных не инициализирована"}
@@ -844,8 +803,6 @@ func (a *App) GetTableData(tableName string) TableDataResponse {
 	}
 }
 
-// ручка для получения всех полей(используется в окне вставке данных)
-// ручка для получения всех полей(используется в окне вставке данных)
 func (a *App) GetInsertFormFields(req InsertRequest) []FieldInfo {
 	var fields []FieldInfo
 
@@ -942,7 +899,6 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 		}
 	}
 
-	// Валидация caffeine_level для products
 	if req.TableName == "products" {
 		if val, exists := req.Data["caffeine_level"]; exists {
 			strVal, ok := val.(string)
@@ -971,13 +927,11 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 		}
 	}
 
-	// Обработка timestamp/datetime полей - преобразование из строки в time.Time
 	columns, err := database.DB.Migrator().ColumnTypes(req.TableName)
 	if err == nil {
-		// Определяем границы для валидации: текущая дата ± 5 лет
 		now := time.Now()
-		minDate := now.AddDate(-5, 0, 0) // 5 лет назад
-		maxDate := now.AddDate(5, 0, 0)  // 5 лет вперёд
+		minDate := now.AddDate(-5, 0, 0)
+		maxDate := now.AddDate(5, 0, 0)
 
 		for _, col := range columns {
 			colType, _ := col.ColumnType()
@@ -987,21 +941,18 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 			if strings.Contains(colTypeLower, "timestamp") || strings.Contains(colTypeLower, "time") {
 				if val, exists := req.Data[fieldName]; exists && val != nil {
 					if strVal, ok := val.(string); ok && strVal != "" {
-						// Пробуем разные форматы timestamp
 						var parsedTime time.Time
 						var parseErr error
 
-						// Форматы для попытки парсинга (в порядке приоритета)
 						formats := []string{
-							"2006-01-02 15:04:05",       // Стандартный формат с пробелом
-							"2006-01-02T15:04:05",       // ISO8601 без часового пояса
-							time.RFC3339,                // RFC3339 (с часовым поясом)
-							"2006-01-02T15:04:05Z07:00", // ISO8601 с часовым поясом
-							"20060102150405",            // Компактный формат
-							"2006-01-02",                // Только дата
+							"2006-01-02 15:04:05",
+							"2006-01-02T15:04:05",
+							time.RFC3339,
+							"2006-01-02T15:04:05Z07:00",
+							"20060102150405",
+							"2006-01-02",
 						}
 
-						// Пробуем каждый формат
 						for _, format := range formats {
 							if parsedTime, parseErr = time.Parse(format, strVal); parseErr == nil {
 								break
@@ -1017,7 +968,6 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 							}
 						}
 
-						// Валидация: дата должна быть в пределах ±5 лет от текущей даты
 						if parsedTime.Before(minDate) {
 							return RecreateTablesResult{
 								Success: false,
@@ -1057,7 +1007,6 @@ func (a *App) InsertRecord(req InsertRecordRequest) RecreateTablesResult {
 	}
 }
 
-// Возвращает метаданные всех таблиц
 func (a *App) GetTablesMetadata() []TableMetadata {
 	if database.DB == nil {
 		return []TableMetadata{}
@@ -1128,7 +1077,6 @@ func (a *App) GetTablesMetadata() []TableMetadata {
 	return meta
 }
 
-// выполняет SELECT-запрос
 func (a *App) ExecuteCustomQuery(req CustomQueryRequest) TableDataResponse {
 	if database.DB == nil {
 		return TableDataResponse{Error: "База данных не инициализирована"}
@@ -1139,19 +1087,15 @@ func (a *App) ExecuteCustomQuery(req CustomQueryRequest) TableDataResponse {
 
 	var rows []map[string]interface{}
 
-	// Используем Raw с параметризацией для безопасности и очистки кэша
 	result := database.DB.Raw(req.Query).Scan(&rows)
 
 	if result.Error != nil {
 		logger.Error("ExecuteCustomQuery error: %v\nQuery: %s", result.Error, req.Query)
 
-		// Если ошибка связана с кэшем план, пытаемся очистить его
 		if strings.Contains(result.Error.Error(), "cached plan") {
 			logger.Info("Обнаружена ошибка кэша плана, очищаем подготовленные выражения")
-			// В PostgreSQL используем DISCARD PLANS для очистки кэша
 			database.DB.Exec("DISCARD PLANS")
 
-			// Повторно выполняем запрос
 			result = database.DB.Raw(req.Query).Scan(&rows)
 			if result.Error != nil {
 				logger.Error("ExecuteCustomQuery retry failed: %v\nQuery: %s", result.Error, req.Query)
@@ -1185,7 +1129,6 @@ func (a *App) ExecuteCustomQuery(req CustomQueryRequest) TableDataResponse {
 	}
 }
 
-// Новый метод для выполнения JOIN-запросов
 func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 	if database.DB == nil {
 		return TableDataResponse{Error: "База данных не инициализирована"}
@@ -1207,7 +1150,6 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 		return TableDataResponse{Error: "Не указаны таблицы для соединения"}
 	}
 
-	// Проверяем все таблицы для JOIN
 	for _, join := range req.Joins {
 		if !database.DB.Migrator().HasTable(join.Table) {
 			return TableDataResponse{Error: fmt.Sprintf("Таблица %s не найдена", join.Table)}
@@ -1217,11 +1159,8 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 		}
 	}
 
-	// Формируем SELECT * (выбираем все поля из всех таблиц)
 	query := fmt.Sprintf("SELECT * FROM %s", req.MainTable)
 
-	// Формируем JOIN части с условиями ON
-	// mainField соединяется с join.Field для каждого JOIN
 	for _, join := range req.Joins {
 		condition := fmt.Sprintf("%s.%s = %s.%s", req.MainTable, req.MainField, join.Table, join.Field)
 		query += fmt.Sprintf(" %s JOIN %s ON %s", join.Type, join.Table, condition)
@@ -1234,12 +1173,10 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 	if result.Error != nil {
 		logger.Error("ExecuteJoinQuery error: %v\nQuery: %s", result.Error, query)
 
-		// Если ошибка связана с кэшем план, пытаемся очистить его
 		if strings.Contains(result.Error.Error(), "cached plan") {
 			logger.Info("Обнаружена ошибка кэша плана, очищаем подготовленные выражения")
 			database.DB.Exec("DISCARD PLANS")
 
-			// Повторно выполняем запрос
 			result = database.DB.Raw(query).Scan(&rows)
 			if result.Error != nil {
 				logger.Error("ExecuteJoinQuery retry failed: %v\nQuery: %s", result.Error, query)
@@ -1254,13 +1191,11 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 		return TableDataResponse{Columns: []string{}, Rows: []map[string]interface{}{}}
 	}
 
-	// Получаем названия колонок из первой строки
 	var cols []string
 	for col := range rows[0] {
 		cols = append(cols, col)
 	}
 
-	// Приводим time.Time к строке
 	for i := range rows {
 		for k, v := range rows[i] {
 			if t, ok := v.(time.Time); ok {
@@ -1275,9 +1210,6 @@ func (a *App) ExecuteJoinQuery(req JoinRequest) TableDataResponse {
 	}
 }
 
-// === Функции для управления пользовательскими типами ===
-
-// CreateCustomType создаёт новый пользовательский тип (ENUM или COMPOSITE)
 func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult {
 	if database.DB == nil {
 		return RecreateTablesResult{Success: false, Error: "База данных не инициализирована"}
@@ -1294,12 +1226,10 @@ func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult
 			return RecreateTablesResult{Success: false, Error: "ENUM должен содержать хотя бы одно значение"}
 		}
 
-		// Экранируем значения
 		values := []string{}
 		for _, v := range req.Values {
 			values = append(values, fmt.Sprintf("'%s'", strings.ReplaceAll(v, "'", "''")))
 		}
-		// Экранируем имя типа в кавычки
 		query = fmt.Sprintf("CREATE TYPE \"%s\" AS ENUM (%s)", req.TypeName, strings.Join(values, ", "))
 
 	} else if strings.ToUpper(req.TypeKind) == "COMPOSITE" {
@@ -1307,12 +1237,10 @@ func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult
 			return RecreateTablesResult{Success: false, Error: "COMPOSITE должен содержать хотя бы одно поле"}
 		}
 
-		// Формируем список полей
 		fields := []string{}
 		for _, field := range req.Fields {
 			fields = append(fields, fmt.Sprintf("%s %s", field.FieldName, field.FieldType))
 		}
-		// Экранируем имя типа в кавычки
 		query = fmt.Sprintf("CREATE TYPE \"%s\" AS (%s)", req.TypeName, strings.Join(fields, ", "))
 
 	} else {
@@ -1325,11 +1253,9 @@ func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult
 		return RecreateTablesResult{Success: false, Error: err.Error()}
 	}
 
-	// Добавляем комментарий к типу, чтобы отметить что он создан приложением
 	commentQuery := fmt.Sprintf("COMMENT ON TYPE \"%s\" IS 'created_by_app'", req.TypeName)
 	if err := database.DB.Exec(commentQuery).Error; err != nil {
 		logger.Warn("Failed to add comment to type: %v", err)
-		// Не прерываем процесс если ошибка с комментарием
 	}
 
 	logger.Info("Successfully created type: %s", req.TypeName)
@@ -1339,7 +1265,6 @@ func (a *App) CreateCustomType(req CreateCustomTypeRequest) RecreateTablesResult
 	}
 }
 
-// GetCustomTypes возвращает список всех пользовательских типов
 func (a *App) GetCustomTypes() CustomTypesListResponse {
 	if database.DB == nil {
 		return CustomTypesListResponse{Error: "База данных не инициализирована"}
@@ -1347,8 +1272,6 @@ func (a *App) GetCustomTypes() CustomTypesListResponse {
 
 	var types []CustomType
 
-	// Запрос для получения ТОЛЬКО типов, созданных пользователем (не встроенные PostgreSQL)
-	// OID >= 16384 - это пользовательские типы
 	query := `
 	SELECT t.typname as name, 
 	       CASE WHEN t.typtype = 'e' THEN 'enum' ELSE 'composite' END as kind,
@@ -1358,7 +1281,6 @@ func (a *App) GetCustomTypes() CustomTypesListResponse {
 	WHERE t.typtype IN ('e', 'c')
 	  AND t.typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
 	  AND t.oid >= 16384
-	  -- Исключаем типы, которые автоматически созданы для таблиц
 	  AND NOT EXISTS (
 	      SELECT 1 FROM pg_class c 
 	      WHERE c.relname = t.typname 
@@ -1385,7 +1307,6 @@ func (a *App) GetCustomTypes() CustomTypesListResponse {
 			ct.Kind = kind
 		}
 
-		// Получаем значения для ENUM
 		if enumVals, ok := row["enum_values"]; ok && enumVals != nil {
 			switch v := enumVals.(type) {
 			case []interface{}:
@@ -1405,7 +1326,6 @@ func (a *App) GetCustomTypes() CustomTypesListResponse {
 	return CustomTypesListResponse{Types: types}
 }
 
-// UpdateCustomType редактирует существующий пользовательский тип
 func (a *App) UpdateCustomType(req UpdateCustomTypeRequest) RecreateTablesResult {
 	if database.DB == nil {
 		return RecreateTablesResult{Success: false, Error: "База данных не инициализирована"}
@@ -1415,7 +1335,6 @@ func (a *App) UpdateCustomType(req UpdateCustomTypeRequest) RecreateTablesResult
 		return RecreateTablesResult{Success: false, Error: "Имя типа не может быть пустым"}
 	}
 
-	// Для ENUM можно добавить новые значения
 	if len(req.NewValues) > 0 {
 		for _, value := range req.NewValues {
 			query := fmt.Sprintf("ALTER TYPE %s ADD VALUE '%s'", req.TypeName,
@@ -1433,7 +1352,6 @@ func (a *App) UpdateCustomType(req UpdateCustomTypeRequest) RecreateTablesResult
 	}
 }
 
-// DropCustomType удаляет пользовательский тип
 func (a *App) DropCustomType(req DropCustomTypeRequest) RecreateTablesResult {
 	if database.DB == nil {
 		return RecreateTablesResult{Success: false, Error: "База данных не инициализирована"}
@@ -1445,7 +1363,6 @@ func (a *App) DropCustomType(req DropCustomTypeRequest) RecreateTablesResult {
 
 	logger.Info("Starting drop type process for: %s", req.TypeName)
 
-	// Проверяем что такой тип существует
 	var exists bool
 	checkQuery := `
 		SELECT EXISTS(
@@ -1462,7 +1379,6 @@ func (a *App) DropCustomType(req DropCustomTypeRequest) RecreateTablesResult {
 		return RecreateTablesResult{Success: false, Error: fmt.Sprintf("Тип '%s' не найден", req.TypeName)}
 	}
 
-	// Используем CASCADE для удаления зависимостей, экранируем имя типа
 	query := fmt.Sprintf("DROP TYPE IF EXISTS \"%s\" CASCADE", req.TypeName)
 	logger.Info("Executing drop query: %s", query)
 
